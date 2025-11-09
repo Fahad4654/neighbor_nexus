@@ -9,6 +9,7 @@ import {
   metricsMiddleware,
   metricsRoute,
 } from "./middlewares/prometheus.middleware";
+import { COMPANY_NAME } from "./config";
 
 const createApp = (): Application => {
   const app = express();
@@ -23,14 +24,13 @@ const createApp = (): Application => {
   // Health check
   app.get("/v1/api/health", (req, res) => {
     res.status(200).json({
-      status: "UP",
+      status: `${COMPANY_NAME} is running UP!`,
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
     });
   });
 
   // 🎯 PUBLIC, BUT SECURED METRICS ENDPOINT
-  // Prometheus Scrape authentication check (using header for shared secret)
   app.get("/v1/api/metrics", metricsRoute);
 
   // Public routes

@@ -22,7 +22,7 @@ const ADMIN_MAIL = process.env.ADMIN_MAIL || "superadmin@mail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER || "+8801711223344";
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000/login";
-const COMPANY_NAME = process.env.COMPANY_NAME || "Game App";
+const COMPANY_NAME = process.env.COMPANY_NAME || "Company Inc.";
 const MAIL_SEND = process.env.MAIL_SEND || "true";
 
 const SMTP_USER = process.env.SMTP_USER || "";
