@@ -30,7 +30,15 @@ export class User extends Model {
 
   @AllowNull(false)
   @Column(DataType.STRING(100))
-  name!: string;
+  username!: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
+  firstname!: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
+  lastname!: string;
 
   @AllowNull(false)
   @Column(DataType.STRING(100))

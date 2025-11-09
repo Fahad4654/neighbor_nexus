@@ -160,7 +160,8 @@ export async function updateUser(data: Partial<User> & { id: string }) {
   if (!user) return null;
 
   const allowedFields: Array<keyof User> = [
-    "name",
+    "firstname",
+    "lastname",
     "email",
     "password",
     "isAdmin",

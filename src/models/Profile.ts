@@ -45,12 +45,4 @@ export class Profile extends Model {
   @AllowNull(true)
   @Column(DataType.STRING(256))
   address?: string;
-
-  @AllowNull(false)
-  @Column(DataType.STRING)
-  playerId!: string;
-
-  @AllowNull(true)
-  @Column(DataType.STRING)
-  referredId?: string;
 }
