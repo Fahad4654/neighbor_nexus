@@ -78,7 +78,13 @@ export async function sendOtp(identifier: string, type: string) {
  */
 export async function verifyOtp(identifier: string, otp: string) {
   const user = await User.findOne({
-    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
+    where: {
+      [Op.or]: [
+        { username: identifier },
+        { email: identifier },
+        { phoneNumber: identifier },
+      ],
+    },
   });
   if (!user) throw new Error("User not found");
 

@@ -183,7 +183,10 @@ export class AuthService {
         {
           id: tokenRecord.user.id,
           username: tokenRecord.user.username,
+          firstname: tokenRecord.user.firstname,
+          lastname: tokenRecord.user.lastname,
           email: tokenRecord.user.email,
+          phoneNumber: tokenRecord.user.phoneNumber,
           isAdmin: tokenRecord.user.isAdmin,
         },
         ACCESS_TOKEN_SECRET,
