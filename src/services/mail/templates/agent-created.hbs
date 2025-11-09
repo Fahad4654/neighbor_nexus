@@ -1,0 +1,115 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to {{companyName}}</title>
+  </head>
+  <body
+    style="font-family: Arial, sans-serif; background-color: #f6f9fc; margin: 0; padding: 0;"
+  >
+    <table
+      align="center"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); overflow: hidden;"
+    >
+      <tr>
+        <td
+          style="background-color: #007bff; padding: 20px 0; text-align: center;"
+        >
+          <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Welcome to
+            {{companyName}}
+            🎉</h1>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding: 30px 40px;">
+          <p style="font-size: 16px; color: #333333; margin-bottom: 16px;">Hi
+            {{user.name}},</p>
+
+          <p style="font-size: 15px; color: #555555; line-height: 1.6;">
+            We’re excited to have you on board! Your agent account has been
+            successfully created.
+          </p>
+
+          <table
+            style="width: 100%; border-collapse: collapse; margin-top: 20px;"
+          >
+            <tr>
+              <td
+                style="padding: 10px; background: #f8f9fa; border: 1px solid #e1e1e1;"
+              >Name:</td>
+              <td
+                style="padding: 10px; border: 1px solid #e1e1e1;"
+              >{{user.name}}</td>
+            </tr>
+            <tr>
+              <td
+                style="padding: 10px; background: #f8f9fa; border: 1px solid #e1e1e1;"
+              >Email:</td>
+              <td
+                style="padding: 10px; border: 1px solid #e1e1e1;"
+              >{{user.email}}</td>
+            </tr>
+            <tr>
+              <td
+                style="padding: 10px; background: #f8f9fa; border: 1px solid #e1e1e1;"
+              >Phone Number:</td>
+              <td
+                style="padding: 10px; border: 1px solid #e1e1e1;"
+              >{{user.phoneNumber}}</td>
+            </tr>
+            <tr>
+              <td
+                style="padding: 10px; background: #f8f9fa; border: 1px solid #e1e1e1;"
+              >Temporary Password(reset the password if you want):</td>
+              <td
+                style="padding: 10px; border: 1px solid #e1e1e1;"
+              >{{password}}</td>
+            </tr>
+            <tr>
+              <td
+                style="padding: 10px; background: #f8f9fa; border: 1px solid #e1e1e1;"
+              >Created At:</td>
+              <td
+                style="padding: 10px; border: 1px solid #e1e1e1;"
+              >{{user.createdAt}}</td>
+            </tr>
+
+          </table>
+
+          <p
+            style="font-size: 15px; color: #555555; margin-top: 20px; text-align: center;"
+          >
+            You can log in anytime using your credentials.
+          </p>
+
+          <div style="text-align: center; margin-top: 25px;">
+            <a
+              href="{{loginUrl}}"
+              style="background-color: #007bff; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;"
+            >Log In</a>
+          </div>
+
+          <p
+            style="font-size: 14px; color: #888888; margin-top: 30px; text-align: center;"
+          >
+            If you have any questions, contact our support team at
+            <a
+              href="mailto:{{supportEmail}}"
+              style="color: #007bff;"
+            >{{supportEmail}}</a>.
+          </p>
+        </td>
+      </tr>
+    </table>
+    <div class="footer" style="text-align: center;">
+      <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">
+        &copy;
+        {{year}}
+        {{companyName}}. All rights reserved.
+      </p>
+    </div>
+  </body>
+</html>
