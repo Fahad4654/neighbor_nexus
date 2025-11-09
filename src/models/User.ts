@@ -7,10 +7,8 @@ import {
   Default,
   AllowNull,
   HasOne,
-  HasMany,
   ForeignKey,
   Validate,
-  Index,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 

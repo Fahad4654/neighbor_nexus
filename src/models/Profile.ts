@@ -8,16 +8,13 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
-  Index,
 } from "sequelize-typescript";
 import { User } from "./User";
 
 @Table({
   tableName: "profiles",
   timestamps: true,
-  indexes: [
-    { unique: true, fields: ["userId"] }
-  ],
+  indexes: [{ unique: true, fields: ["userId"] }],
 })
 export class Profile extends Model {
   @PrimaryKey
