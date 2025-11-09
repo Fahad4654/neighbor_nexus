@@ -32,9 +32,7 @@ export async function findAllProfiles(
     },
   };
 }
-export function playerId(userId: string) {
-  return `FK-${generateToken(userId)}`;
-}
+
 
 export async function createProfile(data: {
   userId: string;
@@ -48,7 +46,6 @@ export async function createProfile(data: {
     bio: data.bio ?? "",
     avatarUrl: data.avatarUrl ?? "/media/none.jpg",
     address: data.address ?? "",
-    playerId: playerId(data.userId),
     referredId: data.referredId ? `${data.referredId}` : "None",
   });
 }

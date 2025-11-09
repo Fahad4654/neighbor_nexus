@@ -17,7 +17,6 @@ import { Profile } from "../models/Profile";
 import { MailService } from "./mail/mail.service";
 import { Otp } from "../models/Otp";
 import { sendOtp } from "./otp.services";
-import { findByDynamicId } from "./find.service";
 
 const mailService = new MailService();
 

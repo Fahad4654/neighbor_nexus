@@ -1,9 +1,14 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/User";
 import { Profile } from "../models/Profile";
-import { createProfile, playerId } from "./profile.service";
+import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
-import { ADMIN_MAIL, ADMIN_USERNAME, CLIENT_URL, COMPANY_NAME } from "../config";
+import {
+  ADMIN_MAIL,
+  ADMIN_USERNAME,
+  CLIENT_URL,
+  COMPANY_NAME,
+} from "../config";
 import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
 
@@ -81,29 +86,27 @@ export async function createUser(data: {
   updatedBy?: string;
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
-  // let creator: User | null = null;
-  // if (data.referredId) {
-  //   const typedCreatorProfile = await findByDynamicId(
-  //     Profile,
-  //     { playerId: data.referredId },
-  //     false
-  //   );
-  // const creatorProfileCheck = typedCreatorProfile as Profile | null;
-  const admin = await User.findOne({ where: { name: `${ADMIN_USERNAME}` } });
-  const adminProfile = await Profile.findOne({
-    where: { userId: admin?.id },
-  });
-  // const creatorProfile = creatorProfileCheck
-  //   ? creatorProfileCheck
-  //   : adminProfile;
-  let creator: User | null = null;
 
-  const typedCreator = await findByDynamicId(
-    User,
-    { id: adminProfile?.userId },
-    false
-  );
-  creator = typedCreator as User | null;
+  const admin = await User.findOne({
+    where: { username: `${ADMIN_USERNAME}` },
+  });
+
+  let adminProfile: Profile | null = null;
+  if (admin)
+    adminProfile = await Profile.findOne({
+      where: { userId: admin?.id },
+    });
+
+  let creator: User | null = null;
+  if (data.createdBy) {
+    const typedCreator = await findByDynamicId(
+      User,
+      { id: data.createdBy },
+      false
+    );
+    creator = typedCreator as User | null;
+  }
+
   console.log("Created by:", creator);
   const newUser = await User.create({
     username: data.username,
@@ -114,8 +117,8 @@ export async function createUser(data: {
     phoneNumber: data.phoneNumber,
     isAdmin: data.isAdmin ? true : false,
     isVerified: true,
-    createdBy: data.createdBy ? data.createdBy : creator?.id,
-    updatedBy: data.updatedBy ? data.updatedBy : creator?.id,
+    createdBy: data.createdBy ? data.createdBy : admin ? admin.id : null,
+    updatedBy: data.updatedBy ? data.updatedBy : admin ? admin.id : null,
   });
   console.log("user created", newUser);
   await mailService.sendMail(
@@ -175,7 +178,12 @@ export async function deleteUser(identifier: {
   id?: string;
   phoneNumber?: string;
 }) {
-  if (!identifier.email && !identifier.username && !identifier.id && !identifier.phoneNumber) {
+  if (
+    !identifier.email &&
+    !identifier.username &&
+    !identifier.id &&
+    !identifier.phoneNumber
+  ) {
     throw new Error(
       "At least one identifier (username, email, id, or phoneNumber) is required"
     );
