@@ -16,8 +16,7 @@ import { User } from "./User";
   tableName: "profiles",
   timestamps: true,
   indexes: [
-    { unique: true, fields: ["userId"] },
-    { unique: true, fields: ["playerId"] },
+    { unique: true, fields: ["userId"] }
   ],
 })
 export class Profile extends Model {

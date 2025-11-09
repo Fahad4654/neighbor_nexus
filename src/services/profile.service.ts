@@ -13,7 +13,7 @@ export async function findAllProfiles(
     include: [
       {
         model: User,
-        attributes: ["id", "name", "email"],
+        attributes: ["id", "username","firstname", "lastname", "email", "phoneNumber"],
       },
     ],
     nest: true,
@@ -56,7 +56,7 @@ export async function createProfile(data: {
 export async function deleteProfileByUserId(userId: string) {
   const user = await User.findOne({
     where: { id: userId },
-    attributes: ["id", "name", "email"],
+    attributes: ["id", "username","firstname", "lastname", "email", "phoneNumber"],
   });
 
   const deletedCount = await Profile.destroy({ where: { userId } });

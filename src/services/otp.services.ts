@@ -34,7 +34,7 @@ export async function sendOtp(identifier: string, type: string) {
       undefined, // HTML will come from template
       "otp-user", // Handlebars template
       {
-        name: user.name,
+        name: user.lastname,
         expiry: "10",
         otp,
         year: new Date().getFullYear(),
@@ -52,7 +52,7 @@ export async function sendOtp(identifier: string, type: string) {
     undefined, // HTML will come from template
     "otp-password", // Handlebars template
     {
-      name: user.name,
+      name: user.lastname,
       expiry: "10",
       otp,
       year: new Date().getFullYear(),

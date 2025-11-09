@@ -102,7 +102,9 @@ export class AuthService {
     });
 
     const newUser = await User.create({
-      name,
+      username,
+      firstname,
+      lastname,
       email,
       password: hashedPassword,
       phoneNumber,
@@ -232,7 +234,7 @@ export async function resetPassword(identifier: string, newPassword: string) {
     undefined,
     "reset-pass-success",
     {
-      name: user.username,
+      name: user.lastname,
       loginUrl: `${CLIENT_URL}/login`,
       companyName: `${COMPANY_NAME}`,
       year: new Date().getFullYear(),

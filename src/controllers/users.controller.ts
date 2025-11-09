@@ -93,7 +93,9 @@ export async function createUserController(req: Request, res: Response) {
   adminMiddleware(req, res, async () => {
     try {
       const reqBodyValidation = validateRequiredBody(req, res, [
-        "name",
+        "username",
+        "firstname",
+        "lastname",
         "email",
         "password",
         "phoneNumber",

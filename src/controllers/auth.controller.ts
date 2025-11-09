@@ -7,20 +7,29 @@ import { sendOtp, verifyOtp } from "../services/otp.services";
 
 export const register: RequestHandler = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, referredId } = req.body;
+    const { username, firstname, lastname, email, password, phoneNumber } =
+      req.body;
 
-    if (!name || !email || !password || !phoneNumber) {
+    if (
+      !username ||
+      !firstname ||
+      !lastname ||
+      !email ||
+      !password ||
+      !phoneNumber
+    ) {
       console.log("All fields are required");
       res.status(400).json({ message: "All fields are required" });
       return;
     }
 
     const newUser = await AuthService.registerUser({
-      name,
+      username,
+      firstname,
+      lastname,
       email,
       password,
       phoneNumber,
-      referredId,
     });
 
     const userResponse = newUser.toJSON();
@@ -117,11 +126,11 @@ export const refreshToken: RequestHandler = async (req, res) => {
     });
     return;
   } catch (error: any) {
-    if (error.name === "TokenExpiredError") {
+    if (error.username === "TokenExpiredError") {
       console.log("Refresh token expired");
       res.status(403).json({ message: "Refresh token expired" });
     }
-    if (error.name === "JsonWebTokenError") {
+    if (error.username === "JsonWebTokenError") {
       console.log("Invalid refresh token");
       res.status(403).json({ message: "Invalid refresh token" });
     }

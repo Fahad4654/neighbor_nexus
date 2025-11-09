@@ -95,17 +95,17 @@ export async function deleteUserProfileController(req: Request, res: Response) {
     const { deletedCount, user } = await deleteProfileByUserId(req.body.userId);
 
     if (deletedCount === 0) {
-      console.log(`User: ${user?.name} doesn't have a profile`);
+      console.log(`User: ${user?.username} doesn't have a profile`);
       res.status(404).json({
         error: "User's Profile not found",
-        message: `User: ${user?.name} doesn't have a profile`,
+        message: `User: ${user?.username} doesn't have a profile`,
       });
       return;
     }
 
-    console.log(`User: ${user?.name}'s profile is being deleted`);
+    console.log(`User: ${user?.username}'s profile is being deleted`);
     res.status(200).json({
-      message: `User: ${user?.name}'s profile is being deleted`,
+      message: `User: ${user?.username}'s profile is being deleted`,
       email: user?.email,
     });
     return;

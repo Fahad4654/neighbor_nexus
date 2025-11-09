@@ -18,6 +18,7 @@ import { Profile } from "./Profile";
   tableName: "users",
   timestamps: true,
   indexes: [
+    { unique: true, fields: ["username"] },
     { unique: true, fields: ["email"] },
     { unique: true, fields: ["phoneNumber"] },
   ],
