@@ -22,7 +22,11 @@ const createApp = (): Application => {
 
   // Health check
   app.get("/v1/api/health", (req, res) => {
-    res.status(200).json({ status: "UP" });
+    res.status(200).json({
+      status: "UP",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
   });
 
   // 🎯 PUBLIC, BUT SECURED METRICS ENDPOINT
