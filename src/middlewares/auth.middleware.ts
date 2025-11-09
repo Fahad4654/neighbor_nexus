@@ -1,15 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
-import { SECRET as JWT_SECRET } from "../config";
+import { ACCESS_TOKEN_SECRET as JWT_SECRET } from "../config";
 
 declare module "express" {
   interface Request {
     user?: {
       id: string;
+      username: string;
+      firstname: string;
+      lastname: string;
       email: string;
       isAdmin: boolean;
-      isAgent: boolean;
     };
   }
 }
@@ -33,9 +35,11 @@ export const authenticate = async (
     // Verify token
     const payload = jwt.verify(token, SECRET) as {
       id: string;
+      username: string;
+      firstname: string;
+      lastname: string;
       email: string;
       isAdmin: boolean;
-      isAgent: boolean;
     };
 
     // Optional: Verify user still exists

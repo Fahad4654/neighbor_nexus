@@ -9,7 +9,8 @@ const DB_USER = process.env.DB_USER || "postgres";
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432;
-const SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET || "your_jwt_secret";
+const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET || "your_jwt_secret";
 const ACCESS_TOKEN_EXPIRATION =
   process.env.ACCESS_TOKEN_EXPIRATION?.toString() || "15m";
 const REFRESH_TOKEN_EXPIRATION =
@@ -41,7 +42,8 @@ export {
   DB_PASSWORD,
   DB_HOST,
   DB_PORT,
-  SECRET,
+  REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
   ADMIN_USERNAME,

@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import { User } from "../models/User";
 import { Token } from "../models/Token";
 import {
-  SECRET,
+  REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
   ADMIN_USERNAME,
@@ -13,7 +14,6 @@ import {
 } from "../config";
 import { createProfile } from "./profile.service";
 import { Op } from "sequelize";
-import { Profile } from "../models/Profile";
 import { MailService } from "./mail/mail.service";
 import { Otp } from "../models/Otp";
 import { sendOtp } from "./otp.services";
@@ -37,14 +37,17 @@ export class AuthService {
       {
         id: user.id,
         username: user.username,
+        firstname: user.firstname,
+        lastname: user.lastname,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         isAdmin: user.isAdmin,
       },
-      SECRET,
+      ACCESS_TOKEN_SECRET,
       { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
     );
 
-    const refreshToken = jwt.sign({ id: user.id }, SECRET, {
+    const refreshToken = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, {
       expiresIn: REFRESH_TOKEN_EXPIRATION ? REFRESH_TOKEN_EXPIRATION : "7d",
     } as SignOptions);
 
@@ -95,10 +98,7 @@ export class AuthService {
     }
 
     const hashedPassword = await this.hashPassword(password);
-    const admin = await User.findOne({ where: { name: `${ADMIN_USERNAME}` } });
-    const adminProfile = await Profile.findOne({
-      where: { userId: admin?.id },
-    });
+    const admin = await User.findOne({ where: { username: `${ADMIN_USERNAME}` } });
 
     const newUser = await User.create({
       username,
@@ -162,7 +162,7 @@ export class AuthService {
 
   static async refreshAccessToken(refreshToken: string) {
     try {
-      const payload = jwt.verify(refreshToken, SECRET) as { id: string };
+      const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { id: string };
 
       const tokenRecord = await Token.findOne({
         where: {
@@ -183,7 +183,7 @@ export class AuthService {
           email: tokenRecord.user.email,
           isAdmin: tokenRecord.user.isAdmin,
         },
-        SECRET,
+        ACCESS_TOKEN_SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
       );
 
