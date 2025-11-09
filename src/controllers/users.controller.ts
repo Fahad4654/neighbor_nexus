@@ -14,9 +14,9 @@ import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
 
 export async function getUsersController(req: Request, res: Response) {
-  const agentOrAdminMiddleware = isAdmin();
+  const adminMiddleware = isAdmin();
 
-  agentOrAdminMiddleware(req, res, async () => {
+  adminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");
@@ -171,9 +171,9 @@ export async function updateUserController(req: Request, res: Response) {
 }
 
 export async function deleteUserController(req: Request, res: Response) {
-  const agentOrAdminMiddleware = isAdmin();
+  const adminMiddleware = isAdmin();
 
-  agentOrAdminMiddleware(req, res, async () => {
+  adminMiddleware(req, res, async () => {
     try {
       const { email, id, phoneNumber } = req.body;
 

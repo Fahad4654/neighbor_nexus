@@ -108,7 +108,6 @@ export class AuthService {
       password: hashedPassword,
       phoneNumber,
       isAdmin: false,
-      isAgent: false,
       createdBy: admin?.id,
       updatedBy: admin?.id,
     });

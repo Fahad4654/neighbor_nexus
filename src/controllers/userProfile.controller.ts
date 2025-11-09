@@ -10,9 +10,9 @@ import { validateRequiredBody } from "../services/reqBodyValidation.service";
 
 // User Profile List
 export async function getUsersProfileController(req: Request, res: Response) {
-  const agentOrAdminMiddleware = isAdmin();
+  const adminMiddleware = isAdmin();
 
-  agentOrAdminMiddleware(req, res, async () => {
+  adminMiddleware(req, res, async () => {
     try {
       if (!req.body) {
         console.log("Request body is required");

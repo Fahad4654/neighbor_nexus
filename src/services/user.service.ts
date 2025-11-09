@@ -33,12 +33,6 @@ export async function findAllUsers(
 
   const whereClause: any = {};
 
-  // if (user.isAgent) {
-  //   // Example logic:
-  //   // only show users belonging to the same business or assigned to this agent
-  //   whereClause.createdBy = user.id; // or `whereClause.businessId = user.businessId`
-  // }
-
   const { count, rows } = await User.findAndCountAll({
     where: whereClause, // ✅ Apply condition
     attributes: { exclude: ["password"] },
