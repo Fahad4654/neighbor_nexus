@@ -6,7 +6,7 @@ import {
   SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
-  ADMIN_NAME,
+  ADMIN_USERNAME,
   CLIENT_URL,
   ADMIN_MAIL,
   COMPANY_NAME,
@@ -37,9 +37,9 @@ export class AuthService {
     const accessToken = jwt.sign(
       {
         id: user.id,
+        username: user.username,
         email: user.email,
         isAdmin: user.isAdmin,
-        isAgent: user.isAgent,
       },
       SECRET,
       { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
@@ -60,22 +60,25 @@ export class AuthService {
   }
 
   static async registerUser(data: {
-    name: string;
+    username: string;
+    firstname: string;
+    lastname: string;
     email: string;
     password: string;
     phoneNumber: string;
-    referredId?: string;
   }) {
-    const { name, email, password, phoneNumber } = data;
+    const { username, firstname, lastname, email, password, phoneNumber } =
+      data;
 
     const existingUser = await User.findOne({
       where: {
-        [Op.or]: [{ email }, { phoneNumber }],
+        [Op.or]: [{ email }, { phoneNumber }, { username }],
       },
     });
     if (existingUser) {
       if (
         existingUser.email === email &&
+        existingUser.username === username &&
         existingUser.phoneNumber === phoneNumber
       ) {
         console.log("User already exists");
@@ -83,6 +86,9 @@ export class AuthService {
       } else if (existingUser.email === email) {
         console.log("Email matched");
         throw new Error("Email already exists");
+      } else if (existingUser.username === username) {
+        console.log("Username matched");
+        throw new Error("Username already exists");
       } else if (existingUser.phoneNumber === phoneNumber) {
         console.log("Phone number matched");
         throw new Error("Phone number already exists");
@@ -90,27 +96,10 @@ export class AuthService {
     }
 
     const hashedPassword = await this.hashPassword(password);
-    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+    const admin = await User.findOne({ where: { name: `${ADMIN_USERNAME}` } });
     const adminProfile = await Profile.findOne({
       where: { userId: admin?.id },
     });
-
-    let refferedBy = null;
-    if (data.referredId) {
-      let typedRefferedBy = await findByDynamicId(
-        Profile,
-        { playerId: data.referredId },
-        false
-      );
-      refferedBy = typedRefferedBy as Profile | null;
-    }
-
-    console.log(refferedBy?.userId);
-    let createdBy = null;
-    if (refferedBy) {
-      createdBy = refferedBy.userId;
-    }
-    console.log(createdBy);
 
     const newUser = await User.create({
       name,
@@ -119,8 +108,8 @@ export class AuthService {
       phoneNumber,
       isAdmin: false,
       isAgent: false,
-      createdBy: createdBy ? createdBy : admin?.id,
-      updatedBy: createdBy ? createdBy : admin?.id,
+      createdBy: admin?.id,
+      updatedBy: admin?.id,
     });
 
     await sendOtp(newUser.email, "register");
@@ -129,19 +118,20 @@ export class AuthService {
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
-      referredId: data.referredId
-        ? data.referredId
-        : adminProfile?.playerId,
     });
-    console.log("Profile created for", newUser.email);
+    console.log("Profile created for", newUser.username);
     return newUser;
   }
 
   static async loginUser(identifier: string, password: string) {
-    // identifier can be email OR phone number
+    // identifier can be username OR email OR phone number
     const user = await User.findOne({
       where: {
-        [Op.or]: [{ email: identifier }, { phoneNumber: identifier }],
+        [Op.or]: [
+          { username: identifier },
+          { email: identifier },
+          { phoneNumber: identifier },
+        ],
       },
     });
 
@@ -188,9 +178,9 @@ export class AuthService {
       const newAccessToken = jwt.sign(
         {
           id: tokenRecord.user.id,
+          username: tokenRecord.user.username,
           email: tokenRecord.user.email,
           isAdmin: tokenRecord.user.isAdmin,
-          isAgent: tokenRecord.user.isAgent,
         },
         SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
@@ -204,14 +194,24 @@ export class AuthService {
 }
 
 export async function resetPassword(identifier: string, newPassword: string) {
-  const user = await User.findOne({
-    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
-  });
+  // Determine which field to search by
+  let whereCondition: any = {};
+
+  if (identifier.includes("@")) {
+    whereCondition.email = identifier;
+  } else if (/^\+?\d+$/.test(identifier)) {
+    // simple regex to check if it's a phone number (digits only)
+    whereCondition.phoneNumber = identifier;
+  } else {
+    whereCondition.username = identifier;
+  }
+
+  // Find user
+  const user = await User.findOne({ where: whereCondition });
   if (!user) throw new Error("User not found");
 
-  const token = await Otp.findOne({
-    where: { userId: user.id },
-  });
+  // Find OTP token
+  const token = await Otp.findOne({ where: { userId: user.id } });
   if (!token) throw new Error("No OTP verification found");
   if (!token.verified) throw new Error("OTP not verified");
   if (token.expiresAt.getTime() < Date.now()) {
@@ -219,18 +219,20 @@ export async function resetPassword(identifier: string, newPassword: string) {
     throw new Error("OTP expired");
   }
 
+  // Reset password
   user.password = await bcrypt.hash(newPassword, 10);
   await user.save();
-  await token.destroy(); // remove after successful reset
+  await token.destroy();
 
+  // Send confirmation email
   await mailService.sendMail(
     user.email,
     "Password Reset Successful",
     "Password Reset Successful.",
-    undefined, // HTML will come from template
-    "reset-pass-success", // Handlebars template
+    undefined,
+    "reset-pass-success",
     {
-      name: user.name,
+      name: user.username,
       loginUrl: `${CLIENT_URL}/login`,
       companyName: `${COMPANY_NAME}`,
       year: new Date().getFullYear(),

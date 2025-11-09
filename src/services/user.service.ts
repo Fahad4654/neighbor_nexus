@@ -3,7 +3,7 @@ import { User } from "../models/User";
 import { Profile } from "../models/Profile";
 import { createProfile, playerId } from "./profile.service";
 import { Op } from "sequelize";
-import { ADMIN_MAIL, ADMIN_NAME, CLIENT_URL, COMPANY_NAME } from "../config";
+import { ADMIN_MAIL, ADMIN_USERNAME, CLIENT_URL, COMPANY_NAME } from "../config";
 import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
 
@@ -89,7 +89,7 @@ export async function createUser(data: {
   //     false
   //   );
   // const creatorProfileCheck = typedCreatorProfile as Profile | null;
-  const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+  const admin = await User.findOne({ where: { name: `${ADMIN_USERNAME}` } });
   const adminProfile = await Profile.findOne({
     where: { userId: admin?.id },
   });

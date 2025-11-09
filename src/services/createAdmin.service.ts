@@ -1,6 +1,6 @@
 import { User } from "../models/User";
 import {
-  ADMIN_NAME,
+  ADMIN_USERNAME,
   ADMIN_MAIL,
   ADMIN_PASSWORD,
   ADMIN_PHONENUMBER,
@@ -14,7 +14,9 @@ export async function createAdmin() {
 
   if (!adminExists) {
     const newUser = await createUser({
-      name: ADMIN_NAME,
+      username: ADMIN_USERNAME,
+      firstname: "Admin",
+      lastname: "User",
       email: ADMIN_MAIL,
       password: ADMIN_PASSWORD,
       isAdmin: true,

@@ -15,7 +15,9 @@ const ACCESS_TOKEN_EXPIRATION =
 const REFRESH_TOKEN_EXPIRATION =
   process.env.REFRESH_TOKEN_EXPIRATION?.toString() || "7d";
 const CREATE_ADMIN = JSON.parse(process.env.CREATE_ADMIN || "true");
-const ADMIN_NAME = process.env.ADMIN_NAME || "superadmin";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "superadmin";
+const ADMIN_FIRSTNAME = process.env.ADMIN_FIRSTNAME || "Super";
+const ADMIN_LASTNAME = process.env.ADMIN_LASTNAME || "Admin";
 const ADMIN_MAIL = process.env.ADMIN_MAIL || "superadmin@mail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "password";
 const ADMIN_PHONENUMBER = process.env.ADMIN_PHONENUMBER || "+8801711223344";
@@ -42,7 +44,7 @@ export {
   SECRET,
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
-  ADMIN_NAME,
+  ADMIN_USERNAME,
   ADMIN_MAIL,
   ADMIN_PASSWORD,
   ADMIN_PHONENUMBER,
