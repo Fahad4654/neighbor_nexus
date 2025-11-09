@@ -1,5 +1,5 @@
 import { databaseService } from "./services/database.service";
-import { PORT, CREATE_ADMIN } from "./config";
+import { PORT, CREATE_ADMIN, COMPANY_NAME } from "./config";
 import createApp from "./app";
 import { createAdmin } from "./services/createAdmin.service";
 import os from "os";
@@ -19,11 +19,11 @@ const startServer = async () => {
 
     const app = createApp();
     app.listen(PORT, () => {
-      console.log(`✅ Server running on:`);
-      console.log(`   • Local:   http://localhost:${PORT}`);
-      console.log(`   • Local:   http://127.0.0.1:${PORT}`);
-      console.log(`   • Network: http://${localIP}:${PORT}`);
-      console.log(`   • Health:  http://localhost:${PORT}/v1/api/health`);
+      console.log(`✅ ${COMPANY_NAME} Server is running on:`);
+      console.log(`     • Local:   http://localhost:${PORT}`);
+      console.log(`     • Local:   http://127.0.0.1:${PORT}`);
+      console.log(`     • Network: http://${localIP}:${PORT}`);
+      console.log(`     • Health:  http://localhost:${PORT}/v1/api/health`);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
