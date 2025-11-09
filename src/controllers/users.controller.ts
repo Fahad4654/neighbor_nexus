@@ -9,13 +9,12 @@ import { User } from "../models/User";
 import { findByDynamicId } from "../services/find.service";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
 import { Profile } from "../models/Profile";
-import { isAdminOrAgent } from "../middlewares/isAgentOrAdmin.middleware";
+
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
-import { userGameSummary } from "../services/userGameSummary.service";
 
 export async function getUsersController(req: Request, res: Response) {
-  const agentOrAdminMiddleware = isAdminOrAgent();
+  const agentOrAdminMiddleware = isAdmin();
 
   agentOrAdminMiddleware(req, res, async () => {
     try {
@@ -170,7 +169,7 @@ export async function updateUserController(req: Request, res: Response) {
 }
 
 export async function deleteUserController(req: Request, res: Response) {
-  const agentOrAdminMiddleware = isAdminOrAgent();
+  const agentOrAdminMiddleware = isAdmin();
 
   agentOrAdminMiddleware(req, res, async () => {
     try {
@@ -272,35 +271,5 @@ export async function getUsersByRefController(req: Request, res: Response) {
   } catch (error) {
     console.error("Error finding user:", error);
     res.status(500).json({ message: "Error fetching users:", error });
-  }
-}
-
-export async function userGameSummaryController(req: Request, res: Response) {
-  try {
-    const userId = req.params.userId;
-
-    if (!userId) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
-
-    if (!req.user?.isAdmin && !req.user?.isAgent && userId !== req.user?.id) {
-      res.status(400).json({ error: "Permission denied" });
-      return;
-    }
-    const summary = await userGameSummary(userId);
-
-    res.status(200).json({
-      message: "User game summary fetched successfully",
-      data: summary,
-    });
-    return;
-  } catch (error) {
-    console.error("Error fetching user game summary:", error);
-    res.status(500).json({
-      error: "Internal Server Error",
-      details: error instanceof Error ? error.message : error,
-    });
-    return;
   }
 }
