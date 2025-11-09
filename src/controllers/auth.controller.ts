@@ -52,9 +52,9 @@ export const login: RequestHandler = async (req, res) => {
     // ✅ Now "identifier" can be email OR phoneNumber
 
     if (!identifier || !password) {
-      console.log("Identifier (email/phone) and password are required");
+      console.log("Identifier (username/email/phone) and password are required");
       res.status(400).json({
-        message: "Identifier (email/phone) and password are required",
+        message: "Identifier (username/email/phone) and password are required",
       });
       return;
     }
