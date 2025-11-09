@@ -98,7 +98,9 @@ export class AuthService {
     }
 
     const hashedPassword = await this.hashPassword(password);
-    const admin = await User.findOne({ where: { username: `${ADMIN_USERNAME}` } });
+    const admin = await User.findOne({
+      where: { username: `${ADMIN_USERNAME}` },
+    });
 
     const newUser = await User.create({
       username,
@@ -161,7 +163,9 @@ export class AuthService {
 
   static async refreshAccessToken(refreshToken: string) {
     try {
-      const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { id: string };
+      const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as {
+        id: string;
+      };
 
       const tokenRecord = await Token.findOne({
         where: {

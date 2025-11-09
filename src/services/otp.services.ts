@@ -2,6 +2,7 @@ import { Otp } from "../models/Otp";
 import { User } from "../models/User";
 import { MailService } from "./mail/mail.service";
 import { ADMIN_MAIL, CLIENT_URL, COMPANY_NAME } from "../config";
+import { Op } from "sequelize";
 
 const mailService = new MailService();
 
@@ -11,7 +12,13 @@ const mailService = new MailService();
 
 export async function sendOtp(identifier: string, type: string) {
   const user = await User.findOne({
-    where: { [identifier.includes("@") ? "email" : "phoneNumber"]: identifier },
+    where: {
+      [Op.or]: [
+        { username: identifier },
+        { email: identifier },
+        { phoneNumber: identifier },
+      ],
+    },
   });
   if (!user) throw new Error("User not found");
 
