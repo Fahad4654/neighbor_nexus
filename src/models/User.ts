@@ -69,11 +69,6 @@ export class User extends Model {
   @AllowNull(false)
   @Default(false)
   @Column(DataType.BOOLEAN)
-  isAgent!: boolean;
-
-  @AllowNull(false)
-  @Default(false)
-  @Column(DataType.BOOLEAN)
   isVerified!: boolean;
 
   @ForeignKey(() => User)

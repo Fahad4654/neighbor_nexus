@@ -28,11 +28,11 @@ export async function findAllUsers(
 
   const whereClause: any = {};
 
-  if (user.isAgent) {
-    // Example logic:
-    // only show users belonging to the same business or assigned to this agent
-    whereClause.createdBy = user.id; // or `whereClause.businessId = user.businessId`
-  }
+  // if (user.isAgent) {
+  //   // Example logic:
+  //   // only show users belonging to the same business or assigned to this agent
+  //   whereClause.createdBy = user.id; // or `whereClause.businessId = user.businessId`
+  // }
 
   const { count, rows } = await User.findAndCountAll({
     where: whereClause, // ✅ Apply condition
@@ -70,55 +70,49 @@ export async function findAllUsers(
 }
 
 export async function createUser(data: {
-  name: string;
+  username: string;
+  firstname: string;
+  lastname: string;
   email: string;
   password: string;
   phoneNumber?: string;
   isAdmin?: boolean;
-  isAgent?: boolean;
-  referredId?: string;
   createdBy?: string;
   updatedBy?: string;
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
+  // let creator: User | null = null;
+  // if (data.referredId) {
+  //   const typedCreatorProfile = await findByDynamicId(
+  //     Profile,
+  //     { playerId: data.referredId },
+  //     false
+  //   );
+  // const creatorProfileCheck = typedCreatorProfile as Profile | null;
+  const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
+  const adminProfile = await Profile.findOne({
+    where: { userId: admin?.id },
+  });
+  // const creatorProfile = creatorProfileCheck
+  //   ? creatorProfileCheck
+  //   : adminProfile;
   let creator: User | null = null;
-  if (data.referredId) {
-    const typedCreatorProfile = await findByDynamicId(
-      Profile,
-      { playerId: data.referredId },
-      false
-    );
-    const creatorProfileCheck = typedCreatorProfile as Profile | null;
-    const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
-    const adminProfile = await Profile.findOne({
-      where: { userId: admin?.id },
-    });
-    const creatorProfile = creatorProfileCheck
-      ? creatorProfileCheck
-      : adminProfile;
-    const typedCreator = await findByDynamicId(
-      User,
-      { id: creatorProfile?.userId },
-      false
-    );
-    creator = typedCreator as User | null;
-    console.log("Created by:", creator);
-  } else {
-    const tyedCreator = await findByDynamicId(
-      User,
-      { email: ADMIN_MAIL },
-      false
-    );
-    creator = tyedCreator as User | null;
-    console.log("Created by:", creator);
-  }
+
+  const typedCreator = await findByDynamicId(
+    User,
+    { id: adminProfile?.userId },
+    false
+  );
+  creator = typedCreator as User | null;
+  console.log("Created by:", creator);
   const newUser = await User.create({
-    name: data.name,
+    username: data.username,
+    firstname: data.firstname,
+    lastname: data.lastname,
     email: data.email,
     password: hashedPassword,
     phoneNumber: data.phoneNumber,
     isAdmin: data.isAdmin ? true : false,
-    isAgent: data.isAgent ? true : false,
     isVerified: true,
     createdBy: data.createdBy ? data.createdBy : creator?.id,
     updatedBy: data.updatedBy ? data.updatedBy : creator?.id,
@@ -126,10 +120,10 @@ export async function createUser(data: {
   console.log("user created", newUser);
   await mailService.sendMail(
     newUser.email,
-    data.isAgent ? "Agent Created" : "User Created",
+    "User Created",
     "User Creation is completed.",
     undefined, // HTML will come from template
-    data.isAgent ? "agent-created" : "user-created", // Handlebars template
+    "user-created", // Handlebars template
     {
       companyName: `${COMPANY_NAME}`,
       user: newUser.get({ plain: true }),
@@ -140,16 +134,10 @@ export async function createUser(data: {
     }
   );
 
-  const admin = await User.findOne({ where: { name: `${ADMIN_NAME}` } });
-  const adminProfile = await Profile.findOne({
-    where: { userId: admin?.id },
-  });
-
   await createProfile({
     userId: newUser.id,
     bio: "Please Edit",
     address: "Please Edit",
-    referredId: data.referredId ? data.referredId : adminProfile?.playerId,
   });
   console.log("Profile created for", newUser.email);
   return newUser;
@@ -183,12 +171,13 @@ export async function updateUser(data: Partial<User> & { id: string }) {
 
 export async function deleteUser(identifier: {
   email?: string;
+  username?: string;
   id?: string;
   phoneNumber?: string;
 }) {
-  if (!identifier.email && !identifier.id && !identifier.phoneNumber) {
+  if (!identifier.email && !identifier.username && !identifier.id && !identifier.phoneNumber) {
     throw new Error(
-      "At least one identifier (email, id, or phoneNumber) is required"
+      "At least one identifier (username, email, id, or phoneNumber) is required"
     );
   }
 
@@ -196,6 +185,7 @@ export async function deleteUser(identifier: {
     where: {
       [Op.or]: [
         identifier.email ? { email: identifier.email } : undefined,
+        identifier.username ? { username: identifier.username } : undefined,
         identifier.id ? { id: identifier.id } : undefined,
         identifier.phoneNumber
           ? { phoneNumber: identifier.phoneNumber }
