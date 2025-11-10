@@ -149,7 +149,7 @@ export async function requestPasswordResetController(
   try {
     const { identifier } = req.body;
     if (!identifier) {
-      res.status(400).json({ error: "Email or phone number is required" });
+      res.status(400).json({ error: "Username, email or phone number is required" });
       return;
     }
 
