@@ -148,9 +148,9 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     "firstname",
     "lastname",
     "email",
-    "password",
     "isAdmin",
     "phoneNumber",
+    "updatedBy"
   ];
   const updates: Partial<User> = {};
 
