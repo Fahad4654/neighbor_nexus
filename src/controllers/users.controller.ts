@@ -77,9 +77,30 @@ export async function getUsersByIdController(req: Request, res: Response) {
       res.status(404).json({ error: "User not found" });
       return;
     }
+    const typedUserProfile = await findByDynamicId(
+      Profile,
+      { userId: user.id },
+      false
+    );
+    const userProfile = typedUserProfile as Profile | null;
+    if (!userProfile) {
+      console.log("User profile not found");
+      res.status(404).json({ error: "User profile not found" });
+      return;
+    }
+    if (user && user.isAdmin && !req.user?.isAdmin) {
+      console.log("Access to admin user details is restricted");
+      res
+        .status(403)
+        .json({ error: "Access to admin user details is restricted" });
+      return;
+    }
 
     console.log("User found:", user);
-    res.status(200).json({ user: user, status: "success" });
+    console.log("Profile found:", userProfile);
+    res
+      .status(200)
+      .json({ user: user, profile: userProfile, status: "success" });
     return;
   } catch (error) {
     console.error("Error finding user:", error);
@@ -148,9 +169,7 @@ export async function updateUserController(req: Request, res: Response) {
       }
     }
     if (req.body.isAdmin && !req.user.isAdmin) {
-      res
-        .status(400)
-        .json({ error: "Only admins can grant admin privileges" });
+      res.status(400).json({ error: "Only admins can grant admin privileges" });
       return;
     }
     const updatedUser = await updateUser(req.body);
