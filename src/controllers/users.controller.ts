@@ -77,9 +77,30 @@ export async function getUsersByIdController(req: Request, res: Response) {
       res.status(404).json({ error: "User not found" });
       return;
     }
+    const typedUserProfile = await findByDynamicId(
+      Profile,
+      { userId: user.id },
+      false
+    );
+    const userProfile = typedUserProfile as Profile | null;
+    if (!userProfile) {
+      console.log("User profile not found");
+      res.status(404).json({ error: "User profile not found" });
+      return;
+    }
+    if (user && user.isAdmin && !req.user?.isAdmin) {
+      console.log("Access to admin user details is restricted");
+      res
+        .status(403)
+        .json({ error: "Access to admin user details is restricted" });
+      return;
+    }
 
     console.log("User found:", user);
-    res.status(200).json({ user: user, status: "success" });
+    console.log("Profile found:", userProfile);
+    res
+      .status(200)
+      .json({ user: user, profile: userProfile, status: "success" });
     return;
   } catch (error) {
     console.error("Error finding user:", error);
@@ -146,6 +167,10 @@ export async function updateUserController(req: Request, res: Response) {
           .json({ error: "You are not permitted to update this user" });
         return;
       }
+    }
+    if (req.body.isAdmin && !req.user.isAdmin) {
+      res.status(400).json({ error: "Only admins can grant admin privileges" });
+      return;
     }
     const updatedUser = await updateUser(req.body);
 
@@ -228,50 +253,4 @@ export async function deleteUserController(req: Request, res: Response) {
       res.status(500).json({ message: "Error deleting user", error });
     }
   });
-}
-
-export async function getUsersByRefController(req: Request, res: Response) {
-  try {
-    const playerId = req.body.ref;
-    if (!playerId) {
-      res.status(400).json({
-        status: 400,
-        error: "Referral Code is required",
-      });
-      return;
-    }
-
-    const foundtypedProfile = await findByDynamicId(
-      Profile,
-      { playerId },
-      false
-    );
-    const foundProfile = foundtypedProfile as Profile | null;
-    if (!foundProfile) {
-      res.status(400).json({
-        status: 400,
-        error: "Referral Code is not valid",
-      });
-      return;
-    }
-    // const user = await findByDynamicId(User, { id: foundProfile.userId }, false);
-    const foundtypedUser = await findByDynamicId(
-      User,
-      { id: foundProfile.userId },
-      false
-    );
-    const user = foundtypedUser as User | null;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    console.log("User found:", user);
-    res.status(200).json({ user: user, status: "success" });
-    return;
-  } catch (error) {
-    console.error("Error finding user:", error);
-    res.status(500).json({ message: "Error fetching users:", error });
-  }
 }
