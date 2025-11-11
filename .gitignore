@@ -82,6 +82,7 @@ out
 .nuxt
 dist
 build
+media
 
 # Gatsby files
 .cache/

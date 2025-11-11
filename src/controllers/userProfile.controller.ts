@@ -92,6 +92,17 @@ export async function deleteUserProfileController(req: Request, res: Response) {
       return;
     }
 
+    if (!req.user) {
+      console.log("Unauthorized access attempt");
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    if (!req.user.isAdmin && req.user.id !== req.body.userId) {
+      console.log("Forbidden access attempt");
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+
     const { deletedCount, user } = await deleteProfileByUserId(req.body.userId);
 
     if (deletedCount === 0) {
@@ -121,6 +132,16 @@ export async function updateUserProfileController(req: Request, res: Response) {
     if (!req.body || !req.body.userId) {
       console.log("UserId is required");
       res.status(400).json({ error: "UserId is required" });
+      return;
+    }
+    if (!req.user) {
+      console.log("Unauthorized access attempt");
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    if (!req.user.isAdmin && req.user.id !== req.body.userId) {
+      console.log("Forbidden access attempt");
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
 
@@ -165,6 +186,17 @@ export async function uploadProfilePictureController(
 
     if (!req.body.userId) {
       res.status(400).json({ success: false, message: "userId is required" });
+      return;
+    }
+
+    if (!req.user) {
+      console.log("Unauthorized access attempt");
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    if (!req.user.isAdmin && req.user.id !== req.body.userId) {
+      console.log("Forbidden access attempt");
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
 

@@ -147,7 +147,7 @@ export async function updateUser(data: Partial<User> & { id: string }) {
   const allowedFields: Array<keyof User> = [
     "firstname",
     "lastname",
-    "email",
+    // "email",
     "isAdmin",
     "phoneNumber",
     "updatedBy"
