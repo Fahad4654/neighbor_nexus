@@ -142,7 +142,10 @@ export async function createUser(data: {
 
 export async function updateUser(data: Partial<User> & { id: string }) {
   const user = await User.findOne({ where: { id: data.id } });
-  if (!user) return null;
+  if (!user) {
+    console.log("User not found for update");
+    throw new Error("User not found");
+  }
 
   const allowedFields: Array<keyof User> = [
     "firstname",
@@ -150,7 +153,7 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     // "email",
     "isAdmin",
     "phoneNumber",
-    "updatedBy"
+    "updatedBy",
   ];
   const updates: Partial<User> = {};
 

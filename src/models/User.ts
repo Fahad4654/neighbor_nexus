@@ -9,6 +9,7 @@ import {
   HasOne,
   ForeignKey,
   Validate,
+  Comment,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 
@@ -69,6 +70,25 @@ export class User extends Model {
   @Default(false)
   @Column(DataType.BOOLEAN)
   isVerified!: boolean;
+
+  // ✅ Updated rating_avg: Numeric(2,1) with comment
+  @AllowNull(false)
+  @Default(0.0)
+  @Comment("Average of all reviews received (e.g., 4.7).")
+  @Column(DataType.DECIMAL(2, 1))
+  rating_avg!: number;
+
+  // ✅ Geo location column (PostGIS)
+  @AllowNull(false)
+  @Default({
+    type: "Point",
+    coordinates: [90.4125, 23.8103], // [longitude, latitude]
+  })
+  @Comment(
+    "Stores the precise latitude/longitude for proximity searching. Defaults to Dhaka."
+  )
+  @Column(DataType.GEOGRAPHY("POINT", 4326))
+  geo_location!: object;
 
   @ForeignKey(() => User)
   @AllowNull(true)

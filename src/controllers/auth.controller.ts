@@ -135,7 +135,7 @@ export const refreshToken: RequestHandler = async (req, res) => {
       res.status(403).json({ message: "Invalid refresh token" });
     }
     console.log("Internal server error", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({error: error.message });
     return;
   }
 };
