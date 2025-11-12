@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: neighbor_nexus
-    image: postgres:16
+    image: postgis/postgis:16-3.4
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}

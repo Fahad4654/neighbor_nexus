@@ -4,6 +4,7 @@ import { Profile } from "../models/Profile";
 import { Token } from "../models/Token";
 import { DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER } from "../config";
 import { Otp } from "../models/Otp";
+import { Tool } from "../models/Tools";
 
 const sequelize = new Sequelize({
   database: DB_NAME,
@@ -12,7 +13,7 @@ const sequelize = new Sequelize({
   password: DB_PASSWORD,
   host: DB_HOST,
   port: DB_PORT,
-  models: [User, Profile, Token, Otp], // Add all models here
+  models: [User, Profile, Token, Otp, Tool], // Add all models here
   logging: false,
   dialectOptions: {
     ssl:
