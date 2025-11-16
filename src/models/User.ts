@@ -82,7 +82,7 @@ export class User extends Model {
   @AllowNull(false)
   @Default({
     type: "Point",
-    coordinates: [90.4125, 23.8103], // [longitude, latitude]
+    coordinates: [90.4125, 23.8103], // Dhaka default (lon, lat)
   })
   @Comment(
     "Stores the precise latitude/longitude for proximity searching. Defaults to Dhaka."
