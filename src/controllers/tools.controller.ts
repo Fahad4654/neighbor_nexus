@@ -61,49 +61,37 @@ export async function getToolsController(req: Request, res: Response) {
   }
 }
 
-export async function getUsersByIdController(req: Request, res: Response) {
+export async function getToolByListingIdController(
+  req: Request,
+  res: Response
+) {
   try {
-    const userId = req.params.id;
-    if (!userId) {
+    const listing_id = req.params.listing_id;
+    if (!listing_id) {
       res.status(400).json({
         status: 400,
-        error: "User ID is required as a route parameter (e.g., /users/:id)",
+        error:
+          "listing_id is required as a route parameter (e.g., /tools/:listing_id)",
       });
       return;
     }
 
-    const typedUser = await findByDynamicId(User, { id: userId }, false);
-    const user = typedUser as User | null;
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-    const typedUserProfile = await findByDynamicId(
-      Profile,
-      { userId: user.id },
+    const typedTool = await findByDynamicId(
+      Tool,
+      { listing_id: listing_id },
       false
     );
-    const userProfile = typedUserProfile as Profile | null;
-    if (!userProfile) {
-      console.log("User profile not found");
-      res.status(404).json({ error: "User profile not found" });
+    const tool = typedTool as Tool | null;
+    if (!tool) {
+      console.log("Tool not found");
+      res.status(404).json({ error: "Tool not found" });
       return;
     }
-    if (user && user.isAdmin && !req.user?.isAdmin) {
-      console.log("Access to admin user details is restricted");
-      res
-        .status(403)
-        .json({ error: "Access to admin user details is restricted" });
-      return;
-    }
-    res
-      .status(200)
-      .json({ user: user, profile: userProfile, status: "success" });
+    res.status(200).json({ Tool: tool, status: "success" });
     return;
   } catch (error) {
-    console.error("Error finding user:", error);
-    res.status(500).json({ message: "Error fetching users:", error });
+    console.error("Error finding tool:", error);
+    res.status(500).json({ message: "Error fetching tool:", error });
   }
 }
 

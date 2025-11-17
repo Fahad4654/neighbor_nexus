@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createToolController,
   deleteToolController,
+  getToolByListingIdController,
   getToolsController,
   updateToolController,
 } from "../controllers/tools.controller";
@@ -10,7 +11,7 @@ import {
 const router = Router();
 
 router.post("/all", getToolsController);
-// router.get("/:id", getUsersByIdControll);
+router.get("/:listing_id", getToolByListingIdController);
 router.post("/", createToolController);
 router.put("/", updateToolController);
 router.delete("/", deleteToolController);
