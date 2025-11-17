@@ -68,40 +68,71 @@ export class AuthService {
     email: string;
     password: string;
     phoneNumber: string;
+
+    // 👇 Add Google Maps location input
+    location?: {
+      lat: number;
+      lng: number;
+    };
   }) {
     const { username, firstname, lastname, email, password, phoneNumber } =
       data;
 
+    // ------------------------------------------------------------
+    // 🔍 Check existing user
+    // ------------------------------------------------------------
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [{ email }, { phoneNumber }, { username }],
       },
     });
+
     if (existingUser) {
       if (
         existingUser.email === email &&
         existingUser.username === username &&
         existingUser.phoneNumber === phoneNumber
       ) {
-        console.log("User already exists");
         throw new Error("User already exists");
       } else if (existingUser.email === email) {
-        console.log("Email matched");
         throw new Error("Email already exists");
       } else if (existingUser.username === username) {
-        console.log("Username matched");
         throw new Error("Username already exists");
       } else if (existingUser.phoneNumber === phoneNumber) {
-        console.log("Phone number matched");
         throw new Error("Phone number already exists");
       }
     }
 
+    // ------------------------------------------------------------
+    // 🔐 Hash password
+    // ------------------------------------------------------------
     const hashedPassword = await this.hashPassword(password);
+
+    // ------------------------------------------------------------
+    // 👤 Admin (creator)
+    // ------------------------------------------------------------
     const admin = await User.findOne({
       where: { username: `${ADMIN_USERNAME}` },
     });
 
+    // ------------------------------------------------------------
+    // 🌍 Handle geo-location (Google Maps)
+    // ------------------------------------------------------------
+    let geoLocationValue = undefined;
+
+    if (data.location) {
+      const { lat, lng } = data.location;
+
+      geoLocationValue = {
+        type: "Point",
+        coordinates: [lng, lat], // ⚠️ PostGIS requires (lon, lat)
+      };
+    }
+    console.log(geoLocationValue);
+
+    // ------------------------------------------------------------
+    // 🆕 Create new user
+    // ------------------------------------------------------------
     const newUser = await User.create({
       username,
       firstname,
@@ -112,16 +143,27 @@ export class AuthService {
       isAdmin: false,
       createdBy: admin?.id,
       updatedBy: admin?.id,
+
+      // ⭐ Only set geo_location if provided
+      ...(geoLocationValue && { geo_location: geoLocationValue }),
     });
 
+    // ------------------------------------------------------------
+    // 📧 Send OTP email
+    // ------------------------------------------------------------
     await sendOtp(newUser.email, "register");
 
+    // ------------------------------------------------------------
+    // 🧾 Create profile
+    // ------------------------------------------------------------
     await createProfile({
       userId: newUser.id,
       bio: "Please Edit",
       address: "Please Edit",
     });
+
     console.log("Profile created for", newUser.username);
+
     return newUser;
   }
 
