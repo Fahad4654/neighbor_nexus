@@ -88,7 +88,6 @@ export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
     where: { listing_id: data.listing_id },
   });
   if (!UpdateTool) {
-    console.log("Tool not found for update");
     throw new Error("Tool not found");
   }
 
@@ -115,33 +114,12 @@ export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
   });
 }
 
-export async function deleteUser(identifier: {
-  email?: string;
-  username?: string;
-  id?: string;
-  phoneNumber?: string;
-}) {
-  if (
-    !identifier.email &&
-    !identifier.username &&
-    !identifier.id &&
-    !identifier.phoneNumber
-  ) {
-    throw new Error(
-      "At least one identifier (username, email, id, or phoneNumber) is required"
-    );
+export async function deleteTool(listing_id: string) {
+  if (!listing_id) {
+    throw new Error("listing_id is required");
   }
 
-  return User.destroy({
-    where: {
-      [Op.or]: [
-        identifier.email ? { email: identifier.email } : undefined,
-        identifier.username ? { username: identifier.username } : undefined,
-        identifier.id ? { id: identifier.id } : undefined,
-        identifier.phoneNumber
-          ? { phoneNumber: identifier.phoneNumber }
-          : undefined,
-      ].filter(Boolean) as any,
-    },
+  return Tool.destroy({
+    where: { listing_id },
   });
 }

@@ -12,7 +12,12 @@ import { Profile } from "../models/Profile";
 
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
-import { createTool, findAllTools, updateTool } from "../services/tool.service";
+import {
+  createTool,
+  deleteTool,
+  findAllTools,
+  updateTool,
+} from "../services/tool.service";
 import { Tool } from "../models/Tools";
 
 export async function getToolsController(req: Request, res: Response) {
@@ -69,7 +74,6 @@ export async function getUsersByIdController(req: Request, res: Response) {
 
     const typedUser = await findByDynamicId(User, { id: userId }, false);
     const user = typedUser as User | null;
-    console.log(user);
     if (!user) {
       console.log("User not found");
       res.status(404).json({ error: "User not found" });
@@ -93,9 +97,6 @@ export async function getUsersByIdController(req: Request, res: Response) {
         .json({ error: "Access to admin user details is restricted" });
       return;
     }
-
-    console.log("User found:", user);
-    console.log("Profile found:", userProfile);
     res
       .status(200)
       .json({ user: user, profile: userProfile, status: "success" });
@@ -172,8 +173,6 @@ export async function updateToolController(req: Request, res: Response) {
         .json({ error: "No valid fields to update or tool not found" });
       return;
     }
-
-    console.log("Tool updated successfully", updatedTool);
     res.status(200).json({
       message: "Tool updated successfully",
       user: updatedTool,
@@ -186,29 +185,18 @@ export async function updateToolController(req: Request, res: Response) {
   }
 }
 
-export async function deleteUserController(req: Request, res: Response) {
+export async function deleteToolController(req: Request, res: Response) {
   try {
-    const { email, id, phoneNumber } = req.body;
+    const { listing_id } = req.body;
 
-    if (!email && !id && !phoneNumber) {
-      return res
-        .status(400)
-        .json({ error: "Provide email, id, or phoneNumber" });
+    if (!listing_id) {
+      return res.status(400).json({ error: "Provide listing_id of the tool" });
     }
 
-    const whereClause: any = {
-      [Op.or]: [
-        id ? { id } : null,
-        email ? { email } : null,
-        phoneNumber ? { phoneNumber } : null,
-      ].filter(Boolean),
-    };
-
-    const wantDelUser = await User.findOne({ where: whereClause });
-    if (!wantDelUser) {
-      return res
-        .status(404)
-        .json({ error: "User not found or identifiers mismatch" });
+    const typedWantDelTool = await findByDynamicId(Tool, { listing_id }, false);
+    const wantDelTool = typedWantDelTool as Tool | null;
+    if (!wantDelTool) {
+      return res.status(404).json({ error: "Tool not found" });
     }
 
     if (!req.user) {
@@ -216,28 +204,27 @@ export async function deleteUserController(req: Request, res: Response) {
     }
 
     if (!req.user.isAdmin) {
-      if (
-        req.user.id !== wantDelUser.id &&
-        wantDelUser.createdBy !== req.user.id
-      ) {
+      if (req.user.id !== wantDelTool.owner_id) {
         return res
           .status(403)
-          .json({ error: "You are not permitted to delete this user" });
+          .json({ error: "You are not permitted to delete this tool" });
       }
     }
 
-    const deletedCount = await deleteUser({ email, id, phoneNumber });
+    const deletedCount = await deleteTool(listing_id);
 
     if (deletedCount === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Tool not found" });
     }
 
     res.status(200).json({
-      message: "User deleted successfully",
-      deleted: { email, id, phoneNumber },
+      message: "Tool deleted successfully",
+      deleted: { Tool: wantDelTool },
+      count: deletedCount,
+      status: "success",
     });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting user", error });
+    console.error("Error deleting tool:", error);
+    res.status(500).json({ message: "Error deleting tool", error });
   }
 }
