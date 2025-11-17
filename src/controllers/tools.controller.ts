@@ -12,7 +12,8 @@ import { Profile } from "../models/Profile";
 
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
-import { createTool, findAllTools } from "../services/tool.service";
+import { createTool, findAllTools, updateTool } from "../services/tool.service";
+import { Tool } from "../models/Tools";
 
 export async function getToolsController(req: Request, res: Response) {
   try {
@@ -133,59 +134,55 @@ export async function createToolController(req: Request, res: Response) {
   }
 }
 
-export async function updateUserController(req: Request, res: Response) {
+export async function updateToolController(req: Request, res: Response) {
   try {
-    if (!req.body.id) {
-      res.status(400).json({ error: "UserId is required" });
+    if (!req.body.listing_id) {
+      res.status(400).json({ error: "listing_id is required" });
       return;
     }
-    const typedWantUpUser = await findByDynamicId(
-      User,
-      { id: req.body.id },
+    const typedWantUpTool = await findByDynamicId(
+      Tool,
+      { listing_id: req.body.listing_id },
       false
     );
-    const wantUpUser = typedWantUpUser as User | null;
+    const wantUpTool = typedWantUpTool as Tool | null;
 
     if (!req.user) {
       res.status(400).json({ error: "Login is required" });
       return;
     }
-    if (!wantUpUser) {
-      res.status(400).json({ error: "User Not found" });
+    if (!wantUpTool) {
+      res.status(400).json({ error: "Tool Not found" });
       return;
     }
     if (!req.user.isAdmin) {
-      if (req.user.id !== req.body.id && wantUpUser.createdBy !== req.user.id) {
+      if (req.user.id !== req.body.id && wantUpTool.owner_id !== req.user.id) {
         res
           .status(400)
-          .json({ error: "You are not permitted to update this user" });
+          .json({ error: "only owner or admin can update this tool" });
         return;
       }
     }
-    if (req.body.isAdmin && !req.user.isAdmin) {
-      res.status(400).json({ error: "Only admins can grant admin privileges" });
-      return;
-    }
-    const updatedUser = await updateUser(req.body);
+    const updatedTool = await updateTool(req.body);
 
-    if (!updatedUser) {
-      console.log("No valid fields to update or user not found");
+    if (!updatedTool) {
+      console.log("No valid fields to update or tool not found");
       res
         .status(400)
-        .json({ error: "No valid fields to update or user not found" });
+        .json({ error: "No valid fields to update or tool not found" });
       return;
     }
 
-    console.log("User updated successfully", updatedUser);
+    console.log("Tool updated successfully", updatedTool);
     res.status(200).json({
-      message: "User updated successfully",
-      user: updatedUser,
+      message: "Tool updated successfully",
+      user: updatedTool,
       status: "success",
     });
     return;
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Error updating users:", error });
+    console.error("Error updating tool:", error);
+    res.status(500).json({ message: "Error updating tool:", error });
   }
 }
 

@@ -83,22 +83,25 @@ export async function createTool(data: {
   return newTool;
 }
 
-export async function updateUser(data: Partial<User> & { id: string }) {
-  const user = await User.findOne({ where: { id: data.id } });
-  if (!user) {
-    console.log("User not found for update");
-    throw new Error("User not found");
+export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
+  const UpdateTool = await Tool.findOne({
+    where: { listing_id: data.listing_id },
+  });
+  if (!UpdateTool) {
+    console.log("Tool not found for update");
+    throw new Error("Tool not found");
   }
 
-  const allowedFields: Array<keyof User> = [
-    "firstname",
-    "lastname",
-    // "email",
-    "isAdmin",
-    "phoneNumber",
-    "updatedBy",
+  const allowedFields: Array<keyof Tool> = [
+    "listing_type",
+    "title",
+    "description",
+    "hourly_price",
+    "daily_price",
+    "security_deposit",
+    "is_available",
   ];
-  const updates: Partial<User> = {};
+  const updates: Partial<Tool> = {};
 
   for (const key of allowedFields) {
     if (data[key] !== undefined) updates[key] = data[key];
@@ -106,9 +109,9 @@ export async function updateUser(data: Partial<User> & { id: string }) {
 
   if (Object.keys(updates).length === 0) return null;
 
-  await user.update(updates);
-  return User.findByPk(user.id, {
-    attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+  await UpdateTool.update(updates);
+  return Tool.findByPk(UpdateTool.listing_id, {
+    include: [{ model: User, as: "owner" }],
   });
 }
 
