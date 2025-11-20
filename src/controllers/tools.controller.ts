@@ -12,7 +12,13 @@ import { Profile } from "../models/Profile";
 
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
-import { createTool, findAllTools } from "../services/tool.service";
+import {
+  createTool,
+  deleteTool,
+  findAllTools,
+  updateTool,
+} from "../services/tool.service";
+import { Tool } from "../models/Tools";
 
 export async function getToolsController(req: Request, res: Response) {
   try {
@@ -55,53 +61,37 @@ export async function getToolsController(req: Request, res: Response) {
   }
 }
 
-export async function getUsersByIdController(req: Request, res: Response) {
+export async function getToolByListingIdController(
+  req: Request,
+  res: Response
+) {
   try {
-    const userId = req.params.id;
-    if (!userId) {
+    const listing_id = req.params.listing_id;
+    if (!listing_id) {
       res.status(400).json({
         status: 400,
-        error: "User ID is required as a route parameter (e.g., /users/:id)",
+        error:
+          "listing_id is required as a route parameter (e.g., /tools/:listing_id)",
       });
       return;
     }
 
-    const typedUser = await findByDynamicId(User, { id: userId }, false);
-    const user = typedUser as User | null;
-    console.log(user);
-    if (!user) {
-      console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-    const typedUserProfile = await findByDynamicId(
-      Profile,
-      { userId: user.id },
+    const typedTool = await findByDynamicId(
+      Tool,
+      { listing_id: listing_id },
       false
     );
-    const userProfile = typedUserProfile as Profile | null;
-    if (!userProfile) {
-      console.log("User profile not found");
-      res.status(404).json({ error: "User profile not found" });
+    const tool = typedTool as Tool | null;
+    if (!tool) {
+      console.log("Tool not found");
+      res.status(404).json({ error: "Tool not found" });
       return;
     }
-    if (user && user.isAdmin && !req.user?.isAdmin) {
-      console.log("Access to admin user details is restricted");
-      res
-        .status(403)
-        .json({ error: "Access to admin user details is restricted" });
-      return;
-    }
-
-    console.log("User found:", user);
-    console.log("Profile found:", userProfile);
-    res
-      .status(200)
-      .json({ user: user, profile: userProfile, status: "success" });
+    res.status(200).json({ Tool: tool, status: "success" });
     return;
   } catch (error) {
-    console.error("Error finding user:", error);
-    res.status(500).json({ message: "Error fetching users:", error });
+    console.error("Error finding tool:", error);
+    res.status(500).json({ message: "Error fetching tool:", error });
   }
 }
 
@@ -133,85 +123,68 @@ export async function createToolController(req: Request, res: Response) {
   }
 }
 
-export async function updateUserController(req: Request, res: Response) {
+export async function updateToolController(req: Request, res: Response) {
   try {
-    if (!req.body.id) {
-      res.status(400).json({ error: "UserId is required" });
+    if (!req.body.listing_id) {
+      res.status(400).json({ error: "listing_id is required" });
       return;
     }
-    const typedWantUpUser = await findByDynamicId(
-      User,
-      { id: req.body.id },
+    const typedWantUpTool = await findByDynamicId(
+      Tool,
+      { listing_id: req.body.listing_id },
       false
     );
-    const wantUpUser = typedWantUpUser as User | null;
+    const wantUpTool = typedWantUpTool as Tool | null;
 
     if (!req.user) {
       res.status(400).json({ error: "Login is required" });
       return;
     }
-    if (!wantUpUser) {
-      res.status(400).json({ error: "User Not found" });
+    if (!wantUpTool) {
+      res.status(400).json({ error: "Tool Not found" });
       return;
     }
     if (!req.user.isAdmin) {
-      if (req.user.id !== req.body.id && wantUpUser.createdBy !== req.user.id) {
+      if (req.user.id !== req.body.id && wantUpTool.owner_id !== req.user.id) {
         res
           .status(400)
-          .json({ error: "You are not permitted to update this user" });
+          .json({ error: "only owner or admin can update this tool" });
         return;
       }
     }
-    if (req.body.isAdmin && !req.user.isAdmin) {
-      res.status(400).json({ error: "Only admins can grant admin privileges" });
-      return;
-    }
-    const updatedUser = await updateUser(req.body);
+    const updatedTool = await updateTool(req.body);
 
-    if (!updatedUser) {
-      console.log("No valid fields to update or user not found");
+    if (!updatedTool) {
+      console.log("No valid fields to update or tool not found");
       res
         .status(400)
-        .json({ error: "No valid fields to update or user not found" });
+        .json({ error: "No valid fields to update or tool not found" });
       return;
     }
-
-    console.log("User updated successfully", updatedUser);
     res.status(200).json({
-      message: "User updated successfully",
-      user: updatedUser,
+      message: "Tool updated successfully",
+      user: updatedTool,
       status: "success",
     });
     return;
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Error updating users:", error });
+    console.error("Error updating tool:", error);
+    res.status(500).json({ message: "Error updating tool:", error });
   }
 }
 
-export async function deleteUserController(req: Request, res: Response) {
+export async function deleteToolController(req: Request, res: Response) {
   try {
-    const { email, id, phoneNumber } = req.body;
+    const { listing_id } = req.body;
 
-    if (!email && !id && !phoneNumber) {
-      return res
-        .status(400)
-        .json({ error: "Provide email, id, or phoneNumber" });
+    if (!listing_id) {
+      return res.status(400).json({ error: "Provide listing_id of the tool" });
     }
 
-    const whereClause: any = {
-      [Op.or]: [
-        id ? { id } : null,
-        email ? { email } : null,
-        phoneNumber ? { phoneNumber } : null,
-      ].filter(Boolean),
-    };
-
-    const wantDelUser = await User.findOne({ where: whereClause });
-    if (!wantDelUser) {
-      return res
-        .status(404)
-        .json({ error: "User not found or identifiers mismatch" });
+    const typedWantDelTool = await findByDynamicId(Tool, { listing_id }, false);
+    const wantDelTool = typedWantDelTool as Tool | null;
+    if (!wantDelTool) {
+      return res.status(404).json({ error: "Tool not found" });
     }
 
     if (!req.user) {
@@ -219,28 +192,27 @@ export async function deleteUserController(req: Request, res: Response) {
     }
 
     if (!req.user.isAdmin) {
-      if (
-        req.user.id !== wantDelUser.id &&
-        wantDelUser.createdBy !== req.user.id
-      ) {
+      if (req.user.id !== wantDelTool.owner_id) {
         return res
           .status(403)
-          .json({ error: "You are not permitted to delete this user" });
+          .json({ error: "You are not permitted to delete this tool" });
       }
     }
 
-    const deletedCount = await deleteUser({ email, id, phoneNumber });
+    const deletedCount = await deleteTool(listing_id);
 
     if (deletedCount === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Tool not found" });
     }
 
     res.status(200).json({
-      message: "User deleted successfully",
-      deleted: { email, id, phoneNumber },
+      message: "Tool deleted successfully",
+      deleted: { Tool: wantDelTool },
+      count: deletedCount,
+      status: "success",
     });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting user", error });
+    console.error("Error deleting tool:", error);
+    res.status(500).json({ message: "Error deleting tool", error });
   }
 }

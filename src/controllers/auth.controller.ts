@@ -30,6 +30,7 @@ export const register: RequestHandler = async (req, res) => {
       email,
       password,
       phoneNumber,
+      location: req.body.location,
     });
 
     const userResponse = newUser.toJSON();

@@ -78,6 +78,12 @@ export async function createUser(data: {
   isAdmin?: boolean;
   createdBy?: string;
   updatedBy?: string;
+
+  // 👇 Add Google Maps location
+  location?: {
+    lat: number;
+    lng: number;
+  };
 }) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -102,6 +108,22 @@ export async function createUser(data: {
   }
 
   console.log("Created by:", creator);
+
+  // -----------------------------------------
+  // ⭐ Convert Google Maps lat/lng to PostGIS
+  // -----------------------------------------
+  let geoLocationValue = undefined;
+
+  if (data.location) {
+    geoLocationValue = {
+      type: "Point",
+      coordinates: [data.location.lng, data.location.lat], // IMPORTANT: [lng, lat]
+    };
+  }
+
+  // -----------------------------------------
+  // ⭐ Create the User
+  // -----------------------------------------
   const newUser = await User.create({
     username: data.username,
     firstname: data.firstname,
@@ -109,18 +131,24 @@ export async function createUser(data: {
     email: data.email,
     password: hashedPassword,
     phoneNumber: data.phoneNumber,
-    isAdmin: data.isAdmin ? true : false,
+    isAdmin: data.isAdmin ?? false,
     isVerified: true,
-    createdBy: data.createdBy ? data.createdBy : admin ? admin.id : null,
-    updatedBy: data.updatedBy ? data.updatedBy : admin ? admin.id : null,
+    createdBy: data.createdBy ?? (admin ? admin.id : null),
+    updatedBy: data.updatedBy ?? (admin ? admin.id : null),
+
+    // 👇 Save geo location (will use default if not provided)
+    ...(geoLocationValue && { geo_location: geoLocationValue }),
   });
+
   console.log("user created", newUser);
+
+  // Send email
   await mailService.sendMail(
     newUser.email,
     "User Created",
     "User Creation is completed.",
-    undefined, // HTML will come from template
-    "user-created", // Handlebars template
+    undefined,
+    "user-created",
     {
       companyName: `${COMPANY_NAME}`,
       user: newUser.get({ plain: true }),
@@ -131,14 +159,9 @@ export async function createUser(data: {
     }
   );
 
-  await createProfile({
-    userId: newUser.id,
-    bio: "Please Edit",
-    address: "Please Edit",
-  });
-  console.log("Profile created for", newUser.email);
   return newUser;
 }
+
 
 export async function updateUser(data: Partial<User> & { id: string }) {
   const user = await User.findOne({ where: { id: data.id } });

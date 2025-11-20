@@ -12,6 +12,7 @@ import {
   Comment,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
+import { GeoPoint } from "../types/geo";
 
 @Table({
   tableName: "users",
@@ -79,6 +80,7 @@ export class User extends Model {
   rating_avg!: number;
 
   // ✅ Geo location column (PostGIS)
+
   @AllowNull(false)
   @Default({
     type: "Point",
@@ -88,7 +90,7 @@ export class User extends Model {
     "Stores the precise latitude/longitude for proximity searching. Defaults to Dhaka."
   )
   @Column(DataType.GEOGRAPHY("POINT", 4326))
-  geo_location!: object;
+  geo_location!: GeoPoint;
 
   @ForeignKey(() => User)
   @AllowNull(true)
