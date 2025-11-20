@@ -31,7 +31,7 @@ export async function findNearbyTools(
   const [lng, lat] = (user.geo_location as any).coordinates;
   const maxDistanceMeters = maxDistanceKm * 1000;
 
-  // Search filter
+  // Search filter (Have to work on this to make it work properly)
   const searchFilter: any = {};
   if (searchTerm) {
   searchFilter[Op.or] = [
