@@ -31,18 +31,17 @@ export async function findNearbyTools(
   const [lng, lat] = (user.geo_location as any).coordinates;
   const maxDistanceMeters = maxDistanceKm * 1000;
 
-  // Search filter (Have to work on this to make it work properly)
+  // Search filter
   const searchFilter: any = {};
   if (searchTerm) {
-  searchFilter[Op.or] = [
-    { title: { [Op.iLike]: `%${searchTerm}%` } },
-    { description: { [Op.iLike]: `%${searchTerm}%` } },
-    sequelize.where(
-      sequelize.cast(sequelize.col("listing_type"), "TEXT"),
-      { [Op.iLike]: `%${searchTerm}%` }
-    ),
-  ];
-}
+    searchFilter[Op.or] = [
+      { title: { [Op.iLike]: `%${searchTerm}%` } },
+      { description: { [Op.iLike]: `%${searchTerm}%` } },
+      sequelize.where(sequelize.cast(sequelize.col("listing_type"), "TEXT"), {
+        [Op.iLike]: `%${searchTerm}%`,
+      }),
+    ];
+  }
 
   // Build order clause
   const orderClause: Order = sortOptions.map((opt) => {

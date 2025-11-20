@@ -2,7 +2,6 @@
 import { Request, Response } from "express";
 import { findNearbyTools } from "../services/findTools.service";
 
-
 export const getNearbyTools = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
