@@ -1,31 +1,44 @@
+// src/controllers/tool.controller.ts
 import { Request, Response } from "express";
 import { findNearbyTools } from "../services/findTools.service";
 
-export async function getNearbyTools(req: Request, res: Response) {
+
+export const getNearbyTools = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.userId;
-    const maxDistanceKm = req.query.distance ? Number(req.query.distance) : 10; // default 10km
+    const { userId } = req.params;
+    const { maxDistance = 10, search, sort } = req.query;
 
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required." });
+    // Parse sort options from query (expecting JSON string)
+    // Example: sort=[{"column":"daily_price","order":"ASC"},{"column":"distance","order":"ASC"}]
+    let sortOptions = undefined;
+    if (sort) {
+      try {
+        sortOptions = JSON.parse(String(sort));
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid sort format. Must be JSON array of {column, order}",
+        });
+      }
     }
 
-    if (isNaN(maxDistanceKm)) {
-      return res.status(400).json({ error: "Distance must be a number." });
-    }
+    const tools = await findNearbyTools(
+      userId,
+      Number(maxDistance),
+      search ? String(search) : undefined,
+      sortOptions
+    );
 
-    const tools = await findNearbyTools(userId, maxDistanceKm);
-
-    return res.status(200).json({
+    return res.json({
       success: true,
-      distanceKm: maxDistanceKm,
+      distance: Number(maxDistance),
       count: tools.length,
-      tools,
+      data: tools,
     });
-  } catch (err: any) {
-    console.error("Error finding nearby tools:", err);
-    return res.status(500).json({
-      error: err.message || "Something went wrong.",
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Something went wrong",
     });
   }
-}
+};
