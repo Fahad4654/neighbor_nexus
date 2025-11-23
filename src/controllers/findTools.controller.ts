@@ -1,6 +1,7 @@
 // src/controllers/tool.controller.ts
 import { Request, Response } from "express";
 import { findNearbyTools } from "../services/findTools.service";
+import { findNearbyToolsGoogle } from "../services/findNearbyTools.service";
 
 export const getNearbyTools = async (req: Request, res: Response) => {
   try {
@@ -39,5 +40,31 @@ export const getNearbyTools = async (req: Request, res: Response) => {
       success: false,
       message: error.message || "Something went wrong",
     });
+  }
+};
+
+export const getNearbyToolsGoogleController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { userId } = req.params;
+    const { search, maxDistance } = req.query;
+
+    const tools = await findNearbyToolsGoogle(
+      userId,
+      Number(maxDistance) || 10,
+      search ? String(search) : undefined
+    );
+
+    res.json({
+      success: true,
+      count: tools.length,
+      data: tools,
+    });
+    return;
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+    return;
   }
 };

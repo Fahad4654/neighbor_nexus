@@ -33,6 +33,7 @@ const SMTP_PORT = process.env.SMTP_PORT || "465";
 const REDIS_HOST = process.env.REDIS_HOST || "127.0.0.1";
 const REDIS_PORT = process.env.REDIS_PORT || "6379";
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "";
+const GOOGLE_MAP_API_KEY = process.env.GOOGLE_MAP_API_KEY || "";
 
 export {
   PORT,
@@ -63,4 +64,5 @@ export {
   REDIS_HOST,
   REDIS_PORT,
   REDIS_PASSWORD,
+  GOOGLE_MAP_API_KEY
 };
