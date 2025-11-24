@@ -7,6 +7,7 @@ import { Otp } from "../models/Otp";
 import { Tool } from "../models/Tools";
 import { Transaction } from "../models/Transaction";
 import { Review } from "../models/Review";
+import { ToolImage } from "../models/ToolsImages";
 
 const sequelize = new Sequelize({
   database: DB_NAME,
@@ -15,7 +16,7 @@ const sequelize = new Sequelize({
   password: DB_PASSWORD,
   host: DB_HOST,
   port: DB_PORT,
-  models: [User, Profile, Token, Otp, Tool, Transaction, Review], // Add all models here
+  models: [User, Profile, Token, Otp, Tool, ToolImage,Transaction, Review], // Add all models here
   logging: false,
   dialectOptions: {
     ssl:

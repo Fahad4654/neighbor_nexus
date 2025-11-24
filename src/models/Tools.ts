@@ -10,8 +10,10 @@ import {
   Default,
   BelongsTo,
   Comment,
+  HasMany,
 } from "sequelize-typescript";
 import { User } from "./User";
+import { ToolImage } from "./ToolsImages";
 
 @Table({
   tableName: "tools",
@@ -19,9 +21,9 @@ import { User } from "./User";
 })
 export class Tool extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  listing_id!: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  listing_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)
@@ -64,4 +66,7 @@ export class Tool extends Model {
 
   @BelongsTo(() => User, { foreignKey: "owner_id", as: "owner" })
   owner!: User;
+
+  @HasMany(() => ToolImage, { foreignKey: "tool_id", as: "images" })
+  images!: ToolImage[];
 }

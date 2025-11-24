@@ -25,8 +25,8 @@ export class Transaction extends Model {
 
   @ForeignKey(() => Tool)
   @AllowNull(false)
-  @Column(DataType.INTEGER)
-  listing_id!: number;
+  @Column(DataType.UUID)
+  listing_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)

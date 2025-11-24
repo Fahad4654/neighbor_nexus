@@ -6,7 +6,7 @@ import {
   deleteUserProfileController,
   uploadProfilePictureController,
 } from "../controllers/userProfile.controller";
-import { uploadSingle } from "../middlewares/upload";
+import { uploadProfilePic } from "../middlewares/upload";
 
 const router = Router();
 
@@ -15,7 +15,7 @@ router.post("/", createUserProfileController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);
 
-router.post("/upload-avatar", uploadSingle, uploadProfilePictureController);
+router.post("/upload-avatar", uploadProfilePic, uploadProfilePictureController);
 
 export { router as userCreateRouter };
 export { router };

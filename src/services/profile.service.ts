@@ -44,7 +44,7 @@ export async function createProfile(data: {
   return Profile.create({
     userId: data.userId,
     bio: data.bio ?? "",
-    avatarUrl: data.avatarUrl ?? "/media/none.jpg",
+    avatarUrl: data.avatarUrl ?? "/media/profile/none.jpg",
     address: data.address ?? "",
     referredId: data.referredId ? `${data.referredId}` : "None",
   });
