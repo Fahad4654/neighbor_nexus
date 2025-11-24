@@ -25,11 +25,6 @@ export async function createAdmin() {
       isAdmin: true,
       phoneNumber: ADMIN_PHONENUMBER,
     });
-    await createProfile({
-      userId: newUser.id,
-      bio: "Administrator account",
-      address: "Headquarters",
-    });
     console.log("✅ Admin user created:", newUser);
   } else {
     console.log("ℹ️ Admin user already exists");
