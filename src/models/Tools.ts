@@ -10,8 +10,10 @@ import {
   Default,
   BelongsTo,
   Comment,
+  HasMany,
 } from "sequelize-typescript";
 import { User } from "./User";
+import { ToolImage } from "./ToolsImages";
 
 @Table({
   tableName: "tools",
@@ -64,4 +66,7 @@ export class Tool extends Model {
 
   @BelongsTo(() => User, { foreignKey: "owner_id", as: "owner" })
   owner!: User;
+
+  @HasMany(() => ToolImage, { foreignKey: "tool_id", as: "images" })
+  images!: ToolImage[];
 }
