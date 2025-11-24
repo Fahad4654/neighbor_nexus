@@ -8,6 +8,7 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
+  Default,
 } from "sequelize-typescript";
 import { Tool } from "./Tools";
 
@@ -17,9 +18,9 @@ import { Tool } from "./Tools";
 })
 export class ToolImage extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  id!: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
 
   @ForeignKey(() => Tool)
   @AllowNull(false)
@@ -28,7 +29,7 @@ export class ToolImage extends Model {
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  image_url!: string;   // store S3 URL, Cloudinary URL, or local path
+  image_url!: string; // store S3 URL, Cloudinary URL, or local path
 
   @BelongsTo(() => Tool, { foreignKey: "tool_id" })
   tool!: Tool;

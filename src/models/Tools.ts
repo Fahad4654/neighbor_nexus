@@ -21,9 +21,9 @@ import { ToolImage } from "./ToolsImages";
 })
 export class Tool extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  listing_id!: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  listing_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)
