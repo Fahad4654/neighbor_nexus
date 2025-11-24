@@ -1,78 +1,114 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import { ErrorRequestHandler, Request } from "express";
+import { ToolImage } from "../models/ToolsImages";
 
 // Base media folder
 const mediaDir = path.join(process.cwd(), "media");
 
 // Ensure folder exists
 const ensureDir = (dir: string) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-    console.log(`Created folder: ${dir}`);
-  }
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
+
 ensureDir(mediaDir);
 ensureDir(path.join(mediaDir, "profile"));
 ensureDir(path.join(mediaDir, "tools"));
 
-// Generic storage factory
-const storageFactory = (subFolder: "profile" | "tools") =>
+// Storage generator
+const storageFactory = (sub: "profile" | "tools") =>
   multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, path.join(mediaDir, subFolder));
-    },
+    destination: (req, file, cb) => cb(null, path.join(mediaDir, sub)),
     filename: (req, file, cb) => {
-      const userId = (req.user?.id || "guest").toString();
-      const dateTime = new Date().toISOString().replace(/[:.]/g, "-");
+      const userId = req.user?.id || "guest";
       const ext = path.extname(file.originalname);
-      const uniqueSuffix = Math.round(Math.random() * 1e9);
-
-      cb(null, `${userId}-${dateTime}-${uniqueSuffix}${ext}`);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const random = Math.round(Math.random() * 1e9);
+      cb(null, `${userId}-${timestamp}-${random}${ext}`);
     },
   });
 
-// File filter
-const fileFilter = (
-  req: Express.Request,
+// Allowed file types
+const allowedTypes = /jpeg|jpg|png|gif/;
+
+// ------------------------------
+// CUSTOM TOOL IMAGE LIMIT CHECK
+// ------------------------------
+const toolImageFilter: multer.Options["fileFilter"] = async (
+  req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowedTypes.test(ext)) cb(null, true);
-  else cb(new Error("Invalid file type"));
+  try {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const ext = path.extname(file.originalname).toLowerCase();
+
+    if (!allowedTypes.test(ext)) return cb(new Error("Invalid file type"));
+
+    // listing_id from formData
+    const listing_id =
+      (req.body as any).listing_id || (req.query as any).listing_id;
+
+    if (!listing_id) return cb(new Error("listing_id is required"));
+
+    // Count existing images
+    const count = await ToolImage.count({ where: { tool_id: listing_id } });
+
+    if (count >= 5) {
+      return cb(new Error("Maximum 5 images allowed for this tool"));
+    }
+
+    cb(null, true);
+  } catch (err) {
+    cb(err as Error);
+  }
 };
 
-// Profile picture upload
+// Profile uploader
 export const uploadProfilePic = multer({
   storage: storageFactory("profile"),
-  fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!allowedTypes.test(ext)) return cb(new Error("Invalid file type"));
+    cb(null, true);
+  },
 }).single("profile_pic");
 
-// Tool images upload (max 5 files)
+// Tool images uploader
 export const uploadToolImages = multer({
   storage: storageFactory("tools"),
-  fileFilter,
+  fileFilter: toolImageFilter,
   limits: { files: 5, fileSize: 2 * 1024 * 1024 },
 }).array("files", 5);
 
-// Multer error handler
-export const multerErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+// Global multer error handler
+export const multerErrorHandler: ErrorRequestHandler = (
+  err,
+  req,
+  res,
+  next
+) => {
   if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_COUNT") {
-      return res.status(400).json({ success: false, message: "Too many files uploaded. Maximum is 5 files." });
-    }
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ success: false, message: "File too large. Maximum allowed size is 2 MB." });
-    }
+    if (err.code === "LIMIT_FILE_COUNT")
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "You can upload a maximum of 5 files.",
+        });
+
+    if (err.code === "LIMIT_FILE_SIZE")
+      return res
+        .status(400)
+        .json({ success: false, message: "File too large (max 2MB)." });
+
     return res.status(400).json({ success: false, message: err.message });
   }
 
   if (err) {
-    return res.status(500).json({ success: false, message: err.message || "Something went wrong" });
+    return res.status(400).json({ success: false, message: err.message });
   }
 
   next();
