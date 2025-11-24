@@ -24,8 +24,8 @@ export class ToolImage extends Model {
 
   @ForeignKey(() => Tool)
   @AllowNull(false)
-  @Column(DataType.INTEGER)
-  tool_id!: number;
+  @Column(DataType.UUID)
+  tool_id!: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
