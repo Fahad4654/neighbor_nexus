@@ -8,6 +8,7 @@ import {
   ADMIN_PHONENUMBER,
 } from "../config";
 import { createUser } from "./user.service";
+import { createProfile } from "./profile.service";
 
 export async function createAdmin() {
   const adminExists = await User.findOne({
@@ -23,6 +24,11 @@ export async function createAdmin() {
       password: ADMIN_PASSWORD,
       isAdmin: true,
       phoneNumber: ADMIN_PHONENUMBER,
+    });
+    await createProfile({
+      userId: newUser.id,
+      bio: "Administrator account",
+      address: "Headquarters",
     });
     console.log("✅ Admin user created:", newUser);
   } else {

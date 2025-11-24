@@ -142,6 +142,12 @@ export async function createUser(data: {
 
   console.log("user created", newUser);
 
+  await createProfile({
+      userId: newUser.id,
+      bio: "Please update your bio",
+      address: "Please update your address",
+    });
+
   // Send email
   await mailService.sendMail(
     newUser.email,

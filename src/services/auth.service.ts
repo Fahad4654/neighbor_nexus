@@ -158,8 +158,8 @@ export class AuthService {
     // ------------------------------------------------------------
     await createProfile({
       userId: newUser.id,
-      bio: "Please Edit",
-      address: "Please Edit",
+      bio: "Please update your bio",
+      address: "Please update your address",
     });
 
     console.log("Profile created for", newUser.username);
