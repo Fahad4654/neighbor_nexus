@@ -4,6 +4,7 @@ import {
   createToolController,
   deleteToolController,
   getToolByListingIdController,
+  getToolsByOwnerIdController,
   getToolsController,
   updateToolController,
 } from "../controllers/tools.controller";
@@ -17,6 +18,7 @@ const router = Router();
 
 router.post("/all", getToolsController);
 router.get("/:listing_id", getToolByListingIdController);
+router.get("/owner/:owner_id", getToolsByOwnerIdController);
 router.post("/", createToolController);
 router.put(
   "/",

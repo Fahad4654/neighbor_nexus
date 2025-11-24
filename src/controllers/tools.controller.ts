@@ -6,10 +6,13 @@ import {
   createTool,
   deleteTool,
   findAllTools,
+  findToolsByListingId,
+  findToolsByOwnerId,
   updateTool,
 } from "../services/tool.service";
 import { Tool } from "../models/Tools";
 import { ToolImage } from "../models/ToolsImages";
+import { User } from "../models/User";
 
 // ✅ Get all tools with pagination
 export async function getToolsController(req: Request, res: Response) {
@@ -51,27 +54,50 @@ export async function getToolByListingIdController(
   try {
     const { listing_id } = req.params;
 
-    if (!listing_id) {
-      return res.status(400).json({
-        error:
-          "listing_id is required as a route parameter (e.g., /tools/:listing_id)",
-      });
-    }
-
-    const tool = (await findByDynamicId(
-      Tool,
-      { listing_id },
-      false
-    )) as Tool | null;
+    const tool = await findToolsByListingId(listing_id);
 
     if (!tool) {
       return res.status(404).json({ error: "Tool not found" });
     }
 
-    res.status(200).json({ data: tool, status: "success" });
+    res.status(200).json({
+      message: "Tool fetched successfully",
+      data: tool.get({ plain: true }),
+      status: "success",
+    });
   } catch (error) {
-    console.error("Error fetching tool:", error);
+    console.error("Error fetching tool by listing_id:", error);
     res.status(500).json({ message: "Error fetching tool", error });
+  }
+}
+
+// Get tools by owner_id
+export async function getToolsByOwnerIdController(req: Request, res: Response) {
+  try {
+    const { owner_id } = req.params;
+
+    if (!owner_id) {
+      res.status(400).json({ error: "owner_id is required" });
+      return;
+    }
+
+    const ownerExists = await findByDynamicId(User, { id:owner_id }, false);
+    const owner = ownerExists as User | null;
+    console.log("--------",owner);
+    if (!owner) {
+      res.status(404).json({ error: "Owner not found" });
+      return;
+    }
+
+    const tools = await findToolsByOwnerId(owner.id);
+    res.status(200).json({
+      message: "Tools fetched successfully",
+      data: tools.map((t) => t.get({ plain: true })),
+      status: "success",
+    });
+  } catch (error) {
+    console.error("Error fetching tools by owner_id:", error);
+    res.status(500).json({ message: "Error fetching tools", error });
   }
 }
 
@@ -115,7 +141,9 @@ export async function updateToolController(req: Request, res: Response) {
     }
 
     if (!req.user.isAdmin && req.user.id !== tool.owner_id) {
-      return res.status(403).json({ error: "Only owner or admin can update this tool" });
+      return res
+        .status(403)
+        .json({ error: "Only owner or admin can update this tool" });
     }
 
     // ----------------------------
@@ -128,11 +156,15 @@ export async function updateToolController(req: Request, res: Response) {
           ? remove_image_ids
           : JSON.parse(remove_image_ids);
       } catch {
-        return res.status(400).json({ error: "Invalid remove_image_ids format" });
+        return res
+          .status(400)
+          .json({ error: "Invalid remove_image_ids format" });
       }
 
       if (removeImageIds.length > 0) {
-        const imagesToRemove = await ToolImage.findAll({ where: { id: removeImageIds } });
+        const imagesToRemove = await ToolImage.findAll({
+          where: { id: removeImageIds },
+        });
 
         for (const img of imagesToRemove) {
           if (img.filepath && fs.existsSync(img.filepath)) {
@@ -148,15 +180,26 @@ export async function updateToolController(req: Request, res: Response) {
     // Handle new uploads
     // ----------------------------
     if (req.files && Array.isArray(req.files)) {
-      for (const file of req.files as Express.Multer.File[]) {
-        const currentImagesCount = await ToolImage.count({ where: { tool_id: tool.listing_id } });
-        if (currentImagesCount >= 5) continue; // skip if tool already has 5 images
+      const currentImagesCount = await ToolImage.count({
+        where: { tool_id: tool.listing_id },
+      });
+      const newFilesCount = (req.files as Express.Multer.File[]).length;
 
+      if (currentImagesCount + newFilesCount > 5) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot upload ${newFilesCount} images. Tool already has ${currentImagesCount} images. Maximum allowed is 5.`,
+        });
+      }
+
+      for (const [index, file] of (
+        req.files as Express.Multer.File[]
+      ).entries()) {
         await ToolImage.create({
           tool_id: tool.listing_id,
           image_url: file.filename, // or full URL if uploading to S3/Cloudinary
           filepath: file.path,
-          is_primary: currentImagesCount === 0, // first image is primary
+          is_primary: currentImagesCount + index === 0, // first image is primary
         });
       }
     }
@@ -165,6 +208,7 @@ export async function updateToolController(req: Request, res: Response) {
     // Update tool info
     // ----------------------------
     const updatedTool = await updateTool(req.body);
+    console.log(updatedTool);
 
     res.status(200).json({
       message: "Tool updated successfully",
