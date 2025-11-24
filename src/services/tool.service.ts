@@ -1,24 +1,8 @@
-import bcrypt from "bcryptjs";
 import { User } from "../models/User";
-import { Profile } from "../models/Profile";
-import { createProfile } from "./profile.service";
-import { Op } from "sequelize";
-import {
-  ADMIN_MAIL,
-  ADMIN_USERNAME,
-  CLIENT_URL,
-  COMPANY_NAME,
-} from "../config";
-import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
 import { Tool } from "../models/Tools";
 import { ToolImage } from "../models/ToolsImages";
-
-const mailService = new MailService();
-
-export const generateToken = (id: string): string => {
-  return id.slice(-9).toUpperCase(); // Take last 9 chars and uppercase
-};
+import e from "express";
 
 export async function findAllTools(
   order = "createdAt",
@@ -63,6 +47,60 @@ export async function findAllTools(
   };
 }
 
+export async function findToolsByListingId(listing_id: string) {
+  const tool = await Tool.findOne({
+    where: { listing_id },
+    include: [
+      {
+        model: User,
+        as: "owner",
+        attributes: [
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+          "geo_location",
+          "createdAt",
+          "updatedAt",
+        ],
+      },
+      {
+        model: ToolImage,
+        as: "images",
+        attributes: { exclude: ["updatedAt", "filepath"] },
+      },
+    ],
+  });
+  return tool;
+}
+
+export async function findToolsByOwnerId(owner_id: string) {
+  const tools = await Tool.findAll({
+    where: { owner_id },
+    include: [
+      {
+        model: User,
+        as: "owner",
+        attributes: [
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+          "geo_location",
+          "createdAt",
+          "updatedAt",
+        ],
+      },
+      {
+        model: ToolImage,
+        as: "images",
+        attributes: { exclude: ["updatedAt", "filepath"] },
+      },
+    ],
+  });
+  return tools;
+}
+
 export async function createTool(
   data: {
     owner_id: string;
@@ -102,14 +140,20 @@ export async function createTool(
   });
 }
 
-export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
-  const UpdateTool = await Tool.findOne({
-    where: { listing_id: data.listing_id },
-  });
-  if (!UpdateTool) {
-    throw new Error("Tool not found");
+export async function updateTool(
+  data: Partial<Tool> & {
+    listing_id: string;
+    remove_image_ids?: string[];
+    new_images?: Express.Multer.File[];
   }
+) {
+  const tool = await Tool.findOne({
+    where: { listing_id: data.listing_id },
+    include: [{ model: ToolImage, as: "images" }],
+  });
+  if (!tool) throw new Error("Tool not found");
 
+  // Update normal fields
   const allowedFields: Array<keyof Tool> = [
     "listing_type",
     "title",
@@ -118,7 +162,6 @@ export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
     "daily_price",
     "security_deposit",
     "is_available",
-    "images",
   ];
   const updates: Partial<Tool> = {};
 
@@ -126,11 +169,49 @@ export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
     if (data[key] !== undefined) updates[key] = data[key];
   }
 
-  if (Object.keys(updates).length === 0) return null;
+  if (Object.keys(updates).length > 0) {
+    await tool.update(updates);
+  }
 
-  await UpdateTool.update(updates);
-  return Tool.findByPk(UpdateTool.listing_id, {
-    include: [{ model: User, as: "owner" }],
+  // Remove images
+  if (data.remove_image_ids && data.remove_image_ids.length > 0) {
+    const { unlink } = await import("fs/promises");
+    for (const imgId of data.remove_image_ids) {
+      const img = await ToolImage.findByPk(imgId);
+      if (img) {
+        try {
+          await unlink(img.filepath); // delete from media
+        } catch (err) {
+          console.warn(`Failed to delete file ${img.filepath}:`, err);
+        }
+        await img.destroy();
+      }
+    }
+  }
+
+  // Add new images
+  if (data.new_images && data.new_images.length > 0) {
+    if (tool.images.length + data.new_images.length > 5) {
+      throw new Error("A tool can have a maximum of 5 images");
+    }
+
+    const createdImages = [];
+    for (const file of data.new_images) {
+      const newImg = await ToolImage.create({
+        tool_id: tool.listing_id,
+        image_url: `/media/tools/${file.filename}`,
+        filepath: file.path,
+        is_primary: false,
+      });
+      createdImages.push(newImg);
+    }
+  }
+
+  return Tool.findByPk(tool.listing_id, {
+    include: [
+      { model: User, as: "owner" },
+      { model: ToolImage, as: "images" },
+    ],
   });
 }
 
