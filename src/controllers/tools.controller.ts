@@ -208,7 +208,6 @@ export async function updateToolController(req: Request, res: Response) {
     // Update tool info
     // ----------------------------
     const updatedTool = await updateTool(req.body);
-    console.log(updatedTool);
 
     res.status(200).json({
       message: "Tool updated successfully",
