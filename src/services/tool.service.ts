@@ -12,6 +12,7 @@ import {
 import { MailService } from "./mail/mail.service";
 import { findByDynamicId } from "./find.service";
 import { Tool } from "../models/Tools";
+import { ToolImage } from "../models/ToolsImages";
 
 const mailService = new MailService();
 
@@ -20,30 +21,32 @@ export const generateToken = (id: string): string => {
 };
 
 export async function findAllTools(
-  order = "id",
+  order = "createdAt",
   asc: "ASC" | "DESC" = "ASC",
   page = 1,
   pageSize = 10,
   userId: string
 ) {
   const offset = (page - 1) * pageSize;
+
   const typedUser = await findByDynamicId(User, { id: userId }, false);
   const user = typedUser as User | null;
+
   if (!user) throw new Error("User not found");
+
   let whereClause: any = {};
   if (!user.isAdmin) {
     whereClause = { owner_id: userId };
   }
+
   const { count, rows } = await Tool.findAndCountAll({
-    where: whereClause, // ✅ Apply condition
+    where: whereClause,
     include: [
-      {
-        model: User,
-        as: "owner",
-      },
+      { model: User, as: "owner" },
+      { model: ToolImage, as: "images" }, // ✅ include images
     ],
     nest: true,
-    raw: false, // remove raw so nested JSON works correctly
+    raw: false,
     limit: pageSize,
     offset,
     order: [[order, asc]],
@@ -60,16 +63,19 @@ export async function findAllTools(
   };
 }
 
-export async function createTool(data: {
-  owner_id: string;
-  listing_type: string;
-  title: string;
-  description?: string;
-  hourly_price?: number;
-  daily_price?: number;
-  security_deposit?: number;
-  is_available?: boolean;
-}) {
+export async function createTool(
+  data: {
+    owner_id: string;
+    listing_type: string;
+    title: string;
+    description?: string;
+    hourly_price?: number;
+    daily_price?: number;
+    security_deposit?: number;
+    is_available?: boolean;
+  },
+  imageUrls: string[] = []
+) {
   const newTool = await Tool.create({
     owner_id: data.owner_id,
     listing_type: data.listing_type as "Tool" | "Skill",
@@ -78,9 +84,22 @@ export async function createTool(data: {
     hourly_price: data.hourly_price,
     daily_price: data.daily_price,
     security_deposit: data.security_deposit,
-    is_available: data.is_available !== undefined ? data.is_available : true,
+    is_available: data.is_available ?? true,
   });
-  return newTool;
+
+  // Save images
+  if (imageUrls.length > 0) {
+    const imageRecords = imageUrls.map((url) => ({
+      tool_id: newTool.listing_id,
+      image_url: url,
+    }));
+
+    await ToolImage.bulkCreate(imageRecords);
+  }
+
+  return Tool.findByPk(newTool.listing_id, {
+    include: [{ model: ToolImage, as: "images" }],
+  });
 }
 
 export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
@@ -99,6 +118,7 @@ export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
     "daily_price",
     "security_deposit",
     "is_available",
+    "images",
   ];
   const updates: Partial<Tool> = {};
 
@@ -115,11 +135,20 @@ export async function updateTool(data: Partial<Tool> & { listing_id: string }) {
 }
 
 export async function deleteTool(listing_id: string) {
-  if (!listing_id) {
-    throw new Error("listing_id is required");
-  }
+  if (!listing_id) throw new Error("listing_id is required");
 
-  return Tool.destroy({
-    where: { listing_id },
-  });
+  await ToolImage.destroy({ where: { tool_id: listing_id } });
+
+  return Tool.destroy({ where: { listing_id } });
+}
+
+export async function addImagesToTool(listing_id: string, imageUrls: string[]) {
+  if (!imageUrls.length) return;
+
+  const toInsert = imageUrls.map((url) => ({
+    tool_id: listing_id,
+    image_url: url,
+  }));
+
+  return ToolImage.bulkCreate(toInsert);
 }
