@@ -9,7 +9,6 @@ import {
   updateTool,
 } from "../services/tool.service";
 import { Tool } from "../models/Tools";
-import { uploadMultiple } from "../middlewares/upload";
 import { ToolImage } from "../models/ToolsImages";
 
 // ✅ Get all tools with pagination

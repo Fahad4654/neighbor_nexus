@@ -200,7 +200,7 @@ export async function uploadProfilePictureController(
       return;
     }
 
-    const avatarUrl = `/media/${req.file.filename}`;
+    const avatarUrl = `/media/profile${req.file.filename}`;
 
     const updatedProfile = await updateProfileByUserId(req.body.userId, {
       avatarUrl,

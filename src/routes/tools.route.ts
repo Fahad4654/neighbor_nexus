@@ -11,7 +11,7 @@ import {
   getNearbyTools,
   getNearbyToolsGoogleController,
 } from "../controllers/findTools.controller";
-import { multerErrorHandler, uploadMultiple } from "../middlewares/upload";
+import { multerErrorHandler, uploadToolImages } from "../middlewares/upload";
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.get("/:listing_id", getToolByListingIdController);
 router.post("/", createToolController);
 router.put(
   "/",
-  uploadMultiple, // ✅ Multer parses req.body & req.files
+  uploadToolImages, // ✅ Multer parses req.body & req.files
   updateToolController,
   multerErrorHandler
 );
