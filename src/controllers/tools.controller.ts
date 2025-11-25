@@ -86,7 +86,6 @@ export async function getToolsByOwnerIdController(req: Request, res: Response) {
 
     const ownerExists = await findByDynamicId(User, { id: owner_id }, false);
     const owner = ownerExists as User | null;
-    console.log("--------", owner);
     if (!owner) {
       res.status(404).json({ error: "Owner not found" });
       return;

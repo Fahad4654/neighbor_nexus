@@ -183,7 +183,7 @@ export async function uploadProfilePictureController(
   res: Response
 ) {
   try {
-    // -------- VALIDATION --------
+    // VALIDATION
     if (!req.file) {
       return res
         .status(400)
@@ -206,7 +206,7 @@ export async function uploadProfilePictureController(
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    // -------- DO NOT SAVE FILE YET --------
+    //DO NOT SAVE FILE YET
     // create a temporary avatarUrl but DO NOT write the file
     const tempAvatarUrl = `/media/profile/temp-${Date.now()}.jpg`;
 
@@ -222,7 +222,7 @@ export async function uploadProfilePictureController(
       });
     }
 
-    // -------- SAVE FILE ONLY AFTER SUCCESS --------
+    // SAVE FILE ONLY AFTER SUCCESS
     const finalAvatarUrl = saveFile(
       req.user.id,
       req.file.buffer,

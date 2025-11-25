@@ -31,9 +31,9 @@ const storage = multer.memoryStorage();
 // Allowed file types
 const allowedTypes = /jpeg|jpg|png|gif/;
 
-// ------------------------------
+
 // CUSTOM TOOL IMAGE LIMIT CHECK
-// ------------------------------
+
 const toolImageFilter: multer.Options["fileFilter"] = async (
   req: Request,
   file: Express.Multer.File,

@@ -78,9 +78,7 @@ export class AuthService {
     const { username, firstname, lastname, email, password, phoneNumber } =
       data;
 
-    // ------------------------------------------------------------
     // 🔍 Check existing user
-    // ------------------------------------------------------------
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [{ email }, { phoneNumber }, { username }],
@@ -103,21 +101,15 @@ export class AuthService {
       }
     }
 
-    // ------------------------------------------------------------
-    // 🔐 Hash password
-    // ------------------------------------------------------------
+    // Hash password
     const hashedPassword = await this.hashPassword(password);
 
-    // ------------------------------------------------------------
-    // 👤 Admin (creator)
-    // ------------------------------------------------------------
+    // Admin (creator)
     const admin = await User.findOne({
       where: { username: `${ADMIN_USERNAME}` },
     });
 
-    // ------------------------------------------------------------
     // 🌍 Handle geo-location (Google Maps)
-    // ------------------------------------------------------------
     let geoLocationValue = undefined;
 
     if (data.location) {
@@ -130,9 +122,7 @@ export class AuthService {
     }
     console.log(geoLocationValue);
 
-    // ------------------------------------------------------------
     // 🆕 Create new user
-    // ------------------------------------------------------------
     const newUser = await User.create({
       username,
       firstname,
@@ -148,14 +138,11 @@ export class AuthService {
       ...(geoLocationValue && { geo_location: geoLocationValue }),
     });
 
-    // ------------------------------------------------------------
+
     // 📧 Send OTP email
-    // ------------------------------------------------------------
     await sendOtp(newUser.email, "register");
 
-    // ------------------------------------------------------------
     // 🧾 Create profile
-    // ------------------------------------------------------------
     await createProfile({
       userId: newUser.id,
       bio: "Please update your bio",
