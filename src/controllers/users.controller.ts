@@ -96,11 +96,11 @@ export async function getUsersByIdController(req: Request, res: Response) {
       return;
     }
 
-    console.log("User found:", user);
-    console.log("Profile found:", userProfile);
+    const noPasswordUser = { ...user.get() };
+    delete noPasswordUser.password;
     res
       .status(200)
-      .json({ user: user, profile: userProfile, status: "success" });
+      .json({ user: noPasswordUser, profile: userProfile, status: "success" });
     return;
   } catch (error) {
     console.error("Error finding user:", error);
