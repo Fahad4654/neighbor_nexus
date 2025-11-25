@@ -6,7 +6,7 @@ import {
   deleteUserProfileController,
   uploadProfilePictureController,
 } from "../controllers/userProfile.controller";
-import { uploadProfilePic } from "../middlewares/upload";
+import { multerErrorHandler, uploadProfilePic } from "../middlewares/upload";
 
 const router = Router();
 
@@ -15,7 +15,12 @@ router.post("/", createUserProfileController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);
 
-router.post("/upload-avatar", uploadProfilePic, uploadProfilePictureController);
+router.post(
+  "/upload-avatar",
+  uploadProfilePic, // Multer middleware (memory storage)
+  multerErrorHandler, // Handle Multer errors first
+  uploadProfilePictureController // Then handle the actual upload + DB update
+);
 
 export { router as userCreateRouter };
 export { router };
