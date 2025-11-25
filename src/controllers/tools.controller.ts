@@ -106,7 +106,15 @@ export async function getToolsByOwnerIdController(req: Request, res: Response) {
 // ✅ Create new tool
 export async function createToolController(req: Request, res: Response) {
   try {
-    const requiredFields = ["owner_id", "listing_type", "title"];
+    const requiredFields = [
+      "owner_id",
+      "listing_type",
+      "title",
+      "hourly_price",
+      "daily_price",
+      "security_deposit",
+      "is_available",
+    ];
     const reqBodyValidation = validateRequiredBody(req, res, requiredFields);
     if (!reqBodyValidation) return;
 
@@ -116,6 +124,15 @@ export async function createToolController(req: Request, res: Response) {
       message: "Tool created successfully",
       data: newTool,
       status: "success",
+    });
+    if (!newTool) return;
+
+    // Create default tool image
+    await ToolImage.create({
+      tool_id: newTool.listing_id,
+      image_url: "/media/tools/default.png", // Replace with actual default image URL
+      filepath: path.join(process.cwd(), "media/tools/default.png"),
+      is_primary: true,
     });
   } catch (error) {
     console.error("Error creating tool:", error);
@@ -190,11 +207,12 @@ export async function updateToolImagesController(req: Request, res: Response) {
     }
 
     if (removeImageIds.length > 0) {
+      const defaultImagePath = path.join(process.cwd(), "media/tools/default.png");
       const imagesToRemove = await ToolImage.findAll({
         where: { id: { [Op.in]: removeImageIds } },
       });
       for (const img of imagesToRemove) {
-        if (img.filepath) {
+        if (img.filepath && img.filepath!==defaultImagePath) {
           try {
             const filePath = path.resolve(img.filepath); // resolve to absolute path
             if (fs.existsSync(filePath)) {
