@@ -31,6 +31,7 @@ export async function findAllTools(
     ],
     nest: true,
     raw: false,
+    distinct: true,
     limit: pageSize,
     offset,
     order: [[order, asc]],

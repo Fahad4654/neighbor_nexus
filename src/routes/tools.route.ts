@@ -6,7 +6,8 @@ import {
   getToolByListingIdController,
   getToolsByOwnerIdController,
   getToolsController,
-  updateToolController,
+  updateToolImagesController,
+  updateToolInfoController,
 } from "../controllers/tools.controller";
 import {
   getNearbyTools,
@@ -20,10 +21,11 @@ router.post("/all", getToolsController);
 router.get("/:listing_id", getToolByListingIdController);
 router.get("/owner/:owner_id", getToolsByOwnerIdController);
 router.post("/", createToolController);
+router.put("/update-info", updateToolInfoController);
 router.put(
-  "/",
-  uploadToolImages, // ✅ Multer parses req.body & req.files
-  updateToolController,
+  "/update-images",
+  uploadToolImages, // Multer handles file upload
+  updateToolImagesController,
   multerErrorHandler
 );
 router.delete("/", deleteToolController);

@@ -17,6 +17,7 @@ export async function findAllProfiles(
       },
     ],
     nest: true,
+    distinct: true,
     raw: true,
     limit: pageSize,
     offset,

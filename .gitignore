@@ -82,7 +82,7 @@ out
 .nuxt
 dist
 build
-media
+# media
 package-lock.json
 # Gatsby files
 .cache/

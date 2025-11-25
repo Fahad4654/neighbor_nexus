@@ -53,6 +53,7 @@ export async function findAllUsers(
     nest: true,
     raw: false, // remove raw so nested JSON works correctly
     limit: pageSize,
+    distinct: true,
     offset,
     order: [[order, asc]],
   });
