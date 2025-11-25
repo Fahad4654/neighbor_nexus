@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Request, Response } from "express";
 import {
   findAllProfiles,
@@ -7,6 +9,27 @@ import {
 } from "../services/profile.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+
+function saveFile(
+  userId: string,
+  buffer: Buffer,
+  folder: string,
+  original: string
+) {
+  const ext = path.extname(original);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const random = Math.round(Math.random() * 1e9);
+
+  const filename = `${userId}-${timestamp}-${random}${ext}`;
+
+  const dir = path.join(process.cwd(), "media", folder);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  const full = path.join(dir, filename);
+  fs.writeFileSync(full, buffer);
+
+  return `/media/${folder}/${filename}`;
+}
 
 // User Profile List
 export async function getUsersProfileController(req: Request, res: Response) {
@@ -179,50 +202,66 @@ export async function uploadProfilePictureController(
   res: Response
 ) {
   try {
+    // -------- VALIDATION --------
     if (!req.file) {
-      res.status(400).json({ success: false, message: "No file uploaded" });
-      return;
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
     }
 
     if (!req.body.userId) {
-      res.status(400).json({ success: false, message: "userId is required" });
-      return;
+      return res
+        .status(400)
+        .json({ success: false, message: "userId is required" });
     }
 
     if (!req.user) {
       console.log("Unauthorized access attempt");
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+      return res.status(401).json({ error: "Unauthorized" });
     }
+
     if (!req.user.isAdmin && req.user.id !== req.body.userId) {
       console.log("Forbidden access attempt");
-      res.status(403).json({ error: "Forbidden" });
-      return;
+      return res.status(403).json({ error: "Forbidden" });
     }
 
-    const avatarUrl = `/media/profile/${req.file.filename}`;
+    // -------- DO NOT SAVE FILE YET --------
+    // create a temporary avatarUrl but DO NOT write the file
+    const tempAvatarUrl = `/media/profile/temp-${Date.now()}.jpg`;
 
+    // Try the database update FIRST
     const updatedProfile = await updateProfileByUserId(req.body.userId, {
-      avatarUrl,
+      avatarUrl: tempAvatarUrl, // temp placeholder
     });
 
     if (!updatedProfile) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: "Profile not found or update failed",
       });
-      return;
     }
 
-    res.status(200).json({
+    // -------- SAVE FILE ONLY AFTER SUCCESS --------
+    const finalAvatarUrl = saveFile(
+      req.user.id,
+      req.file.buffer,
+      "profile",
+      req.file.originalname
+    );
+
+    // Update profile again with actual URL
+    const profile = await updateProfileByUserId(req.body.userId, {
+      avatarUrl: finalAvatarUrl,
+    });
+
+    return res.status(200).json({
       success: true,
       message: "Profile picture uploaded successfully",
-      profile: updatedProfile,
+      profile: profile,
     });
-    return;
   } catch (error) {
     console.error("Error uploading profile picture:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to upload profile picture",
       error: error instanceof Error ? error.message : String(error),

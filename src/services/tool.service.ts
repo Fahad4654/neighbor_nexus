@@ -60,14 +60,12 @@ export async function findToolsByListingId(listing_id: string) {
           "email",
           "phoneNumber",
           "geo_location",
-          "createdAt",
-          "updatedAt",
         ],
       },
       {
         model: ToolImage,
         as: "images",
-        attributes: { exclude: ["updatedAt", "filepath"] },
+        attributes: { exclude: ["createdAt", "updatedAt", "filepath"] },
       },
     ],
   });
@@ -87,14 +85,12 @@ export async function findToolsByOwnerId(owner_id: string) {
           "email",
           "phoneNumber",
           "geo_location",
-          "createdAt",
-          "updatedAt",
         ],
       },
       {
         model: ToolImage,
         as: "images",
-        attributes: { exclude: ["updatedAt", "filepath"] },
+        attributes: { exclude: ["createdAt", "updatedAt", "filepath"] },
       },
     ],
   });

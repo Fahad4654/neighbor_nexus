@@ -4,6 +4,7 @@ import { User } from "../models/User";
 import { Request, Response } from "express";
 import { AuthService, resetPassword } from "../services/auth.service";
 import { sendOtp, verifyOtp } from "../services/otp.services";
+import { Profile } from "../models/Profile";
 
 export const register: RequestHandler = async (req, res) => {
   try {
@@ -53,7 +54,9 @@ export const login: RequestHandler = async (req, res) => {
     // ✅ Now "identifier" can be email OR phoneNumber
 
     if (!identifier || !password) {
-      console.log("Identifier (username/email/phone) and password are required");
+      console.log(
+        "Identifier (username/email/phone) and password are required"
+      );
       res.status(400).json({
         message: "Identifier (username/email/phone) and password are required",
       });
@@ -62,9 +65,16 @@ export const login: RequestHandler = async (req, res) => {
 
     const user = await AuthService.loginUser(identifier, password);
     const tokens = await AuthService.generateTokens(user);
+    const profile = await Profile.findOne({
+      where: { userId: user.id },
+      attributes: ["id", "bio", "avatarUrl"],
+    });
 
     const userResponse = user.toJSON();
     delete userResponse.password;
+    delete userResponse.createdBy;
+    delete userResponse.updatedBy;
+    userResponse.profile = profile;
 
     console.log(`${user.email} Logged in successfully`);
     res.json({
@@ -136,7 +146,7 @@ export const refreshToken: RequestHandler = async (req, res) => {
       res.status(403).json({ message: "Invalid refresh token" });
     }
     console.log("Internal server error", error);
-    res.status(500).json({error: error.message });
+    res.status(500).json({ error: error.message });
     return;
   }
 };
@@ -150,7 +160,9 @@ export async function requestPasswordResetController(
   try {
     const { identifier } = req.body;
     if (!identifier) {
-      res.status(400).json({ error: "Username, email or phone number is required" });
+      res
+        .status(400)
+        .json({ error: "Username, email or phone number is required" });
       return;
     }
 
