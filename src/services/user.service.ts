@@ -109,10 +109,8 @@ export async function createUser(data: {
   }
 
   console.log("Created by:", creator);
+  //  Convert Google Maps lat/lng to PostGIS
 
-  // -----------------------------------------
-  // ⭐ Convert Google Maps lat/lng to PostGIS
-  // -----------------------------------------
   let geoLocationValue = undefined;
 
   if (data.location) {
@@ -121,10 +119,8 @@ export async function createUser(data: {
       coordinates: [data.location.lng, data.location.lat], // IMPORTANT: [lng, lat]
     };
   }
-
-  // -----------------------------------------
   // ⭐ Create the User
-  // -----------------------------------------
+
   const newUser = await User.create({
     username: data.username,
     firstname: data.firstname,
