@@ -9,27 +9,8 @@ import {
 } from "../services/profile.service";
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { saveFile } from "../middlewares/upload";
 
-function saveFile(
-  userId: string,
-  buffer: Buffer,
-  folder: string,
-  original: string
-) {
-  const ext = path.extname(original);
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const random = Math.round(Math.random() * 1e9);
-
-  const filename = `${userId}-${timestamp}-${random}${ext}`;
-
-  const dir = path.join(process.cwd(), "media", folder);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-  const full = path.join(dir, filename);
-  fs.writeFileSync(full, buffer);
-
-  return `/media/${folder}/${filename}`;
-}
 
 // User Profile List
 export async function getUsersProfileController(req: Request, res: Response) {
