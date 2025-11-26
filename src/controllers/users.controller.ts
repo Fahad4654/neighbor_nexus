@@ -26,13 +26,15 @@ export async function getUsersController(req: Request, res: Response) {
       const reqBodyValidation = validateRequiredBody(req, res, [
         "order",
         "asc",
+        "page",
+        "pageSize",
       ]);
       if (!reqBodyValidation) return;
 
       const { order, asc, page = 1, pageSize = 10 } = req.body;
       if (!req.user) {
-        console.log("User is required");
-        res.status(400).json({ error: "User is required" });
+        console.log("login is required");
+        res.status(400).json({ error: "login is required" });
         return;
       }
 
