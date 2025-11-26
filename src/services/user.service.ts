@@ -173,6 +173,7 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     "isAdmin",
     "phoneNumber",
     "updatedBy",
+    "geo_location",
   ];
   const updates: Partial<User> = {};
 
