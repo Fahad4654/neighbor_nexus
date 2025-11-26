@@ -181,7 +181,10 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     if (data[key] !== undefined) updates[key] = data[key];
   }
 
-  if (Object.keys(updates).length === 0) return null;
+  if (Object.keys(updates).length === 0) {
+    console.log("No valid fields provided for update");
+    throw new Error("No valid fields provided for update");
+  }
 
   await user.update(updates);
   return User.findByPk(user.id, {
