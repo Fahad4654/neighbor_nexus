@@ -12,6 +12,7 @@ import { Profile } from "../models/Profile";
 
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
+import { ADMIN_USERNAME } from "../config";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -235,6 +236,10 @@ export async function deleteUserController(req: Request, res: Response) {
           .status(403)
           .json({ error: "You are not permitted to delete this user" });
       }
+    }
+    if (wantDelUser.username === ADMIN_USERNAME) {
+      console.log("Cannot delete main admin user");
+      return res.status(403).json({ error: "Cannot delete main admin user" });
     }
 
     const deletedCount = await deleteUser({ email, id, phoneNumber });
