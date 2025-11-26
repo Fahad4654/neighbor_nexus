@@ -92,12 +92,6 @@ export async function createUser(data: {
     where: { username: `${ADMIN_USERNAME}` },
   });
 
-  let adminProfile: Profile | null = null;
-  if (admin)
-    adminProfile = await Profile.findOne({
-      where: { userId: admin?.id },
-    });
-
   let creator: User | null = null;
   if (data.createdBy) {
     const typedCreator = await findByDynamicId(
