@@ -92,12 +92,6 @@ export async function createUser(data: {
     where: { username: `${ADMIN_USERNAME}` },
   });
 
-  let adminProfile: Profile | null = null;
-  if (admin)
-    adminProfile = await Profile.findOne({
-      where: { userId: admin?.id },
-    });
-
   let creator: User | null = null;
   if (data.createdBy) {
     const typedCreator = await findByDynamicId(
@@ -179,6 +173,7 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     "isAdmin",
     "phoneNumber",
     "updatedBy",
+    "geo_location",
   ];
   const updates: Partial<User> = {};
 
@@ -186,7 +181,10 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     if (data[key] !== undefined) updates[key] = data[key];
   }
 
-  if (Object.keys(updates).length === 0) return null;
+  if (Object.keys(updates).length === 0) {
+    console.log("No valid fields provided for update");
+    throw new Error("No valid fields provided for update");
+  }
 
   await user.update(updates);
   return User.findByPk(user.id, {

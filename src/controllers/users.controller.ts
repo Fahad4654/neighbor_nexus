@@ -12,6 +12,7 @@ import { Profile } from "../models/Profile";
 
 import { isAdmin } from "../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
+import { ADMIN_USERNAME } from "../config";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -26,13 +27,15 @@ export async function getUsersController(req: Request, res: Response) {
       const reqBodyValidation = validateRequiredBody(req, res, [
         "order",
         "asc",
+        "page",
+        "pageSize",
       ]);
       if (!reqBodyValidation) return;
 
       const { order, asc, page = 1, pageSize = 10 } = req.body;
       if (!req.user) {
-        console.log("User is required");
-        res.status(400).json({ error: "User is required" });
+        console.log("login is required");
+        res.status(400).json({ error: "login is required" });
         return;
       }
 
@@ -89,10 +92,10 @@ export async function getUsersByIdController(req: Request, res: Response) {
       return;
     }
     if (user && user.isAdmin && !req.user?.isAdmin) {
-      console.log("Access to admin user details is restricted");
+      console.log("Access to admin user's details is restricted");
       res
         .status(403)
-        .json({ error: "Access to admin user details is restricted" });
+        .json({ error: "Access to admin user's details is restricted" });
       return;
     }
 
@@ -233,6 +236,10 @@ export async function deleteUserController(req: Request, res: Response) {
           .status(403)
           .json({ error: "You are not permitted to delete this user" });
       }
+    }
+    if (wantDelUser.username === ADMIN_USERNAME) {
+      console.log("Cannot delete main admin user");
+      return res.status(403).json({ error: "Cannot delete main admin user" });
     }
 
     const deletedCount = await deleteUser({ email, id, phoneNumber });
