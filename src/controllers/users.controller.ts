@@ -91,10 +91,10 @@ export async function getUsersByIdController(req: Request, res: Response) {
       return;
     }
     if (user && user.isAdmin && !req.user?.isAdmin) {
-      console.log("Access to admin user details is restricted");
+      console.log("Access to admin user's details is restricted");
       res
         .status(403)
-        .json({ error: "Access to admin user details is restricted" });
+        .json({ error: "Access to admin user's details is restricted" });
       return;
     }
 
