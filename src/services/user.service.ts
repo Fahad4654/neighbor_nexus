@@ -181,6 +181,17 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     if (data[key] !== undefined) updates[key] = data[key];
   }
 
+    if (updates.geo_location) {
+    const geo = updates.geo_location as any;
+
+    if (geo.lat !== undefined && geo.lng !== undefined) {
+      updates.geo_location = {
+        type: "Point",
+        coordinates: [geo.lng, geo.lat], // lng first!
+      } as any;
+    }
+  }
+
   if (Object.keys(updates).length === 0) {
     console.log("No valid fields provided for update");
     throw new Error("No valid fields provided for update");
