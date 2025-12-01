@@ -206,8 +206,24 @@ export async function updateTool(
 
   return Tool.findByPk(tool.listing_id, {
     include: [
-      { model: User, as: "owner" },
-      { model: ToolImage, as: "images" },
+      {
+        model: User,
+        as: "owner",
+        attributes: [
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+          "geo_location",
+        ],
+      },
+      {
+        model: ToolImage,
+        as: "images",
+        attributes: {
+          exclude: ["tool_id", "createdAt", "updatedAt", "filepath"],
+        },
+      },
     ],
   });
 }
