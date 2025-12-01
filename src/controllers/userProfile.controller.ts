@@ -37,7 +37,6 @@ export async function getUsersProfileController(req: Request, res: Response) {
         Number(page),
         Number(pageSize)
       );
-      console.log("User Profile fetched successfully", profiles);
 
       res.status(200).json({
         message: "User Profile fetched successfully",

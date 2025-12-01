@@ -47,7 +47,6 @@ export async function getUsersController(req: Request, res: Response) {
         req.user?.id
       );
       console.log("User fetched successfully");
-      console.log("usersList", usersList);
       res.status(200).json({
         message: "User fetched successfully",
         usersList,
