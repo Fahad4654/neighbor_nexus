@@ -16,7 +16,6 @@ import { Transaction } from "./Transaction";
 @Table({
   tableName: "reviews",
   timestamps: true, // automatically adds createdAt/updatedAt
-  updatedAt: false, // only use createdAt as created_at
 })
 export class Review extends Model {
   @PrimaryKey
@@ -47,13 +46,21 @@ export class Review extends Model {
   @Column(DataType.TEXT)
   comment?: string;
 
+  @AllowNull(true)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  approved!: boolean;
+
+  @ForeignKey(() => User)
   @AllowNull(false)
-  @Default(DataType.NOW)
-  @Column(DataType.DATE)
-  created_at!: Date;
+  @Column(DataType.UUID)
+  approvedBy!: string;
 
   // Relations
-  @BelongsTo(() => Transaction, { foreignKey: "transaction_id", as: "transaction" })
+  @BelongsTo(() => Transaction, {
+    foreignKey: "transaction_id",
+    as: "transaction",
+  })
   transaction!: Transaction;
 
   @BelongsTo(() => User, { foreignKey: "reviewer_id", as: "reviewer" })
@@ -61,4 +68,7 @@ export class Review extends Model {
 
   @BelongsTo(() => User, { foreignKey: "reviewed_user_id", as: "reviewedUser" })
   reviewedUser!: User;
+
+  @BelongsTo(() => User, { foreignKey: "approvedBy", as: "approver" })
+  approver!: User;
 }
