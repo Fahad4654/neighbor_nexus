@@ -1,19 +1,20 @@
 import { Review } from "../models/Review";
 
 export async function createReview(
-  userID: string,
+  reviewed_user_id: string,
   transactionID: string,
-  reviewerID: string,
+  userId: string,
   rating: number,
   comment: string
 ) {
   const review = await Review.create({
-    user_id: userID,
+    reviewed_user_id: reviewed_user_id,
     transaction_id: transactionID,
-    reviewer_id: reviewerID,
+    reviewer_id: userId,
     rating: rating,
     comment: comment,
     approved: false,
+    approvedBy: userId,
   });
   return review;
 }

@@ -174,6 +174,14 @@ export async function updateUserController(req: Request, res: Response) {
       res.status(400).json({ error: "Only admins can grant admin privileges" });
       return;
     }
+
+    if (req.body.isVerified && !req.user.isAdmin) {
+      res
+        .status(400)
+        .json({ error: "Only admins can verify user accounts" });
+      return;
+    }
+    
     const updatedUser = await updateUser(req.body);
 
     if (!updatedUser) {

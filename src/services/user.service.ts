@@ -171,6 +171,7 @@ export async function updateUser(data: Partial<User> & { id: string }) {
     "lastname",
     // "email",
     "isAdmin",
+    "isVerified",
     "phoneNumber",
     "updatedBy",
     "geo_location",

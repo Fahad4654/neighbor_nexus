@@ -1,19 +1,7 @@
 import { Request, Response } from "express";
-import {
-  findAllUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../services/user.service";
-import { User } from "../models/User";
 import { findByDynamicId } from "../services/find.service";
 import { validateRequiredBody } from "../services/reqBodyValidation.service";
-import { Profile } from "../models/Profile";
 
-import { isAdmin } from "../middlewares/isAdmin.middleware";
-import { Op } from "sequelize";
-import { ADMIN_USERNAME } from "../config";
-import { error } from "console";
 import { Review } from "../models/Review";
 import {
   createReview,
@@ -24,6 +12,7 @@ import {
 export async function getReviewsByIdController(req: Request, res: Response) {
   try {
     const review_id = req.params.id;
+    console.log("Review ID:", review_id);
     if (!review_id) {
       res.status(400).json({
         status: 400,
@@ -53,18 +42,18 @@ export async function createReviewController(req: Request, res: Response) {
     const reqBodyValidation = validateRequiredBody(req, res, [
       "userID",
       "transactionID",
-      "reviewerID",
+      "reviewed_user_id",
       "rating",
       "comment",
     ]);
     if (!reqBodyValidation) return;
 
-    const { userID, transactionID, reviewerID, rating, comment } = req.body;
+    const { userID, transactionID, reviewed_user_id, rating, comment } = req.body;
 
     const newReview = await createReview(
       userID,
       transactionID,
-      reviewerID,
+      reviewed_user_id,
       rating,
       comment
     );

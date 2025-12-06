@@ -52,7 +52,7 @@ export class Review extends Model {
   approved!: boolean;
 
   @ForeignKey(() => User)
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.UUID)
   approvedBy!: string;
 
