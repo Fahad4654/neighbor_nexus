@@ -14,6 +14,7 @@ import {
 } from "sequelize-typescript";
 import { User } from "./User";
 import { ToolImage } from "./ToolsImages";
+import { GeoPoint } from "../types/geo";
 
 @Table({
   tableName: "tools",
@@ -63,6 +64,17 @@ export class Tool extends Model {
   @Comment("Quick check for active listings.")
   @Column(DataType.BOOLEAN)
   is_available!: boolean;
+
+  @AllowNull(true)
+  @Default({
+    type: "Point",
+    coordinates: [90.4125, 23.8103], // Dhaka default (lon, lat)
+  })
+  @Comment(
+    "Stores the precise latitude/longitude for proximity searching. Defaults to Dhaka."
+  )
+  @Column(DataType.GEOGRAPHY("POINT", 4326))
+  geo_location!: GeoPoint;
 
   @BelongsTo(() => User, { foreignKey: "owner_id", as: "owner" })
   owner!: User;

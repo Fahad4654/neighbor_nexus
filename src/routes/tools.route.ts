@@ -10,7 +10,6 @@ import {
   updateToolInfoController,
 } from "../controllers/tools.controller";
 import {
-  getNearbyTools,
   getNearbyToolsGoogleController,
 } from "../controllers/findTools.controller";
 import { multerErrorHandler, uploadToolImages } from "../middlewares/upload";
@@ -29,7 +28,6 @@ router.put(
   multerErrorHandler
 );
 router.delete("/", deleteToolController);
-router.get("/nearby/:userId", getNearbyTools);
 router.get("/gooleNearby/:userId", getNearbyToolsGoogleController);
 
 export { router as userCreateRouter };
