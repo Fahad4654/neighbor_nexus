@@ -49,22 +49,35 @@ export const getNearbyToolsGoogleController = async (
 ) => {
   try {
     const { userId } = req.params;
-    const { search, maxDistance } = req.query;
+    let { search, maxDistance } = req.query;
+
+    // Convert maxDistance to number safely
+    const distanceNumber = maxDistance ? Number(maxDistance) : 10;
+
+    if (isNaN(distanceNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid maxDistance value",
+      });
+    }
 
     const tools = await findNearbyToolsGoogle(
       userId,
-      Number(maxDistance) || 10,
+      distanceNumber,
       search ? String(search) : undefined
     );
 
-    res.json({
+    return res.json({
       success: true,
       count: tools.length,
       data: tools,
     });
-    return;
+
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
-    return;
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
+

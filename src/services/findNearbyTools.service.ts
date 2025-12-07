@@ -8,18 +8,24 @@ export async function findNearbyToolsGoogle(
   maxDistanceKm = 10,
   searchTerm?: string
 ) {
+  // Fetch requesting user
   const user = await User.findByPk(userId);
-  if (!user || !user.geo_location) throw new Error("User location missing");
+  if (!user || !user.geo_location) {
+    throw new Error("User location missing");
+  }
 
   const userCoords = {
-    lat: user.geo_location.coordinates[1],
+    lat: user.geo_location.coordinates[1], // GeoJSON: [lng, lat]
     lng: user.geo_location.coordinates[0],
   };
 
-  // Get all tools optionally filtered by search
+  // Search filtering
   const where: any = {};
-  if (searchTerm) where.title = { [Op.iLike]: `%${searchTerm}%` };
+  if (searchTerm) {
+    where.title = { [Op.iLike]: `%${searchTerm}%` };
+  }
 
+  // Get all tools including owners
   const tools = await Tool.findAll({
     where,
     include: [
@@ -31,31 +37,46 @@ export async function findNearbyToolsGoogle(
     ],
   });
 
-  // Calculate distance via Google API for each tool
-  const toolsWithDistance = [];
+  const toolsWithDistance: any[] = [];
+
   for (const tool of tools) {
-    if (!tool.owner.geo_location) continue;
+    // Skip if no owner or missing coordinates
+    if (!tool.owner?.geo_location) continue;
 
     const toolCoords = {
       lat: tool.owner.geo_location.coordinates[1],
       lng: tool.owner.geo_location.coordinates[0],
     };
 
+    // Query Google Distance API
     const distanceData = await getDistanceBetweenPoints(userCoords, toolCoords);
 
-    if (distanceData.distanceMeters <= maxDistanceKm * 1000) {
+    if (!distanceData) continue;
+
+    // Parse numeric meters safely
+    const distanceMeters = Number(distanceData.distanceMeters);
+
+    if (!distanceMeters || isNaN(distanceMeters)) {
+      console.warn("Invalid distance returned for tool:", tool.id);
+      continue;
+    }
+
+    // Apply distance filter
+    if (distanceMeters <= maxDistanceKm * 1000) {
       toolsWithDistance.push({
         ...tool.toJSON(),
-        distanceMeters: distanceData.distanceMeters,
+        distanceMeters,
         distanceText: distanceData.distanceText,
-        durationSeconds: distanceData.durationSeconds,
+        durationSeconds: Number(distanceData.durationSeconds || 0),
         durationText: distanceData.durationText,
       });
     }
   }
 
-  // Sort by distance ascending
-  toolsWithDistance.sort((a, b) => a.distanceMeters - b.distanceMeters);
+  // Sort by distance ASC
+  toolsWithDistance.sort(
+    (a, b) => Number(a.distanceMeters) - Number(b.distanceMeters)
+  );
 
   return toolsWithDistance;
 }
