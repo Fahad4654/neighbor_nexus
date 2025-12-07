@@ -1,47 +1,14 @@
 // src/controllers/tool.controller.ts
+
 import { Request, Response } from "express";
-import { findNearbyTools } from "../services/findTools.service";
 import { findNearbyToolsGoogle } from "../services/findNearbyTools.service";
 
-export const getNearbyTools = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    const { maxDistance = 10, search, sort } = req.query;
-
-    // Parse sort options from query (expecting JSON string)
-    // Example: sort=[{"column":"daily_price","order":"ASC"},{"column":"distance","order":"ASC"}]
-    let sortOptions = undefined;
-    if (sort) {
-      try {
-        sortOptions = JSON.parse(String(sort));
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid sort format. Must be JSON array of {column, order}",
-        });
-      }
-    }
-
-    const tools = await findNearbyTools(
-      userId,
-      Number(maxDistance),
-      search ? String(search) : undefined,
-      sortOptions
-    );
-
-    return res.json({
-      success: true,
-      distance: Number(maxDistance),
-      count: tools.length,
-      data: tools,
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      success: false,
-      message: error.message || "Something went wrong",
-    });
-  }
-};
+// Define the expected structure for sort options
+interface SortOption {
+  // ✅ FIX: Changed 'sort' to 'column' to match the JSON expectation and service logic
+  column: string; // e.g., 'listing_type', 'hourly_price', 'distanceMeters'
+  order: "ASC" | "DESC";
+}
 
 export const getNearbyToolsGoogleController = async (
   req: Request,
@@ -49,11 +16,10 @@ export const getNearbyToolsGoogleController = async (
 ) => {
   try {
     const { userId } = req.params;
-    let { search, maxDistance } = req.query;
+    let { search, maxDistance, sort } = req.query;
 
-    // Convert maxDistance to number safely
+    // 1. Convert maxDistance to number safely
     const distanceNumber = maxDistance ? Number(maxDistance) : 10;
-
     if (isNaN(distanceNumber)) {
       return res.status(400).json({
         success: false,
@@ -61,10 +27,30 @@ export const getNearbyToolsGoogleController = async (
       });
     }
 
+    // 2. Parse dynamic sort options
+    let sortOptions: SortOption[] = [];
+    if (sort) {
+      try {
+        // Expected format: sort=[{"column":"daily_price","order":"ASC"}, {"column":"distanceMeters","order":"DESC"}]
+        sortOptions = JSON.parse(String(sort));
+        if (!Array.isArray(sortOptions)) {
+            throw new Error('Sort must be an array.');
+        }
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid sort format. Must be a JSON array of {column: string, order: 'ASC'|'DESC'}",
+        });
+      }
+    }
+
+    // 3. Call the updated service function
     const tools = await findNearbyToolsGoogle(
       userId,
       distanceNumber,
-      search ? String(search) : undefined
+      search ? String(search) : undefined,
+      sortOptions
     );
 
     return res.json({
@@ -72,12 +58,12 @@ export const getNearbyToolsGoogleController = async (
       count: tools.length,
       data: tools,
     });
-
   } catch (error: any) {
-    return res.status(400).json({
+    // If the error is 'User location missing' (from service), return 400
+    const statusCode = error.message.includes("User location missing") ? 400 : 500;
+    return res.status(statusCode).json({
       success: false,
-      message: error.message,
+      message: error.message || "Something went wrong",
     });
   }
 };
-
