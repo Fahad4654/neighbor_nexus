@@ -3,8 +3,9 @@ import { Token } from "../../models/Token";
 import { User } from "../../models/User";
 import { Request, Response } from "express";
 import { AuthService, resetPassword } from "../../services/auth/auth.service";
-import { sendOtp, verifyOtp } from "../services/otp.services";
 import { Profile } from "../../models/Profile";
+import { verifyOtp } from "../../services/otp/verify.otp.service";
+import { sendOtp } from "../../services/otp/send.otp.service";
 
 export const register: RequestHandler = async (req, res) => {
   try {

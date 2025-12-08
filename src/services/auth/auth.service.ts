@@ -16,8 +16,8 @@ import {
 import { Op } from "sequelize";
 import { MailService } from "../mail/mail.service";
 import { Otp } from "../../models/Otp";
-import { createProfile } from "../profile/profile.service";
-import { sendOtp } from "../otp/sendOtp.service";
+import { createProfile } from "../profile/create.profile.service";
+import { sendOtp } from "../otp/send.otp.service";
 
 const mailService = new MailService();
 

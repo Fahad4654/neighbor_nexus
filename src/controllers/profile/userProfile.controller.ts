@@ -1,15 +1,8 @@
-import fs from "fs";
-import path from "path";
 import { Request, Response } from "express";
-import {
-  findAllProfiles,
-  createProfile,
-  deleteProfileByUserId,
-  updateProfileByUserId,
-} from "../services/profile.service";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { saveFile } from "../../middlewares/upload";
+import { findAllProfiles, createProfile, deleteProfileByUserId, updateProfileByUserId } from "../../services/profile/profile.service";
 
 
 // User Profile List
