@@ -1,11 +1,11 @@
 import { Router } from "express";
 import {
   getUsersController,
+  getUsersByIdController,
   createUserController,
   updateUserController,
   deleteUserController,
-  getUsersByIdController,
-} from "../controllers/users.controller";
+} from "../controllers/users/users.controller";
 
 const router = Router();
 

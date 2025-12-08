@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
-import { findByDynamicId } from "../services/find.service";
-import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 
-import { Review } from "../models/Review";
-import {
-  createReview,
-  deleteReview,
-  updateReview,
-} from "../services/review.service";
+import { Review } from "../../models/Review";
+import { createReview, updateReview, deleteReview } from "../../services/review/review.service";
+
 
 export async function getReviewsByIdController(req: Request, res: Response) {
   try {

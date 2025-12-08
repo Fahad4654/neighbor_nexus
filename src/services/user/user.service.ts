@@ -1,16 +1,17 @@
 import bcrypt from "bcryptjs";
-import { User } from "../models/User";
-import { Profile } from "../models/Profile";
-import { createProfile } from "./profile.service";
+import { User } from "../../models/User";
+import { Profile } from "../../models/Profile";
+
 import { Op } from "sequelize";
 import {
   ADMIN_MAIL,
   ADMIN_USERNAME,
   CLIENT_URL,
   COMPANY_NAME,
-} from "../config";
-import { MailService } from "./mail/mail.service";
-import { findByDynamicId } from "./find.service";
+} from "../../config";
+import { MailService } from "../mail/mail.service";
+import { findByDynamicId } from "../global/find.service";
+import { createProfile } from "../profile/profile.service";
 
 const mailService = new MailService();
 

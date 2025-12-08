@@ -7,9 +7,9 @@ import {
   deleteProfileByUserId,
   updateProfileByUserId,
 } from "../services/profile.service";
-import { isAdmin } from "../middlewares/isAdmin.middleware";
-import { validateRequiredBody } from "../services/reqBodyValidation.service";
-import { saveFile } from "../middlewares/upload";
+import { isAdmin } from "../../middlewares/isAdmin.middleware";
+import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
+import { saveFile } from "../../middlewares/upload";
 
 
 // User Profile List

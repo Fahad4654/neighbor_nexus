@@ -1,6 +1,5 @@
-import { Profile } from "../models/Profile";
-import { User } from "../models/User";
-import { generateToken } from "./user.service";
+import { Profile } from "../../models/Profile";
+import { User } from "../../models/User";
 
 export async function findAllProfiles(
   order = "id",

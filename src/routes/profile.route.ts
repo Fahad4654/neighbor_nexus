@@ -5,7 +5,7 @@ import {
   updateUserProfileController,
   deleteUserProfileController,
   uploadProfilePictureController,
-} from "../controllers/userProfile.controller";
+} from "../controllers/profile/userProfile.controller";
 import { multerErrorHandler, uploadProfilePic } from "../middlewares/upload";
 
 const router = Router();

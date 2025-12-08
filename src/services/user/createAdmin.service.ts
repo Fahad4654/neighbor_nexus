@@ -1,4 +1,4 @@
-import { User } from "../models/User";
+import { User } from "../../models/User";
 import {
   ADMIN_USERNAME,
   ADMIN_FIRSTNAME,
@@ -6,9 +6,9 @@ import {
   ADMIN_MAIL,
   ADMIN_PASSWORD,
   ADMIN_PHONENUMBER,
-} from "../config";
+} from "../../config";
 import { createUser } from "./user.service";
-import { createProfile } from "./profile.service";
+
 
 export async function createAdmin() {
   const adminExists = await User.findOne({

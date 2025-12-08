@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GOOGLE_MAP_API_KEY } from "../config";
+import { GOOGLE_MAP_API_KEY } from "../../config";
 
 export async function getDistanceBetweenPoints(
   origin: { lat: number; lng: number },

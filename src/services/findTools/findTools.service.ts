@@ -1,7 +1,7 @@
 import { Op, Order, literal } from "sequelize";
-import { sequelize } from "../config/database";
-import { Tool } from "../models/Tools";
-import { User } from "../models/User";
+import { sequelize } from "../../config/database";
+import { Tool } from "../../models/Tools";
+import { User } from "../../models/User";
 
 type ToolSortableFields =
   | "listing_type"

@@ -2,8 +2,8 @@ import { Op } from "sequelize";
 import { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
-import { findByDynamicId } from "../services/find.service";
-import { validateRequiredBody } from "../services/reqBodyValidation.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import {
   createTool,
   deleteTool,
@@ -11,11 +11,11 @@ import {
   findToolsByListingId,
   findToolsByOwnerId,
   updateTool,
-} from "../services/tool.service";
-import { Tool } from "../models/Tools";
-import { ToolImage } from "../models/ToolsImages";
-import { User } from "../models/User";
-import { saveFile } from "../middlewares/upload";
+} from "../../services/tools/tool.service";
+import { Tool } from "../../models/Tools";
+import { ToolImage } from "../../models/ToolsImages";
+import { User } from "../../models/User";
+import { saveFile } from "../../middlewares/upload";
 
 // ✅ Get all tools with pagination
 export async function getToolsController(req: Request, res: Response) {

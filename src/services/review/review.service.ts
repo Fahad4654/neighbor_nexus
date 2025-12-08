@@ -1,4 +1,5 @@
-import { Review } from "../models/Review";
+import { Review } from "../../models/Review";
+
 
 export async function createReview(
   reviewed_user_id: string,

@@ -1,7 +1,7 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { User } from "../models/User";
-import { Token } from "../models/Token";
+import { User } from "../../models/User";
+import { Token } from "../../models/Token";
 import {
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_SECRET,
@@ -11,12 +11,13 @@ import {
   CLIENT_URL,
   ADMIN_MAIL,
   COMPANY_NAME,
-} from "../config";
-import { createProfile } from "./profile.service";
+} from "../../config";
+
 import { Op } from "sequelize";
-import { MailService } from "./mail/mail.service";
-import { Otp } from "../models/Otp";
-import { sendOtp } from "./otp.services";
+import { MailService } from "../mail/mail.service";
+import { Otp } from "../../models/Otp";
+import { createProfile } from "../profile/profile.service";
+import { sendOtp } from "../otp/sendOtp.service";
 
 const mailService = new MailService();
 
@@ -137,7 +138,6 @@ export class AuthService {
       // ⭐ Only set geo_location if provided
       ...(geoLocationValue && { geo_location: geoLocationValue }),
     });
-
 
     // 📧 Send OTP email
     await sendOtp(newUser.email, "register");

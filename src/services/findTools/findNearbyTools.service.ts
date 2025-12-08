@@ -2,8 +2,8 @@
 
 import { Op } from "sequelize";
 // Assuming Tool, User models and getDistanceBetweenPoints service exist
-import { Tool } from "../models/Tools";
-import { User } from "../models/User";
+import { Tool } from "../../models/Tools";
+import { User } from "../../models/User";
 import { getDistanceBetweenPoints } from "./googleMapDistance.service";
 
 // Interfaces for better type safety

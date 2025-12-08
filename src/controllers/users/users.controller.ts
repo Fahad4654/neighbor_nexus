@@ -4,15 +4,15 @@ import {
   createUser,
   updateUser,
   deleteUser,
-} from "../services/user.service";
-import { User } from "../models/User";
-import { findByDynamicId } from "../services/find.service";
-import { validateRequiredBody } from "../services/reqBodyValidation.service";
-import { Profile } from "../models/Profile";
+} from "../../services/user/user.service";
+import { User } from "../../models/User";
+import { findByDynamicId } from "../../services/global/find.service";
+import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
+import { Profile } from "../../models/Profile";
 
-import { isAdmin } from "../middlewares/isAdmin.middleware";
+import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
-import { ADMIN_USERNAME } from "../config";
+import { ADMIN_USERNAME } from "../../config";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();

@@ -8,11 +8,10 @@ import {
   getToolsController,
   updateToolImagesController,
   updateToolInfoController,
-} from "../controllers/tools.controller";
-import {
-  getNearbyToolsGoogleController,
-} from "../controllers/findTools.controller";
+} from "../controllers/tools/tools.controller";
+
 import { multerErrorHandler, uploadToolImages } from "../middlewares/upload";
+import { getNearbyToolsGoogleController } from "../controllers/global/findTools.controller";
 
 const router = Router();
 
