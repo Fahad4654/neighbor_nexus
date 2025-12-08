@@ -1,8 +1,8 @@
-import { databaseService } from "./services/database.service";
 import { PORT, CREATE_ADMIN, COMPANY_NAME } from "./config";
 import createApp from "./app";
-import { createAdmin } from "./services/createAdmin.service";
 import os from "os";
+import { databaseService } from "./services/global/database.service";
+import { createAdmin } from "./services/global/createAdmin.service";
 
 const networkInterfaces = os.networkInterfaces();
 const localIP =

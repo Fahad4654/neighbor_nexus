@@ -1,18 +1,15 @@
 import { Router } from "express";
-
+import { multerErrorHandler, uploadToolImages } from "../middlewares/upload";
+import { getNearbyToolsGoogleController } from "../controllers/global/findTools.controller";
+import { createToolController } from "../controllers/tools/create.tools.controller";
+import { deleteToolController } from "../controllers/tools/delete.tools.controller";
 import {
-  createToolController,
-  deleteToolController,
+  getToolsController,
   getToolByListingIdController,
   getToolsByOwnerIdController,
-  getToolsController,
-  updateToolImagesController,
-  updateToolInfoController,
-} from "../controllers/tools.controller";
-import {
-  getNearbyToolsGoogleController,
-} from "../controllers/findTools.controller";
-import { multerErrorHandler, uploadToolImages } from "../middlewares/upload";
+} from "../controllers/tools/get.tools.controller";
+import { updateToolInfoController } from "../controllers/tools/update.tools.controller";
+import { updateToolImagesController } from "../controllers/tools/updateImages.tools.controller";
 
 const router = Router();
 

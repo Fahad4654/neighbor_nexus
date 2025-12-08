@@ -66,6 +66,24 @@ export class Tool extends Model {
   is_available!: boolean;
 
   @AllowNull(true)
+  @Default(0)
+  @Comment("Number of times this tool has been rented.")
+  @Column(DataType.INTEGER)
+  rental_count!: number;
+
+  @AllowNull(false)
+  @Default(false)
+  @Comment("approval status by admin")
+  @Column(DataType.BOOLEAN)
+  is_approved!: boolean;
+
+  @ForeignKey(() => User)
+  @AllowNull(true)
+  @Comment("approved by whom (User ID)")
+  @Column(DataType.UUID)
+  approved_by?: string | null;
+
+  @AllowNull(true)
   @Default({
     type: "Point",
     coordinates: [90.4125, 23.8103], // Dhaka default (lon, lat)
@@ -78,6 +96,14 @@ export class Tool extends Model {
 
   @BelongsTo(() => User, { foreignKey: "owner_id", as: "owner" })
   owner!: User;
+
+  @BelongsTo(() => User, {
+    foreignKey: "approved_by",
+    as: "approver",
+    onDelete: "SET NULL",
+    onUpdate: "CASCADE",
+  })
+  approver!: User;
 
   @HasMany(() => ToolImage, { foreignKey: "tool_id", as: "images" })
   images!: ToolImage[];
