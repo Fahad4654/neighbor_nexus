@@ -1,7 +1,7 @@
 // src/controllers/tool.controller.ts
 
 import { Request, Response } from "express";
-import { findNearbyToolsGoogle } from "../../services/findTools/findNearbyTools.service";
+import { findNearbyToolsGoogle } from "../../services/findTools/findNearbyToolsByGoogle.service";
 
 
 // Define the expected structure for sort options
