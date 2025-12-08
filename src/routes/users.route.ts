@@ -1,11 +1,11 @@
 import { Router } from "express";
+import { createUserController } from "../controllers/users/create.users.controller";
+import { deleteUserController } from "../controllers/users/delete.users.controller";
 import {
   getUsersController,
   getUsersByIdController,
-  createUserController,
-  updateUserController,
-  deleteUserController,
-} from "../controllers/users/users.controller";
+} from "../controllers/users/get.users.controller";
+import { updateUserController } from "../controllers/users/update.users.controller";
 
 const router = Router();
 
