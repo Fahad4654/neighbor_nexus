@@ -7,7 +7,8 @@ import {
   ADMIN_PASSWORD,
   ADMIN_PHONENUMBER,
 } from "../../config";
-import { createUser } from "./user.service";
+import { createUser } from "../user/user.service";
+
 
 
 export async function createAdmin() {

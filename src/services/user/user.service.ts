@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import { User } from "../../models/User";
 import { Profile } from "../../models/Profile";
-
 import { Op } from "sequelize";
 import {
   ADMIN_MAIL,
