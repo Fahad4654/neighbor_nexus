@@ -22,10 +22,13 @@ import { sendOtp } from "../otp/send.otp.service";
 const mailService = new MailService();
 
 export class AuthService {
+
+  // Hash password
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
 
+  // Compare password
   static async comparePassword(
     password: string,
     hashedPassword: string
@@ -33,6 +36,7 @@ export class AuthService {
     return bcrypt.compare(password, hashedPassword);
   }
 
+  // Generate Access and Refresh Tokens
   static async generateTokens(user: User) {
     const accessToken = jwt.sign(
       {
@@ -48,6 +52,7 @@ export class AuthService {
       { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
     );
 
+    // Generate Refresh Token
     const refreshToken = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, {
       expiresIn: REFRESH_TOKEN_EXPIRATION ? REFRESH_TOKEN_EXPIRATION : "7d",
     } as SignOptions);
@@ -122,7 +127,6 @@ export class AuthService {
         coordinates: [lng, lat], // ⚠️ PostGIS requires (lon, lat)
       };
     }
-    console.log(geoLocationValue);
 
     // 🆕 Create new user
     const newUser = await User.create({
