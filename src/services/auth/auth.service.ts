@@ -62,6 +62,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  // Register User with optional Google Maps location
   static async registerUser(data: {
     username: string;
     firstname: string;
@@ -154,6 +155,7 @@ export class AuthService {
     return newUser;
   }
 
+  // Login User with username, email, or phone number
   static async loginUser(identifier: string, password: string) {
     // identifier can be username OR email OR phone number
     const user = await User.findOne({
@@ -182,6 +184,7 @@ export class AuthService {
     return user;
   }
 
+  // Logout User by deleting refresh token
   static async logoutUser(refreshToken: string) {
     const tokenData = await Token.findOne({ where: { token: refreshToken } });
     if (!tokenData) {
@@ -229,6 +232,7 @@ export class AuthService {
   }
 }
 
+// Reset Password using verified OTP
 export async function resetPassword(identifier: string, newPassword: string) {
   // Determine which field to search by
   let whereCondition: any = {};
