@@ -12,7 +12,14 @@ export async function findAllProfiles(
     include: [
       {
         model: User,
-        attributes: ["id", "username","firstname", "lastname", "email", "phoneNumber"],
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
       },
     ],
     nest: true,
