@@ -22,7 +22,6 @@ import { sendOtp } from "../otp/send.otp.service";
 const mailService = new MailService();
 
 export class AuthService {
-
   // Hash password
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
@@ -197,6 +196,7 @@ export class AuthService {
     await Token.destroy({ where: { token: refreshToken } });
   }
 
+  // Refresh Access Token
   static async refreshAccessToken(refreshToken: string) {
     try {
       const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as {
