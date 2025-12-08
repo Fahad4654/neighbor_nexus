@@ -1,12 +1,10 @@
 import { Router } from "express";
-import {
-  getUsersProfileController,
-  createUserProfileController,
-  updateUserProfileController,
-  deleteUserProfileController,
-  uploadProfilePictureController,
-} from "../controllers/profile/userProfile.controller";
 import { multerErrorHandler, uploadProfilePic } from "../middlewares/upload";
+import { getUsersProfileController } from "../controllers/profile/findAll.profile.controller";
+import { createUserProfileController } from "../controllers/profile/create.profile.controller";
+import { deleteUserProfileController } from "../controllers/profile/delete.profile.controller";
+import { updateUserProfileController } from "../controllers/profile/update.profile.controller";
+import { uploadProfilePictureController } from "../controllers/profile/uploadPicture.profile.controller";
 
 const router = Router();
 
