@@ -77,12 +77,11 @@ export class Tool extends Model {
   @Column(DataType.BOOLEAN)
   is_approved!: boolean;
 
-  @ForeignKey(() => User) // 1. Add the Foreign Key Decorator
+  @ForeignKey(() => User)
   @AllowNull(true)
-  @Default(null)
   @Comment("approved by whom (User ID)")
-  @Column(DataType.UUID) // 2. Change the DataType to UUID
-  approved_by?: string | null; // 3. Update the type to allow null
+  @Column(DataType.UUID)
+  approved_by?: string | null;
 
   @AllowNull(true)
   @Default({

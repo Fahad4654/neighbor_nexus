@@ -9,6 +9,7 @@ import {
   ForeignKey,
   Default,
   BelongsTo,
+  Comment,
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Tool } from "./Tools";
@@ -19,53 +20,54 @@ import { Tool } from "./Tools";
 })
 export class RentRequest extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  transaction_id!: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  id!: string;
 
   @ForeignKey(() => Tool)
   @AllowNull(false)
+  @Comment("The ID of the tool being requested.")
   @Column(DataType.UUID)
   listing_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)
+  @Comment("The ID of the user submitting the request.")
   @Column(DataType.UUID)
   borrower_id!: string;
 
   @AllowNull(false)
-  @Column(DataType.DATE)
-  start_time!: Date;
-
-  @AllowNull(false)
-  @Column(DataType.DATE)
-  end_time!: Date;
-
-  @AllowNull(false)
-  @Default(0.0)
-  @Column(DataType.DECIMAL(10, 2))
-  total_fee!: number;
-
-  @AllowNull(false)
-  @Default(0.0)
-  @Column(DataType.DECIMAL(10, 2))
-  platform_commission!: number;
-
-  @AllowNull(false)
-  @Default(0.0)
-  @Column(DataType.DECIMAL(10, 2))
-  deposit_amount!: number;
-
-  @AllowNull(true)
-  @Column(DataType.STRING(100))
-  stripe_charge_id?: string;
-
-  @AllowNull(false)
   @Default("Requested")
-  @Column(DataType.ENUM("Requested", "Approved", "Cancelled", "Completed", "Disputed"))
-  status!: "Requested" | "Approved" | "Cancelled" | "Completed" | "Disputed";
+  @Comment("The current status of the rental request.")
+  @Column(DataType.STRING)
+  rent_status!:
+    | "Requested"
+    | "Approved"
+    | "Denied"
+    | "Cancelled"
+    | "Completed"
+    | "Disputed";
 
-  // Relations
+  @AllowNull(false)
+  @Default("Hour")
+  @Comment(
+    "The unit of duration used for calculating pricing (e.g., Hour, Day)."
+  )
+  @Column(DataType.STRING)
+  duration_unit!: "Hour" | "Day" | "Week";
+
+  @AllowNull(false)
+  @Comment("The exact date and time the borrower intends to pick up the item.")
+  @Column(DataType.DATE)
+  pickup_time!: Date;
+
+  @AllowNull(false)
+  @Comment(
+    "The exact date and time the borrower commits to dropping off/returning the item."
+  )
+  @Column(DataType.DATE)
+  drop_off_time!: Date;
+
   @BelongsTo(() => Tool, { foreignKey: "listing_id", as: "listing" })
   listing!: Tool;
 
