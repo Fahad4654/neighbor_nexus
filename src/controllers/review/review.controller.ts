@@ -3,8 +3,9 @@ import { findByDynamicId } from "../../services/global/find.service";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 
 import { Review } from "../../models/Review";
-import { createReview, updateReview, deleteReview } from "../../services/review/review.service";
-
+import { createReview } from "../../services/review/create.review.service";
+import { deleteReview } from "../../services/review/delete.review.service";
+import { updateReview } from "../../services/review/update.review.service";
 
 export async function getReviewsByIdController(req: Request, res: Response) {
   try {
@@ -45,7 +46,8 @@ export async function createReviewController(req: Request, res: Response) {
     ]);
     if (!reqBodyValidation) return;
 
-    const { userID, transactionID, reviewed_user_id, rating, comment } = req.body;
+    const { userID, transactionID, reviewed_user_id, rating, comment } =
+      req.body;
 
     const newReview = await createReview(
       userID,
