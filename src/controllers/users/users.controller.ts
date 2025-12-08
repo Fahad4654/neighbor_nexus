@@ -1,18 +1,15 @@
 import { Request, Response } from "express";
-import {
-  findAllUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../../services/user/user.service";
 import { User } from "../../models/User";
 import { findByDynamicId } from "../../services/global/find.service";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { Profile } from "../../models/Profile";
-
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { Op } from "sequelize";
 import { ADMIN_USERNAME } from "../../config";
+import { createUser } from "../../services/user/create.user.service";
+import { deleteUser } from "../../services/user/delete.user.service";
+import { findAllUsers } from "../../services/user/findAll.user.service";
+import { updateUser } from "../../services/user/update.user.service";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -176,12 +173,10 @@ export async function updateUserController(req: Request, res: Response) {
     }
 
     if (req.body.isVerified && !req.user.isAdmin) {
-      res
-        .status(400)
-        .json({ error: "Only admins can verify user accounts" });
+      res.status(400).json({ error: "Only admins can verify user accounts" });
       return;
     }
-    
+
     const updatedUser = await updateUser(req.body);
 
     if (!updatedUser) {

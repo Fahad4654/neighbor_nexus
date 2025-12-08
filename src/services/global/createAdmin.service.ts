@@ -7,9 +7,7 @@ import {
   ADMIN_PASSWORD,
   ADMIN_PHONENUMBER,
 } from "../../config";
-import { createUser } from "../user/user.service";
-
-
+import { createUser } from "../user/create.user.service";
 
 export async function createAdmin() {
   const adminExists = await User.findOne({
