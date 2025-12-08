@@ -11,7 +11,8 @@ import {
 } from "../../config";
 import { MailService } from "../mail/mail.service";
 import { findByDynamicId } from "../global/find.service";
-import { createProfile } from "../profile/profile.service";
+import { createProfile } from "../profile/create.profile.service";
+
 
 const mailService = new MailService();
 

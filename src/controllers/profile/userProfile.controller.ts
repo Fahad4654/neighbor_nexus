@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { saveFile } from "../../middlewares/upload";
-import { findAllProfiles, createProfile, deleteProfileByUserId, updateProfileByUserId } from "../../services/profile/profile.service";
+import { createProfile, deleteProfileByUserId } from "../../services/profile/create.profile.service";
+import { findAllProfiles } from "../../services/profile/findAll.profile.service";
+import { updateProfileByUserId } from "../../services/profile/update.profile.service";
+
 
 
 // User Profile List
