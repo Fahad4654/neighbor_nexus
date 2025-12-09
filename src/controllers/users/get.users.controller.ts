@@ -5,6 +5,11 @@ import { validateRequiredBody } from "../../services/global/reqBodyValidation.se
 import { Profile } from "../../models/Profile";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { findAllUsers } from "../../services/user/findAll.user.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -13,9 +18,14 @@ export async function getUsersController(req: Request, res: Response) {
     try {
       if (!req.body) {
         console.log("Request body is required");
-        res.status(400).json({ error: "Request body is required" });
-        return;
+        return errorResponse(
+          res,
+          "Request body is required",
+          "Missing body for filtering/pagination parameters",
+          400
+        );
       }
+
       const reqBodyValidation = validateRequiredBody(req, res, [
         "order",
         "asc",
@@ -25,10 +35,15 @@ export async function getUsersController(req: Request, res: Response) {
       if (!reqBodyValidation) return;
 
       const { order, asc, page = 1, pageSize = 10 } = req.body;
+
       if (!req.user) {
         console.log("login is required");
-        res.status(400).json({ error: "login is required" });
-        return;
+        return errorResponse(
+          res,
+          "Login is required",
+          "Unauthorized access",
+          401
+        );
       }
 
       const usersList = await findAllUsers(
@@ -38,16 +53,22 @@ export async function getUsersController(req: Request, res: Response) {
         Number(pageSize),
         req.user?.id
       );
+
+      const { total, ...restOfPagination } = usersList.pagination;
+      const pagination = { totalCount: total, ...restOfPagination };
+
       console.log("User fetched successfully");
-      res.status(200).json({
-        message: "User fetched successfully",
-        usersList,
-        status: "success",
-      });
-      return;
+
+      return successResponse(
+        res,
+        "User fetched successfully",
+        usersList.data,
+        200,
+        pagination
+      );
     } catch (error) {
       console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Error fetching users", error });
+      return handleUncaughtError(res, error, "Error fetching users");
     }
   });
 }
@@ -56,48 +77,66 @@ export async function getUsersByIdController(req: Request, res: Response) {
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({
-        status: 400,
-        error: "User ID is required as a route parameter (e.g., /users/:id)",
-      });
-      return;
+      return errorResponse(
+        res,
+        "User ID is required",
+        "User ID is required as a route parameter (e.g., /users/:id)",
+        400
+      );
     }
 
     const typedUser = await findByDynamicId(User, { id: userId }, false);
     const user = typedUser as User | null;
     console.log(user);
+
     if (!user) {
       console.log("User not found");
-      res.status(404).json({ error: "User not found" });
-      return;
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${userId} does not exist`,
+        404
+      );
     }
+
     const typedUserProfile = await findByDynamicId(
       Profile,
       { userId: user.id },
       false
     );
     const userProfile = typedUserProfile as Profile | null;
+
     if (!userProfile) {
       console.log("User profile not found");
-      res.status(404).json({ error: "User profile not found" });
-      return;
+      return errorResponse(
+        res,
+        "User profile not found",
+        `Profile for user ID ${userId} does not exist`,
+        404
+      );
     }
-    if (user && user.isAdmin && !req.user?.isAdmin) {
+
+    if (user.isAdmin && !req.user?.isAdmin) {
       console.log("Access to admin user's details is restricted");
-      res
-        .status(403)
-        .json({ error: "Access to admin user's details is restricted" });
-      return;
+      return errorResponse(
+        res,
+        "Forbidden",
+        "Access to admin user's details is restricted",
+        403
+      );
     }
 
     const noPasswordUser = { ...user.get() };
     delete noPasswordUser.password;
-    res
-      .status(200)
-      .json({ user: noPasswordUser, profile: userProfile, status: "success" });
-    return;
+
+    return successResponse(
+      res,
+      "User details fetched successfully",
+      { user: noPasswordUser, profile: userProfile },
+      200
+    );
   } catch (error) {
     console.error("Error finding user:", error);
-    res.status(500).json({ message: "Error fetching users:", error });
+    return handleUncaughtError(res, error, "Error fetching user details");
   }
 }

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { ACCESS_TOKEN_SECRET as JWT_SECRET } from "../config";
+import { errorResponse, handleUncaughtError } from "../utils/apiResponse";
 
 declare module "express" {
   interface Request {
@@ -28,11 +29,14 @@ export const authenticate = async (
     const token = authHeader?.split(" ")[1];
 
     if (!token) {
-      res.status(401).json({ message: "Authentication token required" });
-      return;
+      return errorResponse(
+        res,
+        "Authentication token required",
+        "No bearer token provided in Authorization header",
+        401
+      );
     }
 
-    // Verify token
     const payload = jwt.verify(token, SECRET) as {
       id: string;
       username: string;
@@ -42,30 +46,42 @@ export const authenticate = async (
       isAdmin: boolean;
     };
 
-    // Optional: Verify user still exists
     const user = await User.findByPk(payload.id);
     if (!user) {
-      res.status(401).json({ message: "User no longer exists" });
-      return;
+      return errorResponse(
+        res,
+        "User not found",
+        "Token payload refers to a non-existent user",
+        404
+      );
     }
 
-    // Attach user to request
     req.user = payload;
     next();
   } catch (error) {
     console.error("Authentication error:", error);
 
     if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({ message: "Token expired" });
-      return;
+      return errorResponse(
+        res,
+        "Token expired",
+        "JWT has passed its expiration time",
+        401
+      );
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(403).json({ message: "Invalid token" });
-      return;
+      return errorResponse(
+        res,
+        "Invalid token",
+        "JWT signature is invalid or token is malformed",
+        403
+      );
     }
-
-    res.status(500).json({ message: "Internal server error" });
-    return;
+    return handleUncaughtError(
+      res,
+      error,
+      "Internal server error during authentication"
+    );
   }
 };

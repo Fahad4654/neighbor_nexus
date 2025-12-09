@@ -7,6 +7,11 @@ import {
   findToolsByListingId,
   findToolsByOwnerId,
 } from "../../services/tools/find.tool.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 // ✅ Get all tools with pagination
 export async function getToolsController(req: Request, res: Response) {
@@ -15,7 +20,7 @@ export async function getToolsController(req: Request, res: Response) {
     if (!reqBodyValidation) return;
 
     if (!req.user) {
-      return res.status(401).json({ error: "User is required" });
+      return errorResponse(res, "User is required", "Login is required", 401);
     }
 
     const { order, asc, page = 1, pageSize = 10 } = req.body;
@@ -28,15 +33,19 @@ export async function getToolsController(req: Request, res: Response) {
       req.user.id
     );
 
-    res.status(200).json({
-      message: "Tools fetched successfully",
-      data: toolsList.data.map((t) => t.get({ plain: true })),
-      pagination: toolsList.pagination,
-      status: "success",
-    });
+    const { total, ...restOfPagination } = toolsList.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
+
+    return successResponse(
+      res,
+      "Tools fetched successfully",
+      toolsList.data.map((t) => t.get({ plain: true })),
+      200,
+      pagination
+    );
   } catch (error) {
     console.error("Error fetching tools:", error);
-    res.status(500).json({ message: "Error fetching tools", error });
+    return handleUncaughtError(res, error, "Error fetching tools");
   }
 }
 
@@ -51,17 +60,23 @@ export async function getToolByListingIdController(
     const tool = await findToolsByListingId(listing_id);
 
     if (!tool) {
-      return res.status(404).json({ error: "Tool not found" });
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
     }
 
-    res.status(200).json({
-      message: "Tool fetched successfully",
-      data: tool.get({ plain: true }),
-      status: "success",
-    });
+    return successResponse(
+      res,
+      "Tool fetched successfully",
+      tool.get({ plain: true }),
+      200
+    );
   } catch (error) {
     console.error("Error fetching tool by listing_id:", error);
-    res.status(500).json({ message: "Error fetching tool", error });
+    return handleUncaughtError(res, error, "Error fetching tool");
   }
 }
 
@@ -71,25 +86,36 @@ export async function getToolsByOwnerIdController(req: Request, res: Response) {
     const { owner_id } = req.params;
 
     if (!owner_id) {
-      res.status(400).json({ error: "owner_id is required" });
-      return;
+      return errorResponse(
+        res,
+        "Owner ID is required",
+        "Missing owner_id in route parameter",
+        400
+      );
     }
 
     const ownerExists = await findByDynamicId(User, { id: owner_id }, false);
     const owner = ownerExists as User | null;
+
     if (!owner) {
-      res.status(404).json({ error: "Owner not found" });
-      return;
+      return errorResponse(
+        res,
+        "Owner not found",
+        `User with ID ${owner_id} does not exist`,
+        404
+      );
     }
 
     const tools = await findToolsByOwnerId(owner.id);
-    res.status(200).json({
-      message: "Tools fetched successfully",
-      data: tools.map((t) => t.get({ plain: true })),
-      status: "success",
-    });
+
+    return successResponse(
+      res,
+      "Tools fetched successfully",
+      tools.map((t) => t.get({ plain: true })),
+      200
+    );
   } catch (error) {
     console.error("Error fetching tools by owner_id:", error);
-    res.status(500).json({ message: "Error fetching tools", error });
+    return handleUncaughtError(res, error, "Error fetching tools");
   }
 }

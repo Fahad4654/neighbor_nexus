@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { ErrorRequestHandler, Request } from "express";
 import { ToolImage } from "../models/ToolsImages";
+import { errorResponse, handleUncaughtError } from "../utils/apiResponse";
 
 export function saveFile(
   userId: string,
@@ -25,14 +26,9 @@ export function saveFile(
   return `/media/${folder}/${filename}`;
 }
 
-// We ONLY save manually after validation. No auto-saving by multer.
 const storage = multer.memoryStorage();
 
-// Allowed file types
 const allowedTypes = /jpeg|jpg|png|gif/;
-
-
-// CUSTOM TOOL IMAGE LIMIT CHECK
 
 const toolImageFilter: multer.Options["fileFilter"] = async (
   req: Request,
@@ -63,7 +59,7 @@ const toolImageFilter: multer.Options["fileFilter"] = async (
 // Profile uploader (memory)
 export const uploadProfilePic = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!allowedTypes.test(ext)) return cb(new Error("Invalid file type"));
@@ -71,14 +67,12 @@ export const uploadProfilePic = multer({
   },
 }).single("profile_pic");
 
-// Tool images uploader (memory)
 export const uploadToolImages = multer({
   storage,
   fileFilter: toolImageFilter,
   limits: { files: 5, fileSize: 2 * 1024 * 1024 },
 }).array("files", 5);
 
-// Global multer error handler
 export const multerErrorHandler: ErrorRequestHandler = (
   err,
   req,
@@ -86,21 +80,30 @@ export const multerErrorHandler: ErrorRequestHandler = (
   next
 ) => {
   if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_COUNT")
-      return res
-        .status(400)
-        .json({ success: false, message: "You can upload a maximum of 5 files." });
+    let message = err.message;
+    let status = 400;
+    let errorDetail = "Multer processing error";
 
-    if (err.code === "LIMIT_FILE_SIZE")
-      return res
-        .status(400)
-        .json({ success: false, message: "File too large (max 2MB)." });
+    if (err.code === "LIMIT_FILE_COUNT") {
+      message = "You can upload a maximum of 5 files.";
+      errorDetail = "File count limit exceeded";
+    } else if (err.code === "LIMIT_FILE_SIZE") {
+      message = "File too large (max 2MB).";
+      errorDetail = "File size limit exceeded";
+    } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      message = `Unexpected field: ${err.field}`;
+      errorDetail = "Unexpected file field name";
+    }
 
-    return res.status(400).json({ success: false, message: err.message });
+    return errorResponse(res, message, errorDetail, status);
   }
 
-  if (err)
-    return res.status(400).json({ success: false, message: err.message });
+  if (err instanceof Error) {
+    return errorResponse(res, err.message, "File filter error", 400);
+  }
 
+  if (err) {
+    return handleUncaughtError(res, err, "Unexpected error in multer handler");
+  }
   next();
 };

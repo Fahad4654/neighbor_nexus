@@ -3,15 +3,23 @@ import { User } from "../../models/User";
 import { Op } from "sequelize";
 import { ADMIN_USERNAME } from "../../config";
 import { deleteUser } from "../../services/user/delete.user.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function deleteUserController(req: Request, res: Response) {
   try {
     const { email, id, phoneNumber } = req.body;
 
     if (!email && !id && !phoneNumber) {
-      return res
-        .status(400)
-        .json({ error: "Provide email, id, or phoneNumber" });
+      return errorResponse(
+        res,
+        "Provide email, id, or phoneNumber",
+        "Missing user identifier for deletion",
+        400
+      );
     }
 
     const whereClause: any = {
@@ -24,13 +32,21 @@ export async function deleteUserController(req: Request, res: Response) {
 
     const wantDelUser = await User.findOne({ where: whereClause });
     if (!wantDelUser) {
-      return res
-        .status(404)
-        .json({ error: "User not found or identifiers mismatch" });
+      return errorResponse(
+        res,
+        "User not found or identifiers mismatch",
+        "User lookup failed",
+        404
+      );
     }
 
     if (!req.user) {
-      return res.status(400).json({ error: "Login is required" });
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
     }
 
     if (!req.user.isAdmin) {
@@ -38,28 +54,44 @@ export async function deleteUserController(req: Request, res: Response) {
         req.user.id !== wantDelUser.id &&
         wantDelUser.createdBy !== req.user.id
       ) {
-        return res
-          .status(403)
-          .json({ error: "You are not permitted to delete this user" });
+        return errorResponse(
+          res,
+          "Forbidden",
+          "You are not permitted to delete this user",
+          403
+        );
       }
     }
+
     if (wantDelUser.username === ADMIN_USERNAME) {
       console.log("Cannot delete main admin user");
-      return res.status(403).json({ error: "Cannot delete main admin user" });
+      return errorResponse(
+        res,
+        "Forbidden",
+        "Cannot delete main admin user",
+        403
+      );
     }
 
     const deletedCount = await deleteUser({ email, id, phoneNumber });
 
     if (deletedCount === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return errorResponse(
+        res,
+        "User not found",
+        "Deletion failed (user not found after lookup or deletion restricted)",
+        404
+      );
     }
 
-    res.status(200).json({
-      message: "User deleted successfully",
-      deleted: { email, id, phoneNumber },
-    });
+    return successResponse(
+      res,
+      "User deleted successfully",
+      { deleted: { email, id, phoneNumber } },
+      200
+    );
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting user", error });
+    return handleUncaughtError(res, error, "Error deleting user");
   }
 }
