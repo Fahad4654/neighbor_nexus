@@ -14,7 +14,6 @@ export async function createUserProfileController(req: Request, res: Response) {
     try {
       if (!req.body) {
         console.log("Request body is required");
-        // 🔴 400 Bad Request
         return errorResponse(
           res,
           "Request body is required",
@@ -35,7 +34,6 @@ export async function createUserProfileController(req: Request, res: Response) {
       const newProfile = await createProfile(req.body);
 
       console.log("User profile created successfully", newProfile);
-      // 🟢 201 Created
       return successResponse(
         res,
         "User profile created successfully",
@@ -44,7 +42,6 @@ export async function createUserProfileController(req: Request, res: Response) {
       );
     } catch (error) {
       console.error("Error creating user profile:", error);
-      // 🛑 500 Internal Server Error
       return handleUncaughtError(res, error, "Error creating user profile");
     }
   });
