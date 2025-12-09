@@ -1,22 +1,36 @@
 import { Request, Response } from "express";
 import { updateProfileByUserId } from "../../services/profile/update.profile.service";
+import {
+  errorResponse,
+  successResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function updateUserProfileController(req: Request, res: Response) {
   try {
     if (!req.body || !req.body.userId) {
       console.log("UserId is required");
-      res.status(400).json({ error: "UserId is required" });
-      return;
+      return errorResponse(
+        res,
+        "UserId is required",
+        "Missing userId in request body",
+        400
+      );
     }
+
     if (!req.user) {
       console.log("Unauthorized access attempt");
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+      return errorResponse(res, "Unauthorized", "Login is required", 401);
     }
+
     if (!req.user.isAdmin && req.user.id !== req.body.userId) {
       console.log("Forbidden access attempt");
-      res.status(403).json({ error: "Forbidden" });
-      return;
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to update this profile",
+        403
+      );
     }
 
     const updatedProfile = await updateProfileByUserId(
@@ -26,24 +40,23 @@ export async function updateUserProfileController(req: Request, res: Response) {
 
     if (!updatedProfile) {
       console.log("No valid fields provided for update or profile not found");
-      res.status(400).json({
-        error: "No valid fields provided for update or profile not found",
-      });
-      return;
+      return errorResponse(
+        res,
+        "Update Failed",
+        "No valid fields provided for update or profile not found",
+        400
+      );
     }
 
     console.log("Profile updated successfully", updatedProfile);
-    res.status(200).json({
-      message: "Profile updated successfully",
-      profile: updatedProfile,
-      status: "success",
-    });
+    return successResponse(
+      res,
+      "Profile updated successfully",
+      { profile: updatedProfile },
+      200
+    );
   } catch (error) {
     console.error("Error updating profile:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to update profile",
-      error: error instanceof Error ? error.message : error,
-    });
+    return handleUncaughtError(res, error, "Failed to update profile");
   }
 }
