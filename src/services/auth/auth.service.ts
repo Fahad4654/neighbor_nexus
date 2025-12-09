@@ -160,7 +160,6 @@ export class AuthService {
 
   // Login User with username, email, or phone number
   static async loginUser(identifier: string, password: string) {
-    // identifier can be username OR email OR phone number
     const user = await User.findOne({
       where: {
         [Op.or]: [
