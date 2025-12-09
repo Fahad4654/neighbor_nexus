@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import { Review } from "../../models/Review";
 import { deleteReview } from "../../services/review/delete.review.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function deleteReviewController(req: Request, res: Response) {
   try {
@@ -8,30 +13,57 @@ export async function deleteReviewController(req: Request, res: Response) {
     const user = req.user;
 
     if (!user) {
-      return res.status(401).json({ error: "Login required" });
+      return errorResponse(res, "Login required", "Unauthorized access", 401);
     }
 
     if (!id) {
-      return res.status(400).json({ error: "Review ID is required" });
+      return errorResponse(
+        res,
+        "Review ID is required",
+        "Missing review ID in request body",
+        400
+      );
     }
 
     const wantDelReview = await Review.findOne({ where: { review_id: id } });
+
     if (!wantDelReview) {
-      return res.status(404).json({ error: "Review not found" });
+      return errorResponse(
+        res,
+        "Review not found",
+        `Review with ID ${id} does not exist`,
+        404
+      );
     }
 
     const deletedCount = await deleteReview(id, user.id);
 
     if (deletedCount === 0) {
-      return res.status(404).json({ error: "Review not found" });
+      if (wantDelReview.reviewer_id !== user.id && !user.isAdmin) {
+        return errorResponse(
+          res,
+          "Forbidden",
+          "You are not authorized to delete this review",
+          403
+        );
+      }
+
+      return errorResponse(
+        res,
+        "Review deletion failed",
+        "Review could not be deleted or was already gone",
+        404
+      );
     }
 
-    res.status(200).json({
-      message: "Review deleted successfully",
-      deleted: { id },
-    });
+    return successResponse(
+      res,
+      "Review deleted successfully",
+      { deleted: { id } },
+      200
+    );
   } catch (error) {
     console.error("Error deleting review:", error);
-    res.status(500).json({ message: "Error deleting review", error });
+    return handleUncaughtError(res, error, "Error deleting review");
   }
 }
