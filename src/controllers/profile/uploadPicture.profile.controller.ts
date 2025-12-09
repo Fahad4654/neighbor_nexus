@@ -1,52 +1,56 @@
 import { Request, Response } from "express";
 import { saveFile } from "../../middlewares/upload";
 import { updateProfileByUserId } from "../../services/profile/update.profile.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function uploadProfilePictureController(
   req: Request,
   res: Response
 ) {
   try {
-    // VALIDATION
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No file uploaded" });
+      return errorResponse(res, "No file uploaded", "Missing file attachment", 400);
     }
 
     if (!req.body.userId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "userId is required" });
+      return errorResponse(res, "userId is required", "Missing userId in request body", 400);
     }
 
     if (!req.user) {
       console.log("Unauthorized access attempt");
-      return res.status(401).json({ error: "Unauthorized" });
+      return errorResponse(res, "Unauthorized", "Login is required", 401);
     }
 
     if (!req.user.isAdmin && req.user.id !== req.body.userId) {
       console.log("Forbidden access attempt");
-      return res.status(403).json({ error: "Forbidden" });
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to update this profile picture",
+        403
+      );
     }
 
-    //DO NOT SAVE FILE YET
     // create a temporary avatarUrl but DO NOT write the file
     const tempAvatarUrl = `/media/profile/temp-${Date.now()}.jpg`;
 
-    // Try the database update FIRST
     const updatedProfile = await updateProfileByUserId(req.body.userId, {
       avatarUrl: tempAvatarUrl, // temp placeholder
     });
 
     if (!updatedProfile) {
-      return res.status(404).json({
-        success: false,
-        message: "Profile not found or update failed",
-      });
+      return errorResponse(
+        res,
+        "Profile not found or update failed",
+        "Could not find profile for the given userId",
+        404
+      );
     }
 
-    // SAVE FILE ONLY AFTER SUCCESS
     const finalAvatarUrl = saveFile(
       req.user.id,
       req.file.buffer,
@@ -59,17 +63,14 @@ export async function uploadProfilePictureController(
       avatarUrl: finalAvatarUrl,
     });
 
-    return res.status(200).json({
-      success: true,
-      message: "Profile picture uploaded successfully",
-      profile: profile,
-    });
+    return successResponse(
+      res,
+      "Profile picture uploaded successfully",
+      { profile: profile },
+      200
+    );
   } catch (error) {
     console.error("Error uploading profile picture:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to upload profile picture",
-      error: error instanceof Error ? error.message : String(error),
-    });
+    return handleUncaughtError(res, error, "Failed to upload profile picture");
   }
 }
