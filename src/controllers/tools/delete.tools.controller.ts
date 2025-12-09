@@ -2,17 +2,32 @@ import { Request, Response } from "express";
 import { findByDynamicId } from "../../services/global/find.service";
 import { Tool } from "../../models/Tools";
 import { deleteTool } from "../../services/tools/delete.tool.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function deleteToolController(req: Request, res: Response) {
   try {
     const { listing_id } = req.body;
 
     if (!listing_id) {
-      return res.status(400).json({ error: "Provide listing_id of the tool" });
+      return errorResponse(
+        res,
+        "Tool ID is required",
+        "Provide listing_id of the tool",
+        400
+      );
     }
 
     if (!req.user) {
-      return res.status(401).json({ error: "Login is required" });
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
     }
 
     const tool = (await findByDynamicId(
@@ -20,26 +35,44 @@ export async function deleteToolController(req: Request, res: Response) {
       { listing_id },
       false
     )) as Tool | null;
+
     if (!tool) {
-      return res.status(404).json({ error: "Tool not found" });
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
     }
 
     if (!req.user.isAdmin && req.user.id !== tool.owner_id) {
-      return res
-        .status(403)
-        .json({ error: "You are not permitted to delete this tool" });
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not permitted to delete this tool",
+        403
+      );
     }
 
     const deletedCount = await deleteTool(listing_id);
 
-    res.status(200).json({
-      message: "Tool deleted successfully",
-      data: tool,
-      deletedCount,
-      status: "success",
-    });
+    if (deletedCount === 0) {
+      return errorResponse(
+        res,
+        "Deletion Failed",
+        "Tool could not be deleted by service",
+        404
+      );
+    }
+
+    return successResponse(
+      res,
+      "Tool deleted successfully",
+      { data: tool, deletedCount },
+      200
+    );
   } catch (error) {
     console.error("Error deleting tool:", error);
-    res.status(500).json({ message: "Error deleting tool", error });
+    return handleUncaughtError(res, error, "Error deleting tool");
   }
 }
