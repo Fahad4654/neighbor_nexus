@@ -1,44 +1,56 @@
 import { Request, Response } from "express";
 import { deleteProfileByUserId } from "../../services/profile/delete.profile.service";
+import {
+  errorResponse,
+  successResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function deleteUserProfileController(req: Request, res: Response) {
   try {
     if (!req.body || !req.body.userId) {
       console.log("UserId is required");
-      res.status(400).json({ error: "UserId is required" });
-      return;
+      return errorResponse(
+        res,
+        "UserId is required",
+        "Missing userId in request body",
+        400
+      );
     }
 
     if (!req.user) {
       console.log("Unauthorized access attempt");
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+      return errorResponse(res, "Unauthorized", "Login is required", 401);
     }
+
     if (!req.user.isAdmin && req.user.id !== req.body.userId) {
       console.log("Forbidden access attempt");
-      res.status(403).json({ error: "Forbidden" });
-      return;
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to delete this profile",
+        403
+      );
     }
 
     const { deletedCount, user } = await deleteProfileByUserId(req.body.userId);
 
     if (deletedCount === 0) {
-      console.log(`User: ${user?.username} doesn't have a profile`);
-      res.status(404).json({
-        error: "User's Profile not found",
-        message: `User: ${user?.username} doesn't have a profile`,
-      });
-      return;
+      const message = `User: ${user?.username} doesn't have a profile`;
+      console.log(message);
+      return errorResponse(res, "User's Profile not found", message, 404);
     }
 
-    console.log(`User: ${user?.username}'s profile is being deleted`);
-    res.status(200).json({
-      message: `User: ${user?.username}'s profile is being deleted`,
-      email: user?.email,
-    });
-    return;
+    const message = `User: ${user?.username}'s profile deleted successfully`;
+    console.log(message);
+    return successResponse(
+      res,
+      message,
+      { email: user?.email, deletedCount },
+      200
+    );
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Error deleting user:", error });
+    console.error("Error deleting user profile:", error);
+    return handleUncaughtError(res, error, "Error deleting user profile");
   }
 }

@@ -2,7 +2,11 @@ import { Request, Response } from "express";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { createProfile } from "../../services/profile/create.profile.service";
-
+import {
+  errorResponse,
+  successResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 export async function createUserProfileController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
 
@@ -10,9 +14,15 @@ export async function createUserProfileController(req: Request, res: Response) {
     try {
       if (!req.body) {
         console.log("Request body is required");
-        res.status(400).json({ error: "Request body is required" });
-        return;
+        return errorResponse(
+          res,
+          "Request body is required",
+          "Empty request body",
+          400
+        );
       }
+
+      // NOTE: validateRequiredBody handles its own response on failure, so we skip here
       const reqBodyValidation = validateRequiredBody(req, res, [
         "userId",
         "bio",
@@ -24,15 +34,15 @@ export async function createUserProfileController(req: Request, res: Response) {
       const newProfile = await createProfile(req.body);
 
       console.log("User profile created successfully", newProfile);
-      res.status(201).json({
-        message: "User profile created successfully",
-        profile: newProfile,
-        status: "success",
-      });
-      return;
+      return successResponse(
+        res,
+        "User profile created successfully",
+        { profile: newProfile },
+        201
+      );
     } catch (error) {
       console.error("Error creating user profile:", error);
-      res.status(500).json({ message: "Error creating user profile", error });
+      return handleUncaughtError(res, error, "Error creating user profile");
     }
   });
 }
