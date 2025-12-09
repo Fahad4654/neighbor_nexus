@@ -6,39 +6,64 @@ import { findByDynamicId } from "../../services/global/find.service";
 import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
 import { saveFile } from "../../middlewares/upload";
+import { findToolsByListingId } from "../../services/tools/find.tool.service";
 import {
-  findAllTools,
-  findToolsByListingId,
-  findToolsByOwnerId,
-} from "../../services/tools/find.tool.service";
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function updateToolImagesController(req: Request, res: Response) {
   try {
     const { listing_id, remove_image_ids } = req.body;
 
     if (!listing_id)
-      return res.status(400).json({ error: "listing_id is required" });
+      return errorResponse(
+        res,
+        "Tool ID is required",
+        "Missing listing_id in request body",
+        400
+      );
 
     const tool = (await findByDynamicId(
       Tool,
       { listing_id },
       false
     )) as Tool | null;
-    if (!tool) return res.status(404).json({ error: "Tool not found" });
+    if (!tool)
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
 
-    if (!req.user) return res.status(401).json({ error: "Login required" });
+    if (!req.user)
+      return errorResponse(res, "Login required", "Unauthorized access", 401);
+
     if (!req.user.isAdmin && req.user.id !== tool.owner_id) {
-      return res
-        .status(403)
-        .json({ error: "Only owner or admin can modify images" });
+      return errorResponse(
+        res,
+        "Forbidden",
+        "Only owner or admin can modify images",
+        403
+      );
     }
 
-    // Remove images
     let removeImageIds: string[] = [];
     if (remove_image_ids) {
-      removeImageIds = Array.isArray(remove_image_ids)
-        ? remove_image_ids
-        : JSON.parse(remove_image_ids);
+      try {
+        removeImageIds = Array.isArray(remove_image_ids)
+          ? remove_image_ids
+          : JSON.parse(remove_image_ids);
+      } catch (e) {
+        return errorResponse(
+          res,
+          "Invalid remove_image_ids format",
+          "remove_image_ids must be a JSON array of IDs or a standard array",
+          400
+        );
+      }
     }
 
     if (removeImageIds.length > 0) {
@@ -52,9 +77,9 @@ export async function updateToolImagesController(req: Request, res: Response) {
       for (const img of imagesToRemove) {
         if (img.filepath && img.filepath !== defaultImagePath) {
           try {
-            const filePath = path.resolve(img.filepath); // resolve to absolute path
+            const filePath = path.resolve(img.filepath);
             if (fs.existsSync(filePath)) {
-              fs.unlinkSync(filePath); // delete file from server
+              fs.unlinkSync(filePath);
             }
           } catch (err) {
             console.warn(`Failed to delete file ${img.filepath}:`, err);
@@ -64,17 +89,20 @@ export async function updateToolImagesController(req: Request, res: Response) {
       await ToolImage.destroy({ where: { id: { [Op.in]: removeImageIds } } });
     }
 
-    // Add new images
     if (req.files && Array.isArray(req.files)) {
       const currentCount = await ToolImage.count({
         where: { tool_id: tool.listing_id },
       });
       const newFilesCount = (req.files as Express.Multer.File[]).length;
 
-      if (currentCount + newFilesCount > 5) {
-        return res.status(400).json({
-          error: `Cannot upload ${newFilesCount} images. Tool already has ${currentCount}. Max is 5.`,
-        });
+      const MAX_IMAGES = 5;
+      if (currentCount + newFilesCount > MAX_IMAGES) {
+        return errorResponse(
+          res,
+          "Image Upload Limit Reached",
+          `Cannot upload ${newFilesCount} images. Tool already has ${currentCount}. Max is ${MAX_IMAGES}.`,
+          400
+        );
       }
       const rootDir = process.cwd();
 
@@ -90,8 +118,8 @@ export async function updateToolImagesController(req: Request, res: Response) {
 
         await ToolImage.create({
           tool_id: tool.listing_id,
-          image_url: savedUrl, // relative URL for frontend
-          filepath: path.join(rootDir, savedUrl), // absolute path for deletion
+          image_url: savedUrl,
+          filepath: path.join(rootDir, savedUrl),
           is_primary: currentCount + index === 0,
         });
       }
@@ -99,13 +127,14 @@ export async function updateToolImagesController(req: Request, res: Response) {
 
     const updatedTool = await findToolsByListingId(listing_id);
 
-    res.status(200).json({
-      message: "Tool images updated successfully",
-      data: updatedTool,
-      status: "success",
-    });
+    return successResponse(
+      res,
+      "Tool images updated successfully",
+      { data: updatedTool },
+      200
+    );
   } catch (error) {
     console.error("Error updating tool images:", error);
-    res.status(500).json({ message: "Error updating tool images", error });
+    return handleUncaughtError(res, error, "Error updating tool images");
   }
 }
