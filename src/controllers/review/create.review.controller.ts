@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { createReview } from "../../services/review/create.review.service";
+import {
+  successResponse,
+  errorResponse,
+  handleUncaughtError,
+} from "../../utils/apiResponse";
 
 export async function createReviewController(req: Request, res: Response) {
   try {
@@ -26,17 +31,22 @@ export async function createReviewController(req: Request, res: Response) {
 
     if (!newReview) {
       console.log("Failed to create review");
-      res.status(400).json({ error: "Failed to create review" });
-      return;
+      return errorResponse(
+        res,
+        "Failed to create review",
+        "Review service returned null (e.g., failed validation or DB error)",
+        400
+      );
     }
-    res.status(201).json({
-      message: "Review created successfully",
-      user: newReview,
-      status: "success",
-    });
-    return;
+    
+    return successResponse(
+      res,
+      "Review created successfully",
+      { review: newReview },
+      201
+    );
   } catch (error) {
-    console.error("Error creating newUser:", error);
-    res.status(500).json({ message: "Error creating users:", error });
+    console.error("Error creating review:", error);
+    return handleUncaughtError(res, error, "Error creating review");
   }
 }
