@@ -7,6 +7,7 @@ import { Profile } from "../../models/Profile";
 import { verifyOtp } from "../../services/otp/verify.otp.service";
 import { sendOtp } from "../../services/otp/send.otp.service";
 
+// Registration Controller
 export const register: RequestHandler = async (req, res) => {
   try {
     const { username, firstname, lastname, email, password, phoneNumber } =
@@ -49,15 +50,13 @@ export const register: RequestHandler = async (req, res) => {
   }
 };
 
+// Login Controller
 export const login: RequestHandler = async (req, res) => {
   try {
     const { identifier, password } = req.body;
     // ✅ Now "identifier" can be email OR phoneNumber
 
     if (!identifier || !password) {
-      console.log(
-        "Identifier (username/email/phone) and password are required"
-      );
       res.status(400).json({
         message: "Identifier (username/email/phone) and password are required",
       });

@@ -2,21 +2,7 @@ import { Op, Order, literal } from "sequelize";
 import { sequelize } from "../../config/database";
 import { Tool } from "../../models/Tools";
 import { User } from "../../models/User";
-
-type ToolSortableFields =
-  | "listing_type"
-  | "title"
-  | "description"
-  | "hourly_price"
-  | "daily_price"
-  | "security_deposit"
-  | "is_available"
-  | "distance";
-
-interface SortOption {
-  column: ToolSortableFields;
-  order: "ASC" | "DESC";
-}
+import { SortOption } from "../../types/tool";
 
 export async function findNearbyTools(
   userId: string,

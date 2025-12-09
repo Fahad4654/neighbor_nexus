@@ -1,29 +1,10 @@
-// src/services/findNearbyTools.service.ts
-
 import { Op } from "sequelize";
-// Assuming Tool, User models and getDistanceBetweenPoints service exist
 import { Tool } from "../../models/Tools";
 import { User } from "../../models/User";
 import { getDistanceBetweenPoints } from "./googleMapDistance.service";
-
-// Interfaces for better type safety
-interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
-interface SortOption {
-  column: string; // e.g., 'listing_type', 'hourly_price', 'distanceMeters'
-  order: "ASC" | "DESC";
-}
-
-// Extended interface for the result set (Tool data + distance info)
-interface ToolWithDistance extends Tool {
-  distanceMeters: number;
-  distanceText: string;
-  durationSeconds: number;
-  durationText: string;
-}
+import { Coordinates } from "../../types/geo";
+import { SortOption } from "../../types/sort";
+import { ToolWithDistance } from "../../types/tool";
 
 // Helper function for dynamic, multi-column sorting in JavaScript
 function dynamicSort(
@@ -31,18 +12,18 @@ function dynamicSort(
   b: ToolWithDistance,
   options: SortOption[]
 ): number {
-  const COMPLEX_PROPS = ['geo_location', 'owner', 'images']; // Explicitly list complex properties to ignore
+  const COMPLEX_PROPS = ["geo_location", "owner", "images"]; // Explicitly list complex properties to ignore
 
   for (const option of options) {
     // Cast column to string to satisfy array access typing
-    const column = option.column as string; 
+    const column = option.column as string;
     const order = option.order === "ASC" ? 1 : -1;
 
     // Check if the property should be ignored for simple sorting
     if (COMPLEX_PROPS.includes(column)) continue;
 
     // Use bracket notation to safely access the property
-    // We must use 'any' or check existence here because TypeScript can't guarantee 
+    // We must use 'any' or check existence here because TypeScript can't guarantee
     // the dynamic string key exists on the interface if we don't use 'keyof'.
     const aValue = (a as any)[column];
     const bValue = (b as any)[column];
@@ -50,18 +31,18 @@ function dynamicSort(
     // Handle nulls/undefined: push nulls/undefined values to the end
     if (aValue === undefined || aValue === null) return 1;
     if (bValue === undefined || bValue === null) return -1;
-    
+
     // Numeric comparison (most reliable, for prices, distance, timestamps)
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-        if (aValue < bValue) return -1 * order;
-        if (aValue > bValue) return 1 * order;
-    } 
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      if (aValue < bValue) return -1 * order;
+      if (aValue > bValue) return 1 * order;
+    }
     // String/Date comparison (for title, listing_type)
     else {
-        const comparison = String(aValue).localeCompare(String(bValue));
-        if (comparison !== 0) {
-            return comparison * order;
-        }
+      const comparison = String(aValue).localeCompare(String(bValue));
+      if (comparison !== 0) {
+        return comparison * order;
+      }
     }
     // If values are equal, proceed to the next sort option
   }

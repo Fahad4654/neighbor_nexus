@@ -22,10 +22,12 @@ import { sendOtp } from "../otp/send.otp.service";
 const mailService = new MailService();
 
 export class AuthService {
+  // Hash password
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
 
+  // Compare password
   static async comparePassword(
     password: string,
     hashedPassword: string
@@ -33,6 +35,7 @@ export class AuthService {
     return bcrypt.compare(password, hashedPassword);
   }
 
+  // Generate Access and Refresh Tokens
   static async generateTokens(user: User) {
     const accessToken = jwt.sign(
       {
@@ -48,6 +51,7 @@ export class AuthService {
       { expiresIn: ACCESS_TOKEN_EXPIRATION } as SignOptions
     );
 
+    // Generate Refresh Token
     const refreshToken = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, {
       expiresIn: REFRESH_TOKEN_EXPIRATION ? REFRESH_TOKEN_EXPIRATION : "7d",
     } as SignOptions);
@@ -62,6 +66,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  // Register User with optional Google Maps location
   static async registerUser(data: {
     username: string;
     firstname: string;
@@ -121,7 +126,6 @@ export class AuthService {
         coordinates: [lng, lat], // ⚠️ PostGIS requires (lon, lat)
       };
     }
-    console.log(geoLocationValue);
 
     // 🆕 Create new user
     const newUser = await User.create({
@@ -154,8 +158,8 @@ export class AuthService {
     return newUser;
   }
 
+  // Login User with username, email, or phone number
   static async loginUser(identifier: string, password: string) {
-    // identifier can be username OR email OR phone number
     const user = await User.findOne({
       where: {
         [Op.or]: [
@@ -182,6 +186,7 @@ export class AuthService {
     return user;
   }
 
+  // Logout User by deleting refresh token
   static async logoutUser(refreshToken: string) {
     const tokenData = await Token.findOne({ where: { token: refreshToken } });
     if (!tokenData) {
@@ -190,6 +195,7 @@ export class AuthService {
     await Token.destroy({ where: { token: refreshToken } });
   }
 
+  // Refresh Access Token
   static async refreshAccessToken(refreshToken: string) {
     try {
       const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as {
@@ -229,6 +235,7 @@ export class AuthService {
   }
 }
 
+// Reset Password using verified OTP
 export async function resetPassword(identifier: string, newPassword: string) {
   // Determine which field to search by
   let whereCondition: any = {};
