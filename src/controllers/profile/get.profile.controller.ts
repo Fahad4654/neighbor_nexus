@@ -42,7 +42,7 @@ export async function getUsersProfileController(req: Request, res: Response) {
       return successResponse(
         res,
         "User Profiles fetched successfully",
-        { profilelist: profiles }, // Note: You might want to restructure this if 'profiles' includes pagination meta data
+        profiles.data,
         200
       );
     } catch (error) {
