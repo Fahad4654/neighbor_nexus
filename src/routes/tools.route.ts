@@ -1,3 +1,4 @@
+// tools.route.ts
 import { Router } from "express";
 import {
   multerErrorHandler,
@@ -30,8 +31,8 @@ router.put("/update-info", updateToolInfoController);
 router.put(
   "/update-images",
   uploadToolImages, // Multer handles file upload
-  updateToolImagesController,
-  multerErrorHandler
+  multerErrorHandler, // FIX: Catch file errors BEFORE the controller
+  updateToolImagesController
 );
 router.delete("/", deleteToolController);
 router.get("/gooleNearby/:userId", getNearbyToolsGoogleController);

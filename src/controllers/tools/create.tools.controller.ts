@@ -1,18 +1,12 @@
 // create.tools.controller.ts
-
 import { Request, Response } from "express";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
-// Removed unused import: import { ToolImage } from "../../models/ToolsImages";
-// Removed unused import: import path from "path"; 
 import { createTool } from "../../services/tools/create.tool.service";
 import {
   successResponse,
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
-// Added Express import for file typing
-import { Express } from "express";
-
 
 export async function createToolController(req: Request, res: Response) {
   try {
@@ -29,11 +23,11 @@ export async function createToolController(req: Request, res: Response) {
     const reqBodyValidation = validateRequiredBody(req, res, requiredFields);
     if (!reqBodyValidation) return;
 
-    // 💡 FIX: Safely retrieve uploaded files from req.files
+    // FIX 1: Safely retrieve uploaded files from req.files
     const files = (req.files as Express.Multer.File[]) || [];
     
     console.log("req.body:", req.body);
-    // 💡 FIX: Pass req.body AND the uploaded files to the service
+    // FIX 2: Pass req.body AND the uploaded files to the service
     const newTool = await createTool(req.body, files);
 
     if (!newTool) {
@@ -45,9 +39,8 @@ export async function createToolController(req: Request, res: Response) {
       );
     }
 
-    // ❌ REMOVED: Manual creation of 'default.png' is no longer needed
-    // The service handles image creation if files are present.
-
+    // REMOVED: Manual creation of 'default.png' is removed.
+    
     return successResponse(
       res,
       "Tool created successfully",
