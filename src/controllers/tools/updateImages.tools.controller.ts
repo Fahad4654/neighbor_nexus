@@ -24,6 +24,12 @@ export async function updateToolImagesController(req: Request, res: Response) {
       set_first_new_file_as_primary,
     } = req.body;
 
+    // Check if the user specifically requested the first new file to be primary
+    // 💡 FIX 1: Calculate this flag early, as it affects the deletion logic
+    const isNewFilePrimaryRequested =
+      set_first_new_file_as_primary === "true" ||
+      set_first_new_file_as_primary === true;
+
     if (!listing_id)
       return errorResponse(
         res,
@@ -70,7 +76,7 @@ export async function updateToolImagesController(req: Request, res: Response) {
                 .map((s: string) => s.trim())
                 .filter(Boolean);
         } else if (Array.isArray(remove_image_ids)) {
-          removeImageIds = remove_image_ids;
+          removeImageIds = removeImageIds;
         }
       } catch (e) {
         return errorResponse(
@@ -130,7 +136,7 @@ export async function updateToolImagesController(req: Request, res: Response) {
         where: { id: { [Op.in]: removeImageIds }, tool_id: listing_id }, // FIX: Scoped by tool_id
       });
 
-      // 💡 NEW SECURITY CHECK: Compare requested IDs vs. found/authorized IDs
+      // NEW SECURITY CHECK: Compare requested IDs vs. found/authorized IDs
       if (imagesToRemove.length !== removeImageIds.length) {
         const foundIds = new Set(imagesToRemove.map(img => img.id));
         const unauthorizedIds = removeImageIds.filter(id => !foundIds.has(id));
@@ -152,12 +158,12 @@ export async function updateToolImagesController(req: Request, res: Response) {
         },
       });
 
-      // Block deletion if it removes the last primary image AND no new primary ID was designated
-      if (!potentialPrimaryImage && !new_primary_id) {
+      // 💡 FIX 2: Block deletion only if NO replacement is designated (neither existing ID nor new upload flag)
+      if (!potentialPrimaryImage && !new_primary_id && !isNewFilePrimaryRequested) {
         return errorResponse(
           res,
           "Deletion Blocked",
-          "Cannot delete the current primary image unless a replacement primary image (new_primary_id) is set.",
+          "Cannot delete the current primary image unless a replacement primary image (new_primary_id or set_first_new_file_as_primary) is set.",
           400
         );
       }
@@ -199,12 +205,9 @@ export async function updateToolImagesController(req: Request, res: Response) {
       }
 
       const rootDir = process.cwd();
-      // Check if the user specifically requested the first new file to be primary
-      const isNewFilePrimaryRequested =
-        set_first_new_file_as_primary === "true" ||
-        set_first_new_file_as_primary === true;
-
+      
       // 💡 CHANGE 3 (Requirement 2): Unset old primary if a new file is becoming primary AND no existing ID was used
+      // NOTE: This runs BEFORE file creation, which is necessary if we are deleting the old primary.
       if (isNewFilePrimaryRequested && newFiles.length > 0 && !new_primary_id) {
         await ToolImage.update(
           { is_primary: false },
