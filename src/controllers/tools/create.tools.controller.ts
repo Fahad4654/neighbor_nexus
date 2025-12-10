@@ -1,13 +1,18 @@
+// create.tools.controller.ts
+
 import { Request, Response } from "express";
-import path from "path";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
-import { ToolImage } from "../../models/ToolsImages";
+// Removed unused import: import { ToolImage } from "../../models/ToolsImages";
+// Removed unused import: import path from "path"; 
 import { createTool } from "../../services/tools/create.tool.service";
 import {
   successResponse,
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
+// Added Express import for file typing
+import { Express } from "express";
+
 
 export async function createToolController(req: Request, res: Response) {
   try {
@@ -24,7 +29,12 @@ export async function createToolController(req: Request, res: Response) {
     const reqBodyValidation = validateRequiredBody(req, res, requiredFields);
     if (!reqBodyValidation) return;
 
-    const newTool = await createTool(req.body);
+    // 💡 FIX: Safely retrieve uploaded files from req.files
+    const files = (req.files as Express.Multer.File[]) || [];
+    
+    console.log("req.body:", req.body);
+    // 💡 FIX: Pass req.body AND the uploaded files to the service
+    const newTool = await createTool(req.body, files);
 
     if (!newTool) {
       return errorResponse(
@@ -35,12 +45,8 @@ export async function createToolController(req: Request, res: Response) {
       );
     }
 
-    await ToolImage.create({
-      tool_id: newTool.listing_id,
-      image_url: "/media/tools/default.png",
-      filepath: path.join(process.cwd(), "media/tools/default.png"),
-      is_primary: true,
-    });
+    // ❌ REMOVED: Manual creation of 'default.png' is no longer needed
+    // The service handles image creation if files are present.
 
     return successResponse(
       res,

@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { multerErrorHandler, uploadToolImages } from "../middlewares/upload";
+import {
+  multerErrorHandler,
+  uploadToolImages,
+  uploadToolImagesForCreate,
+} from "../middlewares/upload";
 import { getNearbyToolsGoogleController } from "../controllers/global/findTools.controller";
 import { createToolController } from "../controllers/tools/create.tools.controller";
 import { deleteToolController } from "../controllers/tools/delete.tools.controller";
@@ -16,7 +20,12 @@ const router = Router();
 router.post("/all", getToolsController);
 router.get("/:listing_id", getToolByListingIdController);
 router.get("/owner/:owner_id", getToolsByOwnerIdController);
-router.post("/", createToolController);
+router.post(
+  "/",
+  uploadToolImagesForCreate,
+  multerErrorHandler,
+  createToolController
+);
 router.put("/update-info", updateToolInfoController);
 router.put(
   "/update-images",
