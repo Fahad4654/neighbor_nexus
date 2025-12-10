@@ -1,27 +1,30 @@
+// create.tool.service.ts
+
 import { User } from "../../models/User";
 import { findByDynamicId } from "../global/find.service";
 import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
 import { saveFile } from "../../middlewares/upload";
 import path from "path";
+import { Express } from "express"; // Import Express for typing
 
 export async function createTool(
   data: {
     owner_id: string;
     listing_type: string;
     title: string;
-    description?: string;
-    hourly_price?: number;
-    daily_price?: number;
-    security_deposit?: number;
-    is_available?: boolean;
+    description: string;
+    hourly_price: number;
+    daily_price: number;
+    security_deposit: number;
+    is_available: boolean;
     useUserLocation?: boolean;
     location?: {
       lat: number;
       lng: number;
     };
   },
-  files: Express.Multer.File[] = [] // uploaded images
+  files: Express.Multer.File[] = []
 ) {
   // 1️⃣ Use user's location if requested
   if (data.useUserLocation) {
@@ -40,7 +43,6 @@ export async function createTool(
     }
   }
 
-  // 2️⃣ Create geo_location object
   let geoLocationValue;
   if (data.location) {
     geoLocationValue = {
@@ -49,7 +51,6 @@ export async function createTool(
     };
   }
 
-  // 3️⃣ Create tool
   const newTool = await Tool.create({
     owner_id: data.owner_id,
     listing_type: data.listing_type as "Tool" | "Skill",
@@ -62,7 +63,6 @@ export async function createTool(
     ...(geoLocationValue && { geo_location: geoLocationValue }),
   });
 
-  // 4️⃣ Handle uploaded images
   if (files.length > 0) {
     if (files.length > 5) {
       throw new Error("A tool can have a maximum of 5 images");

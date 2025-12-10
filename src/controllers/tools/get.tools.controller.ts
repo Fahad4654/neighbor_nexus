@@ -39,7 +39,7 @@ export async function getToolsController(req: Request, res: Response) {
     return successResponse(
       res,
       "Tools fetched successfully",
-      toolsList.data.map((t) => t.get({ plain: true })),
+      { toolsList: toolsList.data },
       200,
       pagination
     );

@@ -38,7 +38,7 @@ export async function getReviewsByIdController(req: Request, res: Response) {
     return successResponse(
       res,
       "Review fetched successfully",
-      { review: review },
+      review.dataValues,
       200
     );
   } catch (error) {

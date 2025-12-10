@@ -8,7 +8,7 @@ import {
 
 // Define the expected structure for sort options
 interface SortOption {
-  column: string; // e.g., 'listing_type', 'hourly_price', 'distanceMeters'
+  column: string;
   order: "ASC" | "DESC";
 }
 
@@ -20,7 +20,6 @@ export const getNearbyToolsGoogleController = async (
     const { userId } = req.params;
     let { search, maxDistance, sort } = req.query;
 
-    // 1. Convert maxDistance to number safely
     const distanceNumber = maxDistance ? Number(maxDistance) : 10;
     if (isNaN(distanceNumber)) {
       return errorResponse(
@@ -31,11 +30,9 @@ export const getNearbyToolsGoogleController = async (
       );
     }
 
-    // 2. Parse dynamic sort options
     let sortOptions: SortOption[] = [];
     if (sort) {
       try {
-        // Expected format: sort=[{"column":"daily_price","order":"ASC"}, ...]
         sortOptions = JSON.parse(String(sort));
         if (!Array.isArray(sortOptions)) {
           throw new Error("Sort must be an array.");
@@ -50,7 +47,6 @@ export const getNearbyToolsGoogleController = async (
       }
     }
 
-    // 3. Call the updated service function
     const tools = await findNearbyToolsGoogle(
       userId,
       distanceNumber,
@@ -68,7 +64,6 @@ export const getNearbyToolsGoogleController = async (
       200
     );
   } catch (error: any) {
-    // If the error is 'User location missing' (from service), return 400
     if (error.message && error.message.includes("User location missing")) {
       return errorResponse(
         res,
