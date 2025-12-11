@@ -6,7 +6,7 @@ export async function findReviewsByUserId(
   pageSize: number
 ) {
   const reviews = await Review.findAll({
-    where: { user_id },
+    where: { reviewer_id: user_id },
     offset: (page - 1) * pageSize,
     limit: pageSize,
   });
@@ -15,14 +15,19 @@ export async function findReviewsByUserId(
 
 export async function findReviewsByReviewerId(
   reviewer_id: string,
-  page: number,
-  pageSize: number
+  page: number = 1, // Default set in function signature
+  pageSize: number = 10 // Default set in function signature
 ) {
+  // Using the defaults from the function signature simplifies the function body
+  const offset = (page - 1) * pageSize;
+
+  // Use 'findAndCountAll' if you need the total number of records for pagination UI
   const reviews = await Review.findAll({
     where: { reviewer_id },
-    offset: (page - 1) * pageSize,
-    limit: pageSize,
+    offset: offset, // Correct calculation
+    limit: pageSize, // Correct limit
   });
+
   return reviews;
 }
 
