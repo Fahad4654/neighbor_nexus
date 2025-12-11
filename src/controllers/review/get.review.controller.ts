@@ -93,6 +93,7 @@ export async function getReviewsBytransactionIdController(
   res: Response
 ) {
   const transaction_id = req.body.transaction_id;
+  const user = req.user;
   if (!transaction_id) {
     return errorResponse(
       res,
@@ -101,6 +102,18 @@ export async function getReviewsBytransactionIdController(
       400
     );
   }
+  if (!user) {
+    return errorResponse(res, "Login is required", "Unauthorized access", 401);
+  }
   const review = await findReviewsByTransactionId(transaction_id);
+  if (!review) {
+    return errorResponse(
+      res,
+      "Review not found",
+      `Review with transaction ID ${transaction_id} does not exist`,
+      404
+    );
+  }
+
   return review;
 }
