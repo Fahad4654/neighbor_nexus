@@ -12,6 +12,8 @@ import {
   findByLenderId,
   findByListingId,
 } from "../../services/rentRequest/findAll.rentRequest.service";
+import { Tool } from "../../models/Tools";
+import { findByDynamicId } from "../../services/global/find.service";
 
 // Find all Rent Requests by Admin
 export async function getRentRequestsController(req: Request, res: Response) {
@@ -210,6 +212,25 @@ export async function getRentRequestByListingIdController(
       return errorResponse(res, "User is required", "Login is required", 401);
     }
 
+    const typedTool = await findByDynamicId(Tool, { listing_id }, false);
+    const tool = typedTool as Tool | null;
+
+    if (!tool) {
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
+    }
+    if (req.user.id !== tool.owner_id && !req.user.isAdmin) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to view this Rent Request",
+        403
+      );
+    }
     const rentRequestsResult = await findByListingId(
       listing_id,
       order,

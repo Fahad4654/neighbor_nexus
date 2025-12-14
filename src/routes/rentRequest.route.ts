@@ -7,6 +7,7 @@ import { createUserRentRequesController } from "../controllers/rentRequest/creat
 import {
   getRentRequestByBorrowerIdController,
   getRentRequestByLenderIdController,
+  getRentRequestByListingIdController,
   getRentRequestsController,
 } from "../controllers/rentRequest/get.rentRequest.controller";
 
@@ -15,6 +16,7 @@ const router = Router();
 router.post("/all", getRentRequestsController);
 router.post("/getByBorrowerId", getRentRequestByBorrowerIdController);
 router.post("/getByLenderId", getRentRequestByLenderIdController);
+router.post("/getByListingId", getRentRequestByListingIdController);
 router.post("/", createUserRentRequesController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);
