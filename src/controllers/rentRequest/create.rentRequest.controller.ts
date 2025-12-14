@@ -6,6 +6,7 @@ import {
   handleUncaughtError,
 } from "../../utils/apiResponse";
 import { createRentRequest } from "../../services/rentRequest/create.rentRequest.service";
+import { findToolsByListingId } from "../../services/tools/find.tool.service";
 export async function createUserRentRequesController(
   req: Request,
   res: Response
@@ -43,6 +44,61 @@ export async function createUserRentRequesController(
       "rental_price",
     ]);
     if (!reqBodyValidation) return;
+
+    const tool = await findToolsByListingId(req.body.listing_id);
+    if (!tool) {
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${req.body.listing_id} does not exist`,
+        404
+      );
+    }
+
+    if (tool.is_available === false) {
+      return errorResponse(
+        res,
+        "Tool not available",
+        `Tool with ID ${req.body.listing_id} is not available`,
+        400
+      );
+    }
+
+    if (tool.owner_id === req.user?.id) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You cannot create a Rent Request for your own tool",
+        403
+      );
+    }
+
+    if (tool.owner_id === req.body.borrower_id) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You cannot create a Rent Request for a tool that you own",
+        403
+      );
+    }
+
+    if (req.user?.id === req.body.lender_id) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You cannot create a Rent Request for a tool that you own",
+        403
+      );
+    }
+
+    if (!tool.is_approved) {
+      return errorResponse(
+        res,
+        "Tool not approved",
+        `Tool with ID ${req.body.listing_id} is not approved`,
+        400
+      );
+    }
 
     const newRentRequest = await createRentRequest(req.body);
 

@@ -2,7 +2,7 @@ import { RentRequest } from "../../models/RentRequest";
 import { Tool } from "../../models/Tools";
 import { User } from "../../models/User";
 
-export async function findAllReentRequests(
+export async function findAllRentRequests(
   order = "id",
   asc = "ASC",
   page = 1,

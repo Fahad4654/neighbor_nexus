@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
-import { findAllProfiles } from "../../services/profile/findAll.profile.service";
 import {
   errorResponse,
   successResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
+import { findAllRentRequests } from "../../services/rentRequest/findAll.rentRequest.service";
 
-export async function getUsersProfileController(req: Request, res: Response) {
+export async function getUsersRentRequestsController(
+  req: Request,
+  res: Response
+) {
   const adminMiddleware = isAdmin();
 
   adminMiddleware(req, res, async () => {
@@ -32,7 +35,7 @@ export async function getUsersProfileController(req: Request, res: Response) {
 
       const { order, asc, page = 1, pageSize = 10 } = req.body;
 
-      const profiles = await findAllProfiles(
+      const rentRequests = await findAllRentRequests(
         order,
         asc,
         Number(page),
@@ -41,13 +44,13 @@ export async function getUsersProfileController(req: Request, res: Response) {
 
       return successResponse(
         res,
-        "User Profiles fetched successfully",
-        profiles.data,
+        "Rent Requests fetched successfully",
+        rentRequests.data,
         200
       );
     } catch (error) {
-      console.error("Error fetching user profiles:", error);
-      return handleUncaughtError(res, error, "Error fetching user profiles");
+      console.error("Error fetching Rent Requests:", error);
+      return handleUncaughtError(res, error, "Error fetching Rent Requests");
     }
   });
 }
