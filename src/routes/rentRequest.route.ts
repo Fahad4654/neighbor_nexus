@@ -1,15 +1,14 @@
 import { Router } from "express";
 import { multerErrorHandler, uploadProfilePic } from "../middlewares/upload";
-import { getUsersProfileController } from "../controllers/profile/get.profile.controller";
 import { deleteUserProfileController } from "../controllers/profile/delete.profile.controller";
 import { updateUserProfileController } from "../controllers/profile/update.profile.controller";
 import { uploadProfilePictureController } from "../controllers/profile/uploadPicture.profile.controller";
 import { createUserRentRequesController } from "../controllers/rentRequest/create.rentRequest.controller";
-import { getUsersRentRequestsController } from "../controllers/rentRequest/get.rentRequest.controller";
+import { getRentRequestsController } from "../controllers/rentRequest/get.rentRequest.controller";
 
 const router = Router();
 
-router.post("/all", getUsersRentRequestsController);
+router.post("/all", getRentRequestsController);
 router.post("/", createUserRentRequesController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);

@@ -2,10 +2,6 @@ import { User } from "../../models/User";
 import { Profile } from "../../models/Profile";
 import { findByDynamicId } from "../global/find.service";
 
-export const generateToken = (id: string): string => {
-  return id.slice(-9).toUpperCase(); // Take last 9 chars and uppercase
-};
-
 export async function findAllUsers(
   order = "id",
   asc: "ASC" | "DESC" = "ASC",
