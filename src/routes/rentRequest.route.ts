@@ -4,11 +4,15 @@ import { deleteUserProfileController } from "../controllers/profile/delete.profi
 import { updateUserProfileController } from "../controllers/profile/update.profile.controller";
 import { uploadProfilePictureController } from "../controllers/profile/uploadPicture.profile.controller";
 import { createUserRentRequesController } from "../controllers/rentRequest/create.rentRequest.controller";
-import { getRentRequestsController } from "../controllers/rentRequest/get.rentRequest.controller";
+import {
+  getRentRequestByBorrowerIdController,
+  getRentRequestsController,
+} from "../controllers/rentRequest/get.rentRequest.controller";
 
 const router = Router();
 
 router.post("/all", getRentRequestsController);
+router.post("/getByBorrowerId", getRentRequestByBorrowerIdController);
 router.post("/", createUserRentRequesController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);
