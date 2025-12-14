@@ -10,8 +10,10 @@ import {
   findAllRentRequests,
   findByBorrowerId,
   findByLenderId,
+  findByListingId,
 } from "../../services/rentRequest/findAll.rentRequest.service";
 
+// Find all Rent Requests by Admin
 export async function getRentRequestsController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
 
@@ -60,6 +62,7 @@ export async function getRentRequestsController(req: Request, res: Response) {
   });
 }
 
+// Find all Rent Requests by Borrower Id
 export async function getRentRequestByBorrowerIdController(
   req: Request,
   res: Response
@@ -96,7 +99,7 @@ export async function getRentRequestByBorrowerIdController(
       );
     }
 
-    const [rentRequestsResult] = await findByBorrowerId(
+    const rentRequestsResult = await findByBorrowerId(
       borrower_id,
       order,
       asc,
@@ -119,6 +122,7 @@ export async function getRentRequestByBorrowerIdController(
   }
 }
 
+// Find all Rent Requests by Lender Id
 export async function getRentRequestByLenderIdController(
   req: Request,
   res: Response
@@ -155,8 +159,59 @@ export async function getRentRequestByLenderIdController(
       );
     }
 
-    const [rentRequestsResult] = await findByLenderId(
+    const rentRequestsResult = await findByLenderId(
       lender_id,
+      order,
+      asc,
+      Number(page),
+      Number(pageSize)
+    );
+    const { total, ...restOfPagination } = rentRequestsResult.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
+
+    return successResponse(
+      res,
+      "Rent Requests fetched successfully",
+      rentRequestsResult.data,
+      200,
+      pagination
+    );
+  } catch (error) {
+    console.error("Error fetching Rent Requests:", error);
+    return handleUncaughtError(res, error, "Error fetching Rent Requests");
+  }
+}
+
+// Find Rent request By Listing Id
+export async function getRentRequestByListingIdController(
+  req: Request,
+  res: Response
+) {
+  try {
+    if (!req.body) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
+    const { listing_id, order, asc, page = 1, pageSize = 10 } = req.body;
+
+    const reqBodyValidation = validateRequiredBody(req, res, [
+      "listing_id",
+      "order",
+      "asc",
+    ]);
+    if (!reqBodyValidation) return;
+
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
+
+    const rentRequestsResult = await findByListingId(
+      listing_id,
       order,
       asc,
       Number(page),

@@ -121,17 +121,15 @@ export async function findByBorrowerId(
     offset,
     order: [[order, asc]],
   });
-  return [
-    {
-      data: rows,
-      pagination: {
-        total: count,
-        page,
-        pageSize,
-        totalPages: Math.ceil(count / pageSize),
-      },
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
     },
-  ];
+  };
 }
 
 export async function findByLenderId(
@@ -189,21 +187,26 @@ export async function findByLenderId(
     offset,
     order: [[order, asc]],
   });
-  return [
-    {
-      data: rows,
-      pagination: {
-        total: count,
-        page,
-        pageSize,
-        totalPages: Math.ceil(count / pageSize),
-      },
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
     },
-  ];
+  };
 }
 
-export async function findByListingId(listingId: string) {
-  const rentRequests = await RentRequest.findOne({
+export async function findByListingId(
+  listingId: string,
+  order = "id",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
+) {
+  const offset = (page - 1) * pageSize;
+  const { count, rows } = await RentRequest.findAndCountAll({
     where: { listing_id: listingId },
     include: [
       {
@@ -243,16 +246,34 @@ export async function findByListingId(listingId: string) {
         ],
       },
     ],
+    nest: true,
+    raw: true,
+    limit: pageSize,
+    offset,
+    order: [[order, asc]],
   });
-  return rentRequests;
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
 export async function findRentRequestByLenderAndListingId(
-  lender_id: string,
-  listing_id: string
+  listing_Id: string,
+  lender_Id: string,
+  order = "id",
+  asc = "ASC",
+  page = 1,
+  pageSize = 10
 ) {
-  const rentRequests = await RentRequest.findOne({
-    where: { lender_id, listing_id },
+  const offset = (page - 1) * pageSize;
+  const { count, rows } = await RentRequest.findAndCountAll({
+    where: { listing_id: lender_Id, lender_id: listing_Id },
     include: [
       {
         model: Tool,
@@ -291,6 +312,19 @@ export async function findRentRequestByLenderAndListingId(
         ],
       },
     ],
+    nest: true,
+    raw: true,
+    limit: pageSize,
+    offset,
+    order: [[order, asc]],
   });
-  return rentRequests;
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
