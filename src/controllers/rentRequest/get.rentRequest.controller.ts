@@ -82,18 +82,35 @@ export async function getRentRequestByBorrowerIdController(
     ]);
     if (!reqBodyValidation) return;
 
-    const rentRequests = await findByBorrowerId(
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
+
+    if (req.user.id !== borrower_id && !req.user.isAdmin) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to view this Rent Request",
+        403
+      );
+    }
+
+    const [rentRequestsResult] = await findByBorrowerId(
       borrower_id,
       order,
       asc,
       Number(page),
       Number(pageSize)
     );
+    const { total, ...restOfPagination } = rentRequestsResult.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
+
     return successResponse(
       res,
       "Rent Requests fetched successfully",
-      rentRequests,
-      200
+      rentRequestsResult.data,
+      200,
+      pagination
     );
   } catch (error) {
     console.error("Error fetching Rent Requests:", error);
