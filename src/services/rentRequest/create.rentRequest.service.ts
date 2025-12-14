@@ -10,12 +10,16 @@ export async function createRentRequest(data: {
   pickup_time: Date;
   drop_off_time: Date;
   rental_price: number;
-  actual_pickup_time: Date;
-  actual_drop_off_time: Date;
+  actual_pickup_time: Date | null;
+  actual_drop_off_time: Date | null;
   borrower_rated: boolean;
   lender_rated: boolean;
 }) {
   if (!data.rent_status) data.rent_status = "Requested";
+  if (!data.borrower_rated) data.borrower_rated = false;
+  if (!data.lender_rated) data.lender_rated = false;
+  if (!data.actual_drop_off_time) data.actual_drop_off_time = null;
+  if (!data.actual_pickup_time) data.actual_pickup_time = null;
 
   const rentRequest = await RentRequest.create(data);
 
