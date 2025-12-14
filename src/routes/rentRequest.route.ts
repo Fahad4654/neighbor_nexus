@@ -5,6 +5,7 @@ import { updateUserProfileController } from "../controllers/profile/update.profi
 import { uploadProfilePictureController } from "../controllers/profile/uploadPicture.profile.controller";
 import { createUserRentRequesController } from "../controllers/rentRequest/create.rentRequest.controller";
 import {
+  getRentRequestByBorrowerAndListingIdController,
   getRentRequestByBorrowerIdController,
   getRentRequestByLenderIdController,
   getRentRequestByListingIdController,
@@ -17,6 +18,10 @@ router.post("/all", getRentRequestsController);
 router.post("/getByBorrowerId", getRentRequestByBorrowerIdController);
 router.post("/getByLenderId", getRentRequestByLenderIdController);
 router.post("/getByListingId", getRentRequestByListingIdController);
+router.post(
+  "/getByBorrowerAndListingId",
+  getRentRequestByBorrowerAndListingIdController
+);
 router.post("/", createUserRentRequesController);
 router.put("/", updateUserProfileController);
 router.delete("/", deleteUserProfileController);

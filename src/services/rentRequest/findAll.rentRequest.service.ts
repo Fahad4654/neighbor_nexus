@@ -263,9 +263,9 @@ export async function findByListingId(
   };
 }
 
-export async function findRentRequestByLenderAndListingId(
-  listing_Id: string,
-  lender_Id: string,
+export async function findRentRequestByBorrowerIDAndListingId(
+  listing_id: string,
+  borrower_id: string,
   order = "id",
   asc = "ASC",
   page = 1,
@@ -273,7 +273,7 @@ export async function findRentRequestByLenderAndListingId(
 ) {
   const offset = (page - 1) * pageSize;
   const { count, rows } = await RentRequest.findAndCountAll({
-    where: { listing_id: lender_Id, lender_id: listing_Id },
+    where: { listing_id, borrower_id },
     include: [
       {
         model: Tool,
