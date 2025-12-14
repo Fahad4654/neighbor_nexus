@@ -9,6 +9,7 @@ import {
 import {
   findAllRentRequests,
   findByBorrowerId,
+  findByLenderId,
 } from "../../services/rentRequest/findAll.rentRequest.service";
 
 export async function getRentRequestsController(req: Request, res: Response) {
@@ -154,7 +155,7 @@ export async function getRentRequestByLenderIdController(
       );
     }
 
-    const [rentRequestsResult] = await findByBorrowerId(
+    const [rentRequestsResult] = await findByLenderId(
       lender_id,
       order,
       asc,
