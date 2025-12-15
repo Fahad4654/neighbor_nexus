@@ -62,7 +62,9 @@ export class Transaction extends Model {
 
   @AllowNull(false)
   @Default("Requested")
-  @Column(DataType.ENUM("Requested", "Approved", "Cancelled", "Completed", "Disputed"))
+  @Column(
+    DataType.ENUM("Requested", "Approved", "Cancelled", "Completed", "Disputed")
+  )
   status!: "Requested" | "Approved" | "Cancelled" | "Completed" | "Disputed";
 
   // Relations

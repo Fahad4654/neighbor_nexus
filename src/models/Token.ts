@@ -13,7 +13,7 @@ import { User } from "./User";
 
 @Table({
   tableName: "tokens",
-  timestamps: true, // handles createdAt and updatedAt automatically
+  timestamps: true,
 })
 export class Token extends Model {
   @PrimaryKey

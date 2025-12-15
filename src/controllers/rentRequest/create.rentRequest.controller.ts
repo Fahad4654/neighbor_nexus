@@ -33,12 +33,10 @@ export async function createRentRequesController(req: Request, res: Response) {
     const reqBodyValidation = validateRequiredBody(req, res, [
       "listing_id",
       "borrower_id",
-      "lender_id",
       "duration_unit",
       "duration_value",
       "pickup_time",
       "drop_off_time",
-      "rental_price",
     ]);
     if (!reqBodyValidation) return;
 
