@@ -36,7 +36,6 @@ export async function createRentRequesController(req: Request, res: Response) {
       "duration_unit",
       "duration_value",
       "pickup_time",
-      "drop_off_time",
     ]);
     if (!reqBodyValidation) return;
 
