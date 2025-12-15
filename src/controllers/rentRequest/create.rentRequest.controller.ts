@@ -7,10 +7,7 @@ import {
 } from "../../utils/apiResponse";
 import { createRentRequest } from "../../services/rentRequest/create.rentRequest.service";
 import { findToolsByListingId } from "../../services/tools/find.tool.service";
-export async function createUserRentRequesController(
-  req: Request,
-  res: Response
-) {
+export async function createRentRequesController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
