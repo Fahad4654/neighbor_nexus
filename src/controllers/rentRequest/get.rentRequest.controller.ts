@@ -11,6 +11,7 @@ import {
   findByBorrowerId,
   findByLenderId,
   findByListingId,
+  findByRentRequestId,
   findRentRequestByBorrowerIDAndListingId,
 } from "../../services/rentRequest/findAll.rentRequest.service";
 import { Tool } from "../../models/Tools";
@@ -333,5 +334,58 @@ export async function getRentRequestByBorrowerAndListingIdController(
   } catch (error) {
     console.error("Error fetching Rent Requests:", error);
     return handleUncaughtError(res, error, "Error fetching Rent Requests");
+  }
+}
+
+export async function getByRentRequestIdController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
+
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
+
+    const rentRequest = await findByRentRequestId(id);
+    if (!rentRequest) {
+      return errorResponse(
+        res,
+        "Rent Request not found",
+        `Rent Request with ID ${id} does not exist`,
+        404
+      );
+    }
+    if (
+      req.user.id !== rentRequest.borrower_id &&
+      !req.user.isAdmin &&
+      req.user.id !== rentRequest.lender_id
+    ) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to view this Rent Request",
+        403
+      );
+    }
+    return successResponse(
+      res,
+      "Rent Request fetched successfully",
+      rentRequest,
+      200
+    );
+  } catch (error) {
+    console.error("Error fetching Rent Request:", error);
+    return handleUncaughtError(res, error, "Error fetching Rent Request");
   }
 }

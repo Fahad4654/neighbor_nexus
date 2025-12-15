@@ -106,6 +106,11 @@ export class RentRequest extends Model {
   @Column(DataType.DATE)
   actual_drop_off_time!: Date | null;
 
+  @AllowNull(true)
+  @Comment("If the request was cancelled, the reason for cancellation.")
+  @Column(DataType.TEXT)
+  cancellation_reason?: string | null;
+
   @AllowNull(false)
   @Default(false)
   @Comment(

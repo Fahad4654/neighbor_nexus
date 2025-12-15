@@ -328,3 +328,48 @@ export async function findRentRequestByBorrowerIDAndListingId(
     },
   };
 }
+
+export async function findByRentRequestId(rentRequestID: string) {
+  const rentRequest = await RentRequest.findOne({
+    where: { id: rentRequestID },
+    include: [
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+    ],
+  });
+  return rentRequest;
+}
