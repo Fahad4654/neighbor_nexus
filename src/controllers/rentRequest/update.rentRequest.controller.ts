@@ -74,7 +74,7 @@ export async function updateRentRequestController(req: Request, res: Response) {
       }
       allowedFields = BORROWER_ALLOWED_FIELDS;
     } else if (req.user.isAdmin) {
-      allowedFields = BORROWER_ALLOWED_FIELDS;
+      allowedFields = ADMIN_ALLOWED_FIELDS;
     } else {
       return errorResponse(
         res,
