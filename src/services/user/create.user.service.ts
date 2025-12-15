@@ -48,10 +48,6 @@ export async function createUser(data: {
     );
     creator = typedCreator as User | null;
   }
-
-  console.log("Created by:", creator);
-  //  Convert Google Maps lat/lng to PostGIS
-
   let geoLocationValue = undefined;
 
   if (data.location) {
@@ -78,7 +74,7 @@ export async function createUser(data: {
     ...(geoLocationValue && { geo_location: geoLocationValue }),
   });
 
-  console.log("user created", newUser);
+  console.log("User created successfully");
 
   await createProfile({
     userId: newUser.id,

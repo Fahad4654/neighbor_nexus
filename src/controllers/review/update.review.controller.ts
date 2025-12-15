@@ -49,7 +49,7 @@ export async function updateReviewController(req: Request, res: Response) {
       );
     }
 
-    console.log("Review updated successfully", updatedReview);
+    console.log("Review updated successfully");
     return successResponse(
       res,
       "Review updated successfully",

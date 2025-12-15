@@ -12,7 +12,6 @@ export async function findAllUsers(
   const offset = (page - 1) * pageSize;
   const typedUser = await findByDynamicId(User, { id: userId }, false);
   const user = typedUser as User | null;
-  console.log(user);
   if (!user) throw new Error("User not found");
 
   const whereClause: any = {};

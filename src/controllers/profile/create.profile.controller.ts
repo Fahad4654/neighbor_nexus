@@ -33,7 +33,7 @@ export async function createUserProfileController(req: Request, res: Response) {
 
       const newProfile = await createProfile(req.body);
 
-      console.log("User profile created successfully", newProfile);
+      console.log("User profile created successfully");
       return successResponse(
         res,
         "User profile created successfully",

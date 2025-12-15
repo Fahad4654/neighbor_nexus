@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { errorResponse } from "../../utils/apiResponse";
 
 export function validateRequiredBody(
   req: Request,
@@ -7,7 +8,7 @@ export function validateRequiredBody(
 ): boolean {
   for (const field of fields) {
     if (!req.body[field]) {
-      res.status(400).json({ error: `${field} is required` });
+      errorResponse(res, "Missing required field", `Missing ${field}`, 400);
       return false;
     }
   }

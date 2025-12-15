@@ -7,10 +7,7 @@ import {
 } from "../../utils/apiResponse";
 import { createRentRequest } from "../../services/rentRequest/create.rentRequest.service";
 import { findToolsByListingId } from "../../services/tools/find.tool.service";
-export async function createUserRentRequesController(
-  req: Request,
-  res: Response
-) {
+export async function createRentRequesController(req: Request, res: Response) {
   try {
     if (!req.body) {
       console.log("Request body is required");
@@ -36,12 +33,9 @@ export async function createUserRentRequesController(
     const reqBodyValidation = validateRequiredBody(req, res, [
       "listing_id",
       "borrower_id",
-      "lender_id",
       "duration_unit",
       "duration_value",
       "pickup_time",
-      "drop_off_time",
-      "rental_price",
     ]);
     if (!reqBodyValidation) return;
 
@@ -102,7 +96,7 @@ export async function createUserRentRequesController(
 
     const newRentRequest = await createRentRequest(req.body);
 
-    console.log("Rent Request created successfully", newRentRequest);
+    console.log("Rent Request created successfully");
     return successResponse(
       res,
       "Rent Request created successfully",

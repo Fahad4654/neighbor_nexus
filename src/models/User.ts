@@ -75,7 +75,6 @@ export class User extends Model {
   // ✅ Updated rating_avg: Numeric(2,1) with comment
   @AllowNull(false)
   @Default(0.0)
-  @Comment("Average of all reviews received (e.g., 4.7).")
   @Column(DataType.DECIMAL(2, 1))
   rating_avg!: number;
 
@@ -86,9 +85,6 @@ export class User extends Model {
     type: "Point",
     coordinates: [90.4125, 23.8103], // Dhaka default (lon, lat)
   })
-  @Comment(
-    "Stores the precise latitude/longitude for proximity searching. Defaults to Dhaka."
-  )
   @Column(DataType.GEOGRAPHY("POINT", 4326))
   geo_location!: GeoPoint;
 
