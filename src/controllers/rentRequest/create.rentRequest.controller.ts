@@ -96,7 +96,7 @@ export async function createRentRequesController(req: Request, res: Response) {
 
     const newRentRequest = await createRentRequest(req.body);
 
-    console.log("Rent Request created successfully", newRentRequest);
+    console.log("Rent Request created successfully");
     return successResponse(
       res,
       "Rent Request created successfully",

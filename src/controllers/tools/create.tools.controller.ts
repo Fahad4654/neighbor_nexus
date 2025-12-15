@@ -25,8 +25,7 @@ export async function createToolController(req: Request, res: Response) {
 
     // FIX 1: Safely retrieve uploaded files from req.files
     const files = (req.files as Express.Multer.File[]) || [];
-    
-    console.log("req.body:", req.body);
+
     // FIX 2: Pass req.body AND the uploaded files to the service
     const newTool = await createTool(req.body, files);
 
@@ -40,7 +39,7 @@ export async function createToolController(req: Request, res: Response) {
     }
 
     // REMOVED: Manual creation of 'default.png' is removed.
-    
+
     return successResponse(
       res,
       "Tool created successfully",

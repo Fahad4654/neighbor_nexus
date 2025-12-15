@@ -64,7 +64,5 @@ export async function sendOtp(identifier: string, type: string) {
     }
   );
 
-  console.log("OTP is:", otp);
-
   return { message: "OTP sent successfully" };
 }

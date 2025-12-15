@@ -24,7 +24,7 @@ export async function createAdmin() {
       isAdmin: true,
       phoneNumber: ADMIN_PHONENUMBER,
     });
-    console.log("✅ Admin user created:", newUser);
+    console.log("✅ Admin user created successfully");
   } else {
     console.log("ℹ️ Admin user already exists");
   }

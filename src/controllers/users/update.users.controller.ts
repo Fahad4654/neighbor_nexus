@@ -85,7 +85,7 @@ export async function updateUserController(req: Request, res: Response) {
       );
     }
 
-    console.log("User updated successfully", updatedUser);
+    console.log("User updated successfully");
     return successResponse(
       res,
       "User updated successfully",

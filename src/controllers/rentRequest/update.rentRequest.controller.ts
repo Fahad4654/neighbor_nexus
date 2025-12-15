@@ -108,7 +108,7 @@ export async function updateRentRequestController(req: Request, res: Response) {
 
     const updatedRequest = await updateRentRequest(servicePayload);
 
-    console.log("Rent Request updated successfully", updatedRequest);
+    console.log("Rent Request updated successfully");
     return successResponse(
       res,
       "Rent Request updated successfully",

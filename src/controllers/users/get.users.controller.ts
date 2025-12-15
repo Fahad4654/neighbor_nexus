@@ -87,7 +87,6 @@ export async function getUsersByIdController(req: Request, res: Response) {
 
     const typedUser = await findByDynamicId(User, { id: userId }, false);
     const user = typedUser as User | null;
-    console.log(user);
 
     if (!user) {
       console.log("User not found");

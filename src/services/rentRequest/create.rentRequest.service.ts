@@ -37,14 +37,9 @@ export async function createRentRequest(data: {
       data.rental_price =
         Number(tool.daily_price) * Number(data.duration_value) * 7;
   }
-  console.log("pickup time", data.pickup_time);
-  console.log("type", typeof data.pickup_time);
   if (typeof data.pickup_time === "string") {
-    // The `new Date()` constructor handles various date string formats, including yours.
     data.pickup_time = new Date(data.pickup_time);
   }
-  console.log("pickup time----------", data.pickup_time);
-  console.log("type-------", typeof data.pickup_time);
   if (isNaN(data.pickup_time.getTime())) {
     throw new Error("Invalid format for pickup_time");
   }
@@ -65,10 +60,6 @@ export async function createRentRequest(data: {
           Number(data.duration_value) * 7 * 24 * 60 * 60 * 1000
       );
   }
-
-  console.log(data.rental_price);
-  console.log(typeof data.rental_price);
-
   const rentRequest = await RentRequest.create(data);
 
   return rentRequest;

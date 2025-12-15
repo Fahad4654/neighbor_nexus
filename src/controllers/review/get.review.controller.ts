@@ -14,7 +14,6 @@ import {
 export async function getReviewsByIdController(req: Request, res: Response) {
   try {
     const review_id = req.params.id;
-    console.log("Review ID:", review_id);
 
     if (!review_id) {
       return errorResponse(
@@ -27,7 +26,6 @@ export async function getReviewsByIdController(req: Request, res: Response) {
 
     const typedReview = await findByDynamicId(Review, { id: review_id }, false);
     const review = typedReview as Review | null;
-    console.log(review);
 
     if (!review) {
       console.log("Review not found");
@@ -57,7 +55,6 @@ export async function getReviewsByReviewerIdController(
 ) {
   try {
     const reviewer_id = req.params.id;
-    console.log("Reviewer ID:", reviewer_id);
     const { page, pageSize } = req.body;
 
     if (!reviewer_id) {
@@ -69,7 +66,6 @@ export async function getReviewsByReviewerIdController(
       );
     }
     const review = await findReviewsByReviewerId(reviewer_id, page, pageSize);
-    console.log(review);
 
     if (!review) {
       console.log("Review not found");
