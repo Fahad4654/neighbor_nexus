@@ -55,31 +55,26 @@ export class Tool extends Model {
 
   @AllowNull(true)
   @Default(0.0)
-  @Comment("Amount held in escrow for tool rentals only.")
   @Column(DataType.DECIMAL(10, 2))
   security_deposit?: number;
 
   @AllowNull(false)
   @Default(true)
-  @Comment("Quick check for active listings.")
   @Column(DataType.BOOLEAN)
   is_available!: boolean;
 
   @AllowNull(true)
   @Default(0)
-  @Comment("Number of times this tool has been rented.")
   @Column(DataType.INTEGER)
   rental_count!: number;
 
   @AllowNull(false)
   @Default(false)
-  @Comment("approval status by admin")
   @Column(DataType.BOOLEAN)
   is_approved!: boolean;
 
   @ForeignKey(() => User)
   @AllowNull(true)
-  @Comment("approved by whom (User ID)")
   @Column(DataType.UUID)
   approved_by?: string | null;
 
