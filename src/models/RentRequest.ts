@@ -53,7 +53,16 @@ export class RentRequest extends Model {
   @AllowNull(false)
   @Default("Requested")
   @Comment("The current status of the rental request.")
-  @Column(DataType.STRING)
+  @Column(
+    DataType.ENUM(
+      "Requested",
+      "Approved",
+      "Denied",
+      "Cancelled",
+      "Completed",
+      "Disputed"
+    )
+  )
   rent_status!:
     | "Requested"
     | "Approved"
@@ -69,7 +78,7 @@ export class RentRequest extends Model {
   @Comment(
     "The unit of duration used for calculating pricing (e.g., Hour, Day, Week)."
   )
-  @Column(DataType.STRING)
+  @Column(DataType.ENUM("Hour", "Day", "Week"))
   duration_unit!: "Hour" | "Day" | "Week";
 
   @AllowNull(false)
