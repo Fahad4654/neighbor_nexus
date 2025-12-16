@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { deleteProfileByUserId } from "../../services/profile/delete.profile.service";
 import {
   errorResponse,
   successResponse,

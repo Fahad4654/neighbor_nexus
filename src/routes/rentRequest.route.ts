@@ -1,7 +1,4 @@
 import { Router } from "express";
-import { multerErrorHandler, uploadProfilePic } from "../middlewares/upload";
-import { deleteUserProfileController } from "../controllers/profile/delete.profile.controller";
-import { uploadProfilePictureController } from "../controllers/profile/uploadPicture.profile.controller";
 import {
   getByRentRequestIdController,
   getRentRequestByBorrowerAndListingIdController,
@@ -12,6 +9,7 @@ import {
 } from "../controllers/rentRequest/get.rentRequest.controller";
 import { updateRentRequestController } from "../controllers/rentRequest/update.rentRequest.controller";
 import { createRentRequesController } from "../controllers/rentRequest/create.rentRequest.controller";
+import { deleteRentRequestController } from "../controllers/rentRequest/delete.rentRequest.controller";
 
 const router = Router();
 
@@ -26,7 +24,7 @@ router.post(
 router.get("/:id", getByRentRequestIdController);
 router.post("/", createRentRequesController);
 router.put("/", updateRentRequestController);
-router.delete("/", deleteUserProfileController);
+router.delete("/", deleteRentRequestController);
 
 export { router as userCreateRouter };
 export { router };
