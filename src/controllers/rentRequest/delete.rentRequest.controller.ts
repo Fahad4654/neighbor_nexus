@@ -1,19 +1,22 @@
 import { Request, Response } from "express";
-import { deleteProfileByUserId } from "../../services/profile/delete.profile.service";
 import {
   errorResponse,
   successResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
+import { deleteRentRequest } from "../../services/rentRequest/delete.rentRequest.service";
+import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { User } from "../../models/User";
 
-export async function deleteUserProfileController(req: Request, res: Response) {
+export async function deleteRentRequestController(req: Request, res: Response) {
   try {
-    if (!req.body || !req.body.userId) {
-      console.log("UserId is required");
+    if (!req.body) {
+      console.log("Request body is required");
       return errorResponse(
         res,
-        "UserId is required",
-        "Missing userId in request body",
+        "Request body is required",
+        "Empty request body",
         400
       );
     }
@@ -22,31 +25,36 @@ export async function deleteUserProfileController(req: Request, res: Response) {
       console.log("Unauthorized access attempt");
       return errorResponse(res, "Unauthorized", "Login is required", 401);
     }
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User | null;
 
-    if (!req.user.isAdmin && req.user.id !== req.body.userId) {
-      console.log("Forbidden access attempt");
+    if (!user) {
+      console.log("User not found");
       return errorResponse(
         res,
-        "Forbidden",
-        "You are not authorized to delete this profile",
-        403
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
       );
     }
 
-    const { deletedCount, user } = await deleteProfileByUserId(req.body.userId);
+    const validateBody = validateRequiredBody(req, res, ["rentRequest_id"]);
+    if (!validateBody) return;
 
-    if (deletedCount === 0) {
-      const message = `User: ${user?.username} doesn't have a profile`;
-      console.log(message);
-      return errorResponse(res, "User's Profile not found", message, 404);
-    }
+    const deletedCount = await deleteRentRequest(req.body.rentRequest_id, user);
 
-    const message = `User: ${user?.username}'s profile deleted successfully`;
-    console.log(message);
+    if (deletedCount === 0)
+      [
+        console.log(
+          `Rent Request with ID ${req.body.rentRequest_id} not found`
+        ),
+      ];
+
+    console.log("Rent Request deleted successfully");
     return successResponse(
       res,
-      message,
-      { email: user?.email, deletedCount },
+      "Rent Request deleted successfully",
+      { deletedCount },
       200
     );
   } catch (error) {
