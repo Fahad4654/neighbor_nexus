@@ -12,6 +12,7 @@ import {
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Tool } from "./Tools";
+import { RentRequest } from "./RentRequest";
 
 @Table({
   tableName: "transactions",
@@ -32,6 +33,11 @@ export class Transaction extends Model {
   @AllowNull(false)
   @Column(DataType.UUID)
   borrower_id!: string;
+
+  @ForeignKey(() => RentRequest)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  rent_request_id!: string;
 
   @AllowNull(false)
   @Column(DataType.DATE)
@@ -73,4 +79,10 @@ export class Transaction extends Model {
 
   @BelongsTo(() => User, { foreignKey: "borrower_id", as: "borrower" })
   borrower!: User;
+
+  @BelongsTo(() => RentRequest, {
+    foreignKey: "rent_request_id",
+    as: "rent_request",
+  })
+  rent_request!: RentRequest;
 }
