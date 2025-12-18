@@ -58,7 +58,7 @@ export async function deleteRentRequestController(req: Request, res: Response) {
       200
     );
   } catch (error) {
-    console.error("Error deleting user profile:", error);
-    return handleUncaughtError(res, error, "Error deleting user profile");
+    console.error("Error deleting rent request:", error);
+    return handleUncaughtError(res, error, "Error deleting rent request");
   }
 }

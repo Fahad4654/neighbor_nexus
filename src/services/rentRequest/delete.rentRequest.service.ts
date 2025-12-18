@@ -1,8 +1,17 @@
 import { RentRequest } from "../../models/RentRequest";
 import { User } from "../../models/User";
+import { findByDynamicId } from "../global/find.service";
 
 export async function deleteRentRequest(rentRequestID: string, user: User) {
-  const wantToDelRentRequest = await RentRequest.findByPk(rentRequestID);
+  const typedWantToDelRentRequest = await findByDynamicId(
+    RentRequest,
+    {
+      id: rentRequestID,
+    },
+    false
+  );
+  const wantToDelRentRequest = typedWantToDelRentRequest as RentRequest | null;
+
   if (!wantToDelRentRequest) {
     throw new Error("Rent Request not found");
   }
@@ -12,6 +21,6 @@ export async function deleteRentRequest(rentRequestID: string, user: User) {
   }
 
   return await RentRequest.destroy({
-    where: { rent_request_id: rentRequestID },
+    where: { id: rentRequestID },
   });
 }
