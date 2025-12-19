@@ -6,7 +6,7 @@ export async function createTransaction(
   borrower_id: string,
   rent_request_id: string,
   start_time: Date,
-  // end_time
+  end_time: Date,
   total_fee: number,
   platform_commission: number,
   deposit_amount: number,
@@ -18,7 +18,7 @@ export async function createTransaction(
     borrower_id,
     rent_request_id,
     start_time,
-    // end_time,
+    end_time,
     total_fee,
     platform_commission,
     deposit_amount,

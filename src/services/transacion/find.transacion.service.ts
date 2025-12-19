@@ -1,11 +1,11 @@
-import { Review } from "../../models/Review";
+import { Transaction } from "../../models/Transaction";
 
-export async function findReviewsByUserId(
+export async function findTransactionsByUserId(
   user_id: string,
   page: number,
   pageSize: number
 ) {
-  const reviews = await Review.findAll({
+  const reviews = await Transaction.findAll({
     where: { reviewer_id: user_id },
     offset: (page - 1) * pageSize,
     limit: pageSize,
@@ -22,7 +22,7 @@ export async function findReviewsByReviewerId(
   const offset = (page - 1) * pageSize;
 
   // Use 'findAndCountAll' if you need the total number of records for pagination UI
-  const reviews = await Review.findAll({
+  const reviews = await Transaction.findAll({
     where: { reviewer_id },
     offset: offset, // Correct calculation
     limit: pageSize, // Correct limit
@@ -32,7 +32,7 @@ export async function findReviewsByReviewerId(
 }
 
 export async function findReviewsByTransactionId(transaction_id: string) {
-  const reviews = await Review.findAll({
+  const reviews = await Transaction.findAll({
     where: { transaction_id },
   });
   return reviews;

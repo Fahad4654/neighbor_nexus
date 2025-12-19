@@ -34,6 +34,11 @@ export class Transaction extends Model {
   @Column(DataType.UUID)
   borrower_id!: string;
 
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  lender_id!: string;
+
   @ForeignKey(() => RentRequest)
   @AllowNull(false)
   @Column(DataType.UUID)
@@ -79,6 +84,9 @@ export class Transaction extends Model {
 
   @BelongsTo(() => User, { foreignKey: "borrower_id", as: "borrower" })
   borrower!: User;
+
+  @BelongsTo(() => User, { foreignKey: "lender_id", as: "lender" })
+  lender!: User;
 
   @BelongsTo(() => RentRequest, {
     foreignKey: "rent_request_id",
