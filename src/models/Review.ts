@@ -31,12 +31,12 @@ export class Review extends Model {
   @ForeignKey(() => User)
   @AllowNull(false)
   @Column(DataType.UUID)
-  reviewer_id!: string;
+  lender_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)
   @Column(DataType.UUID)
-  reviewed_user_id!: string;
+  borrower_id!: string;
 
   @AllowNull(false)
   @Column(DataType.INTEGER)
@@ -56,18 +56,18 @@ export class Review extends Model {
   @Column(DataType.UUID)
   approvedBy!: string;
 
-  // Relations
+  // Relations;
   @BelongsTo(() => Transaction, {
     foreignKey: "transaction_id",
     as: "transaction",
   })
   transaction!: Transaction;
 
-  @BelongsTo(() => User, { foreignKey: "reviewer_id", as: "reviewer" })
-  reviewer!: User;
+  @BelongsTo(() => User, { foreignKey: "lender_id", as: "lender" })
+  lender!: User;
 
-  @BelongsTo(() => User, { foreignKey: "reviewed_user_id", as: "reviewedUser" })
-  reviewedUser!: User;
+  @BelongsTo(() => User, { foreignKey: "borrower_id", as: "borrower" })
+  borrower!: User;
 
   @BelongsTo(() => User, { foreignKey: "approvedBy", as: "approver" })
   approver!: User;

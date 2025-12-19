@@ -39,7 +39,7 @@ export async function deleteReviewController(req: Request, res: Response) {
     const deletedCount = await deleteReview(id, user.id);
 
     if (deletedCount === 0) {
-      if (wantDelReview.reviewer_id !== user.id && !user.isAdmin) {
+      if (wantDelReview.borrower_id !== user.id && !user.isAdmin) {
         return errorResponse(
           res,
           "Forbidden",
