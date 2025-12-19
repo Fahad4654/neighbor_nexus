@@ -9,6 +9,7 @@ import {
   ForeignKey,
   Default,
   BelongsTo,
+  Unique,
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Tool } from "./Tools";
@@ -41,6 +42,7 @@ export class Transaction extends Model {
 
   @ForeignKey(() => RentRequest)
   @AllowNull(false)
+  @Unique
   @Column(DataType.UUID)
   rent_request_id!: string;
 

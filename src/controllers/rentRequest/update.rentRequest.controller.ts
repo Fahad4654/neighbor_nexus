@@ -14,6 +14,11 @@ import { Transaction } from "../../models/Transaction";
 import { Tool } from "../../models/Tools";
 import { createTransaction } from "../../services/transacion/create.transacion.service";
 import { COMMISSION } from "../../config";
+import {
+  findTransactionsByRentRequestId,
+  findTransactionsByReviewerId,
+  findTransactionsByUserId,
+} from "../../services/transacion/find.transacion.service";
 
 type RentRequestUpdatableField = keyof RentRequest;
 
@@ -110,24 +115,37 @@ export async function updateRentRequestController(req: Request, res: Response) {
       ...updatesToSend,
     } as Partial<RentRequest> & { id: string };
 
-    const updatedRequest = await updateRentRequest(servicePayload);
-    const tool = await Tool.findByPk(updatedRequest?.listing_id);
+    if (
+      rentRequest.rent_status === "Approved" ||
+      rentRequest.rent_status === "Cancelled"
+    ) {
+      throw new Error("Cannot update an approved or cancelled request.");
+    }
+
+    const checkTransaction = await findTransactionsByRentRequestId(
+      rentRequest_id
+    );
+    if (checkTransaction) {
+      throw new Error("Already has a transaction for this rent request");
+    }
+    const updatedRentRequest = await updateRentRequest(servicePayload);
+    const tool = await Tool.findByPk(updatedRentRequest?.listing_id);
     if (!tool) throw new Error("Tool not found");
     let transaction = null;
     if (
-      updatedRequest &&
-      currentUserId === updatedRequest?.lender_id &&
-      updatedRequest?.rent_status === "Approved"
+      updatedRentRequest &&
+      currentUserId === updatedRentRequest.lender_id &&
+      updatedRentRequest.rent_status === "Approved"
     ) {
       transaction = await createTransaction(
-        updatedRequest.listing_id,
-        updatedRequest.borrower_id,
-        updatedRequest.lender_id,
-        updatedRequest.id,
-        updatedRequest.pickup_time,
-        updatedRequest.drop_off_time,
-        updatedRequest.rental_price,
-        Number(updatedRequest.rental_price) * (COMMISSION / 100),
+        updatedRentRequest.listing_id,
+        updatedRentRequest.borrower_id,
+        updatedRentRequest.lender_id,
+        updatedRentRequest.id,
+        updatedRentRequest.pickup_time,
+        updatedRentRequest.drop_off_time,
+        updatedRentRequest.rental_price,
+        Number(updatedRentRequest.rental_price) * (COMMISSION / 100),
         Number(tool.security_deposit),
         "",
         "Pending"
@@ -138,7 +156,7 @@ export async function updateRentRequestController(req: Request, res: Response) {
     return successResponse(
       res,
       "Rent Request updated successfully",
-      { rentRequest: updatedRequest, transaction },
+      { rentRequest: updatedRentRequest, transaction },
       200
     );
   } catch (error) {
