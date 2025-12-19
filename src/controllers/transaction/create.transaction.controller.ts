@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
-import { createReview } from "../../services/review/create.review.service";
 import {
   successResponse,
   errorResponse,
@@ -63,12 +62,12 @@ export async function createTransactionController(req: Request, res: Response) {
 
     return successResponse(
       res,
-      "Review created successfully",
-      { review: newTransaction },
+      "transaction created successfully",
+      { transaction: newTransaction },
       201
     );
   } catch (error) {
-    console.error("Error creating review:", error);
-    return handleUncaughtError(res, error, "Error creating review");
+    console.error("Error creating transaction:", error);
+    return handleUncaughtError(res, error, "Error creating transaction");
   }
 }
