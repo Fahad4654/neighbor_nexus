@@ -5,12 +5,12 @@ export async function findTransactionsByUserId(
   page: number,
   pageSize: number
 ) {
-  const reviews = await Transaction.findAll({
+  const transactions = await Transaction.findAll({
     where: { reviewer_id: user_id },
     offset: (page - 1) * pageSize,
     limit: pageSize,
   });
-  return reviews;
+  return transactions;
 }
 
 export async function findReviewsByReviewerId(

@@ -9,8 +9,10 @@ const DB_USER = process.env.DB_USER || "postgres";
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432;
-const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET || "your_jwt_secret";
-const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET || "your_jwt_secret";
+const REFRESH_TOKEN_SECRET =
+  process.env.JWT_REFRESH_TOKEN_SECRET || "your_jwt_secret";
+const ACCESS_TOKEN_SECRET =
+  process.env.JWT_ACCESS_TOKEN_SECRET || "your_jwt_secret";
 const ACCESS_TOKEN_EXPIRATION =
   process.env.ACCESS_TOKEN_EXPIRATION?.toString() || "15m";
 const REFRESH_TOKEN_EXPIRATION =
@@ -34,6 +36,7 @@ const REDIS_HOST = process.env.REDIS_HOST || "127.0.0.1";
 const REDIS_PORT = process.env.REDIS_PORT || "6379";
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "";
 const GOOGLE_MAP_API_KEY = process.env.GOOGLE_MAP_API_KEY || "";
+const COMMISSION = Number(process.env.COMMISSION) || 15;
 
 export {
   PORT,
@@ -64,5 +67,6 @@ export {
   REDIS_HOST,
   REDIS_PORT,
   REDIS_PASSWORD,
-  GOOGLE_MAP_API_KEY
+  GOOGLE_MAP_API_KEY,
+  COMMISSION,
 };

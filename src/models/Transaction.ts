@@ -20,9 +20,9 @@ import { RentRequest } from "./RentRequest";
 })
 export class Transaction extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  transaction_id!: number;
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  transaction_id!: string;
 
   @ForeignKey(() => Tool)
   @AllowNull(false)
@@ -74,9 +74,9 @@ export class Transaction extends Model {
   @AllowNull(false)
   @Default("Requested")
   @Column(
-    DataType.ENUM("Requested", "Approved", "Cancelled", "Completed", "Disputed")
+    DataType.ENUM("Pending", "Approved", "Cancelled", "Completed", "Disputed")
   )
-  status!: "Requested" | "Approved" | "Cancelled" | "Completed" | "Disputed";
+  status!: "Pending" | "Approved" | "Cancelled" | "Completed" | "Disputed";
 
   // Relations
   @BelongsTo(() => Tool, { foreignKey: "listing_id", as: "listing" })

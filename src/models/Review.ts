@@ -19,14 +19,14 @@ import { Transaction } from "./Transaction";
 })
 export class Review extends Model {
   @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  review_id!: number;
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  review_id!: string;
 
   @ForeignKey(() => Transaction)
   @AllowNull(false)
-  @Column(DataType.INTEGER)
-  transaction_id!: number;
+  @Column(DataType.UUID)
+  transaction_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)
