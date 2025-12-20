@@ -11,7 +11,10 @@ import {
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
 
-export async function getReviewsByIdController(req: Request, res: Response) {
+export async function getTransactionByIdController(
+  req: Request,
+  res: Response
+) {
   try {
     const review_id = req.params.id;
 
@@ -49,7 +52,7 @@ export async function getReviewsByIdController(req: Request, res: Response) {
   }
 }
 
-export async function getReviewsByReviewerIdController(
+export async function getTransactionByReviewerIdController(
   req: Request,
   res: Response
 ) {
@@ -65,7 +68,11 @@ export async function getReviewsByReviewerIdController(
         400
       );
     }
-    const review = await findReviewsByReviewerId(reviewer_id, page, pageSize);
+    const review = await findTransactionByReviewerId(
+      reviewer_id,
+      page,
+      pageSize
+    );
 
     if (!review) {
       console.log("Review not found");
@@ -84,7 +91,7 @@ export async function getReviewsByReviewerIdController(
   }
 }
 
-export async function getReviewsBytransactionIdController(
+export async function getTransactionBytransactionIdController(
   req: Request,
   res: Response
 ) {
@@ -101,7 +108,7 @@ export async function getReviewsBytransactionIdController(
   if (!user) {
     return errorResponse(res, "Login is required", "Unauthorized access", 401);
   }
-  const review = await findReviewsByTransactionId(transaction_id);
+  const review = await findTransactionByTransactionId(transaction_id);
   if (!review) {
     return errorResponse(
       res,

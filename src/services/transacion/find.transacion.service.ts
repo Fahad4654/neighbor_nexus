@@ -29,17 +29,8 @@ export async function findTransactionsByReviewerId(
   return transactions;
 }
 
-export async function findTransactionsByTransactionId(
-  transaction_id: string,
-  page: number = 1,
-  pageSize: number = 10
-) {
-  const offset = (page - 1) * pageSize;
-  const transactions = await Transaction.findAll({
-    where: { transaction_id },
-    offset: offset,
-    limit: pageSize,
-  });
+export async function findTransactionsByTransactionId(transaction_id: string) {
+  const transactions = await Transaction.findByPk(transaction_id);
   return transactions;
 }
 
