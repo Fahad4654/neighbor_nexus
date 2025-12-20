@@ -38,7 +38,11 @@ export async function deleteTransactionController(req: Request, res: Response) {
       );
     }
 
-    if (wantDelReview.borrower_id !== user.id && !user.isAdmin) {
+    if (
+      wantDelReview.borrower_id !== user.id &&
+      wantDelReview.lender_id !== user.id &&
+      !user.isAdmin
+    ) {
       return errorResponse(
         res,
         "Unauthorized",
@@ -47,12 +51,12 @@ export async function deleteTransactionController(req: Request, res: Response) {
       );
     }
 
-    const deletedCount = await deleteTransaction(id);
+    const deletedTransaction = await deleteTransaction(id, user.id);
 
     return successResponse(
       res,
       "Review deleted successfully",
-      { deleted: { id } },
+      { transaction: deletedTransaction },
       200
     );
   } catch (error) {
