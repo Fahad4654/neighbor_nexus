@@ -1,10 +1,7 @@
 import { Review } from "../../models/Review";
 import { Transaction } from "../../models/Transaction";
 
-export async function deleteTransaction(
-  transaction_id: string,
-  actionerID: string
-) {
+export async function deleteTransaction(transaction_id: string) {
   const review = await Transaction.findByPk(transaction_id);
   if (!review) {
     throw new Error("Transaction not found");
