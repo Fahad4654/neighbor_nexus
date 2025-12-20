@@ -4,6 +4,7 @@ import { Transaction } from "../../models/Transaction";
 export async function createTransaction(
   listing_id: string,
   borrower_id: string,
+  lender_id: string,
   rent_request_id: string,
   start_time: Date,
   end_time: Date,
@@ -16,6 +17,7 @@ export async function createTransaction(
   const transaction = await Transaction.create({
     listing_id,
     borrower_id,
+    lender_id,
     rent_request_id,
     start_time,
     end_time,

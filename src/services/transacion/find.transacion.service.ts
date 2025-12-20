@@ -5,35 +5,45 @@ export async function findTransactionsByUserId(
   page: number,
   pageSize: number
 ) {
-  const reviews = await Transaction.findAll({
+  const transactions = await Transaction.findAll({
     where: { reviewer_id: user_id },
     offset: (page - 1) * pageSize,
     limit: pageSize,
   });
-  return reviews;
+  return transactions;
 }
 
-export async function findReviewsByReviewerId(
+export async function findTransactionsByReviewerId(
   reviewer_id: string,
-  page: number = 1, // Default set in function signature
-  pageSize: number = 10 // Default set in function signature
+  page: number = 1,
+  pageSize: number = 10
 ) {
-  // Using the defaults from the function signature simplifies the function body
   const offset = (page - 1) * pageSize;
 
-  // Use 'findAndCountAll' if you need the total number of records for pagination UI
-  const reviews = await Transaction.findAll({
+  const transactions = await Transaction.findAll({
     where: { reviewer_id },
-    offset: offset, // Correct calculation
-    limit: pageSize, // Correct limit
+    offset: offset,
+    limit: pageSize,
   });
 
-  return reviews;
+  return transactions;
 }
 
-export async function findReviewsByTransactionId(transaction_id: string) {
-  const reviews = await Transaction.findAll({
-    where: { transaction_id },
+export async function findTransactionsByTransactionId(transaction_id: string) {
+  const transactions = await Transaction.findByPk(transaction_id);
+  return transactions;
+}
+
+export async function findTransactionsByListingId(listing_id: string) {
+  const transactions = await Transaction.findAll({
+    where: { listing_id },
   });
-  return reviews;
+  return transactions;
+}
+
+export async function findTransactionsByRentRequestId(rent_request_id: string) {
+  const transactions = await Transaction.findOne({
+    where: { rent_request_id },
+  });
+  return transactions;
 }

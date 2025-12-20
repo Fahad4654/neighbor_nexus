@@ -1,14 +1,18 @@
 import { Review } from "../../models/Review";
+import { Transaction } from "../../models/Transaction";
 
-export async function deleteReview(reviewID: string, actionerID: string) {
-  const review = await Review.findByPk(reviewID);
+export async function deleteTransaction(
+  transaction_id: string,
+  actionerID: string
+) {
+  const review = await Transaction.findByPk(transaction_id);
   if (!review) {
-    throw new Error("Review not found");
+    throw new Error("Transaction not found");
   }
 
-  if (review.approvedBy !== actionerID && review.borrower_id !== actionerID) {
-    throw new Error("Unauthorized to delete this review");
-  }
+  // if (review.approvedBy !== actionerID && review.borrower_id !== actionerID) {
+  //   throw new Error("Unauthorized to delete this review");
+  // }
 
-  return await Review.destroy({ where: { review_id: reviewID } });
+  return await Transaction.destroy({ where: { id: transaction_id } });
 }
