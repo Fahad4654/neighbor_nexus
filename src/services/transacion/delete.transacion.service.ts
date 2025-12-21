@@ -5,14 +5,26 @@ export async function deleteTransaction(
   transaction_id: string,
   actionerID: string
 ) {
-  const review = await Transaction.findByPk(transaction_id);
-  if (!review) {
+  const transaction = await Transaction.findByPk(transaction_id);
+  if (!transaction) {
     throw new Error("Transaction not found");
   }
 
-  // if (review.approvedBy !== actionerID && review.borrower_id !== actionerID) {
-  //   throw new Error("Unauthorized to delete this review");
-  // }
+  if (
+    transaction.borrower_id !== actionerID &&
+    transaction.lender_id !== actionerID
+  ) {
+    throw new Error("Unauthorized to delete this transaction");
+  }
 
-  return await Transaction.destroy({ where: { id: transaction_id } });
+  if (transaction.lender_id === actionerID) {
+    transaction.show_to_lender = false;
+  }
+
+  if (transaction.borrower_id === actionerID) {
+    transaction.show_to_borrower = false;
+  }
+
+  transaction.save();
+  return transaction;
 }

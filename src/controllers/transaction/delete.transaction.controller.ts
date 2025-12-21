@@ -6,6 +6,8 @@ import {
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
+import { findTransactionsByTransactionId } from "../../services/transacion/find.transacion.service";
+import { deleteTransaction } from "../../services/transacion/delete.transacion.service";
 
 export async function deleteTransactionController(req: Request, res: Response) {
   try {
@@ -19,47 +21,42 @@ export async function deleteTransactionController(req: Request, res: Response) {
     if (!id) {
       return errorResponse(
         res,
-        "Review ID is required",
-        "Missing review ID in request body",
+        "Transaction ID is required",
+        "Missing transaction ID in request body",
         400
       );
     }
 
-    const wantDelReview = await Review.findOne({ where: { review_id: id } });
+    const wantDelReview = await findTransactionsByTransactionId(id);
 
     if (!wantDelReview) {
       return errorResponse(
         res,
-        "Review not found",
-        `Review with ID ${id} does not exist`,
+        "Transaction not found",
+        `Transaction with ID ${id} does not exist`,
         404
       );
     }
 
-    const deletedCount = await deleteReview(id, user.id);
-
-    if (deletedCount === 0) {
-      if (wantDelReview.borrower_id !== user.id && !user.isAdmin) {
-        return errorResponse(
-          res,
-          "Forbidden",
-          "You are not authorized to delete this review",
-          403
-        );
-      }
-
+    if (
+      wantDelReview.borrower_id !== user.id &&
+      wantDelReview.lender_id !== user.id &&
+      !user.isAdmin
+    ) {
       return errorResponse(
         res,
-        "Review deletion failed",
-        "Review could not be deleted or was already gone",
-        404
+        "Unauthorized",
+        "You are not authorized to delete this transaction",
+        401
       );
     }
+
+    const deletedTransaction = await deleteTransaction(id, user.id);
 
     return successResponse(
       res,
       "Review deleted successfully",
-      { deleted: { id } },
+      { transaction: deletedTransaction },
       200
     );
   } catch (error) {

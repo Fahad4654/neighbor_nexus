@@ -69,6 +69,14 @@ export class Transaction extends Model {
   @Column(DataType.DECIMAL(10, 2))
   deposit_amount!: number;
 
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  show_to_borrower!: boolean;
+
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  show_to_lender!: boolean;
+
   @AllowNull(true)
   @Column(DataType.STRING(100))
   stripe_charge_id?: string;
