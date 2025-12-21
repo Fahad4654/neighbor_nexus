@@ -51,8 +51,8 @@ export async function findTransactionsByRentRequestId(
   } else {
     whereClause = { rent_request_id, show_to_borrower: true };
   }
-  const transactions = await Transaction.findOne({
-    where: { rent_request_id },
+  const transactions = await Transaction.findAll({
+    where: whereClause,
   });
   return transactions;
 }

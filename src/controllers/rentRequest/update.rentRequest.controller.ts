@@ -10,15 +10,10 @@ import {
 } from "../../utils/apiResponse";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { RentRequest } from "../../models/RentRequest";
-import { Transaction } from "../../models/Transaction";
 import { Tool } from "../../models/Tools";
 import { createTransaction } from "../../services/transacion/create.transacion.service";
 import { COMMISSION } from "../../config";
-import {
-  findTransactionsByRentRequestId,
-  findTransactionsByReviewerId,
-  findTransactionsByUserId,
-} from "../../services/transacion/find.transacion.service";
+import { findTransactionsByRentRequestId } from "../../services/transacion/find.transacion.service";
 
 type RentRequestUpdatableField = keyof RentRequest;
 
@@ -122,8 +117,14 @@ export async function updateRentRequestController(req: Request, res: Response) {
       throw new Error("Cannot update an approved or cancelled request.");
     }
 
+    let userIslender = false;
+    if (currentUserId === rentRequest.lender_id) {
+      userIslender = true;
+    }
+
     const checkTransaction = await findTransactionsByRentRequestId(
-      rentRequest_id
+      rentRequest_id,
+      userIslender
     );
     if (checkTransaction) {
       throw new Error("Already has a transaction for this rent request");

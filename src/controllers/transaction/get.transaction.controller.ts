@@ -1,66 +1,23 @@
 import { Request, Response } from "express";
-import { findByDynamicId } from "../../services/global/find.service";
-import { Review } from "../../models/Review";
 import {
   successResponse,
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
 import {
-  findReviewsByReviewerId,
-  findReviewsByTransactionId,
-} from "../../services/review/find.review.service";
+  findTransactionsByLenderId,
+  findTransactionsByTransactionId,
+} from "../../services/transacion/find.transacion.service";
 
-export async function getTransactionByIdController(
+export async function getTransactionBylenderIdController(
   req: Request,
   res: Response
 ) {
   try {
-    const review_id = req.params.id;
-
-    if (!review_id) {
-      return errorResponse(
-        res,
-        "Review ID is required",
-        "Missing review ID in route parameter",
-        400
-      );
-    }
-
-    const typedReview = await findByDynamicId(Review, { id: review_id }, false);
-    const review = typedReview as Review | null;
-
-    if (!review) {
-      console.log("Review not found");
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with ID ${review_id} does not exist`,
-        404
-      );
-    }
-
-    return successResponse(
-      res,
-      "Review fetched successfully",
-      review.dataValues,
-      200
-    );
-  } catch (error) {
-    console.error("Error finding review:", error);
-    return handleUncaughtError(res, error, "Error fetching reviews");
-  }
-}
-
-export async function getTransactionByReviewerIdController(
-  req: Request,
-  res: Response
-) {
-  try {
-    const reviewer_id = req.params.id;
+    const lender_id = req.params.id;
     const { page, pageSize } = req.body;
 
-    if (!reviewer_id) {
+    if (!lender_id) {
       return errorResponse(
         res,
         "Reviewer ID is required",
@@ -68,23 +25,23 @@ export async function getTransactionByReviewerIdController(
         400
       );
     }
-    const review = await findTransactionByReviewerId(
-      reviewer_id,
+    const transacion = await findTransactionsByLenderId(
+      lender_id,
       page,
       pageSize
     );
 
-    if (!review) {
+    if (!transacion) {
       console.log("Review not found");
       return errorResponse(
         res,
         "Review not found",
-        `Review with ID ${reviewer_id} does not exist`,
+        `Review with ID ${lender_id} does not exist`,
         404
       );
     }
 
-    return successResponse(res, "Review fetched successfully", review, 200);
+    return successResponse(res, "Review fetched successfully", transacion, 200);
   } catch (error) {
     console.error("Error finding review:", error);
     return handleUncaughtError(res, error, "Error fetching reviews");
@@ -108,8 +65,8 @@ export async function getTransactionBytransactionIdController(
   if (!user) {
     return errorResponse(res, "Login is required", "Unauthorized access", 401);
   }
-  const review = await findTransactionByTransactionId(transaction_id);
-  if (!review) {
+  const transacion = await findTransactionsByTransactionId(transaction_id);
+  if (!transacion) {
     return errorResponse(
       res,
       "Review not found",
@@ -118,5 +75,5 @@ export async function getTransactionBytransactionIdController(
     );
   }
 
-  return review;
+  return transacion;
 }
