@@ -110,6 +110,19 @@ export async function updateRentRequestController(req: Request, res: Response) {
         400
       );
     }
+    if (req.body.pickup_time) {
+      if (typeof req.body.pickup_time === "string") {
+        req.body.pickup_time = new Date(req.body.pickup_time);
+      }
+      if (req.body.pickup_time < new Date()) {
+        return errorResponse(
+          res,
+          "Update Failed",
+          "Pickup time cannot be in the past.",
+          400
+        );
+      }
+    }
 
     const servicePayload = {
       id: rentRequest_id,
@@ -120,32 +133,52 @@ export async function updateRentRequestController(req: Request, res: Response) {
       rentRequest.rent_status === "Approved" ||
       rentRequest.rent_status === "Cancelled"
     ) {
-      throw new Error("Cannot update an approved or cancelled request.");
+      console.log("Cannot update an approved or cancelled request.");
+      return errorResponse(
+        res,
+        "Update Failed",
+        "Cannot update an approved or cancelled request.",
+        400
+      );
     }
 
     const typedUser = await findByDynamicId(User, { id: currentUserId }, false);
     const user = typedUser as User | null;
     if (!user) {
-      throw new Error("User not found");
+      console.log("User not found");
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${currentUserId} does not exist`,
+        404
+      );
     }
 
     const checkTransaction = await findTransactionsByRentRequestId(
       rentRequest_id,
       user
     );
-    console.log("---------", checkTransaction);
     if (checkTransaction.length > 0) {
-      throw new Error("Already has a transaction for this rent request");
+      console.log("Transaction already exists");
+      return errorResponse(
+        res,
+        "Transaction already exists",
+        "Transaction already exists",
+        400
+      );
     }
-    if (req.body.pickup_time) {
-      const date = new Date(req.body.pickup_time);
-      if (date < new Date()) {
-        throw new Error("Pickup time cannot be in the past");
-      }
-    }
+
     const updatedRentRequest = await updateRentRequest(servicePayload);
     const tool = await Tool.findByPk(updatedRentRequest?.listing_id);
-    if (!tool) throw new Error("Tool not found");
+    if (!tool) {
+      console.log("Tool not found");
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${updatedRentRequest?.listing_id} does not exist`,
+        404
+      );
+    }
     let transaction = null;
     if (
       updatedRentRequest &&

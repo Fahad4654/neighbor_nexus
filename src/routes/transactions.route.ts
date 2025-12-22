@@ -18,7 +18,7 @@ router.post("/user/:id", getTransactionsByUserIdController);
 router.post("/borrower/:id", getTransactionsByBorrowerIdController);
 router.post("/lender/:id", getTransactionsBylenderIdController);
 router.post("/tool/:id", getTransactionsByListingIdController);
-router.post("/rent-request/:id", getTransactionByRentRequest);
+router.get("/rent-request/:id", getTransactionByRentRequest);
 
 router.post("/", createTransactionController);
 router.put("/", updateTransactionController);
