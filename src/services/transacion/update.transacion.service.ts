@@ -1,21 +1,21 @@
-import { Review } from "../../models/Review";
+import { Transaction } from "../../models/Transaction";
 
 export async function updateTransaction(
-  data: Partial<Review> & { id: string }
+  data: Partial<Transaction> & { transaction_id: string }
 ) {
-  const review = await Review.findOne({ where: { review_id: data.id } });
-  if (!review) {
-    console.log("Review not found");
-    throw new Error("Review not found");
+  const transaction = await Transaction.findOne({
+    where: { transaction_id: data.id },
+  });
+  if (!transaction) {
+    console.log("Transaction not found");
+    throw new Error("Transaction not found");
   }
 
-  const allowedFields: Array<keyof Review> = [
-    "rating",
-    "comment",
-    "approved",
-    "approvedBy",
+  const allowedFields: Array<keyof Transaction> = [
+    "status",
+    "stripe_charge_id",
   ];
-  const updates: Partial<Review> = {};
+  const updates: Partial<Transaction> = {};
 
   for (const key of allowedFields) {
     if (data[key] !== undefined) updates[key] = data[key];
@@ -26,8 +26,6 @@ export async function updateTransaction(
     throw new Error("No valid fields provided for update");
   }
 
-  await review.update(updates);
-  return Review.findByPk(review.id, {
-    attributes: { exclude: ["password", "createdAt", "updatedAt"] },
-  });
+  await transaction.update(updates);
+  return Transaction.findByPk(transaction.id);
 }

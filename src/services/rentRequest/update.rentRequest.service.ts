@@ -16,7 +16,7 @@ export async function updateRentRequest(
     "duration_unit",
     "duration_value",
     "pickup_time",
-    "drop_off_time",
+    // "drop_off_time",
     "actual_pickup_time",
     "actual_drop_off_time",
     "borrower_rated",
@@ -34,6 +34,31 @@ export async function updateRentRequest(
   if (Object.keys(updates).length === 0) {
     console.log("No valid fields provided for update");
     throw new Error("No valid fields provided for update");
+  }
+
+  if (typeof updates.pickup_time === "string") {
+    updates.pickup_time = new Date(updates.pickup_time);
+  }
+
+  if (updates.pickup_time) {
+    if (isNaN(updates.pickup_time.getTime())) {
+      throw new Error("Invalid format for pickup_time");
+    }
+    if (rentRequest.duration_unit === "Hour")
+      updates.drop_off_time = new Date(
+        updates.pickup_time.getTime() +
+          Number(rentRequest.duration_value) * 60 * 60 * 1000
+      );
+    if (rentRequest.duration_unit === "Day")
+      updates.drop_off_time = new Date(
+        updates.pickup_time.getTime() +
+          Number(rentRequest.duration_value) * 24 * 60 * 60 * 1000
+      );
+    if (rentRequest.duration_unit === "Week")
+      data.drop_off_time = new Date(
+        updates.pickup_time.getTime() +
+          Number(rentRequest.duration_value) * 7 * 24 * 60 * 60 * 1000
+      );
   }
 
   await rentRequest.update(updates);

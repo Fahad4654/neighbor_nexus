@@ -14,7 +14,7 @@ export async function updateTransactionController(req: Request, res: Response) {
     if (!req.body.id) {
       return errorResponse(
         res,
-        "Review ID is required",
+        "Transaction ID is required",
         "Missing ID in request body",
         400
       );
@@ -22,7 +22,7 @@ export async function updateTransactionController(req: Request, res: Response) {
 
     const typedWantUpTransaction = await findByDynamicId(
       Transaction,
-      { id: req.body.id },
+      { transaction_id: req.body.id },
       false
     );
     const wantUpTransaction = typedWantUpTransaction as Transaction | null;
