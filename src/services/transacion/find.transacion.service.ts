@@ -1,4 +1,5 @@
 import { Transaction } from "../../models/Transaction";
+import { User } from "../../models/User";
 
 export async function findTransactionsByBorrowerId(
   borrower_id: string,
@@ -29,9 +30,22 @@ export async function findTransactionsByLenderId(
   return transactions;
 }
 
-export async function findTransactionsByTransactionId(transaction_id: string) {
-  const transactions = await Transaction.findByPk(transaction_id);
-  return transactions;
+export async function findTransactionByTransactionId(
+  transaction_id: string,
+  user: User
+) {
+  const transaction = await Transaction.findByPk(transaction_id);
+  if (!transaction) {
+    return null;
+  }
+  if (
+    transaction.lender_id !== user.id &&
+    transaction.borrower_id !== user.id &&
+    !user.isAdmin
+  ) {
+    throw new Error("Unauthorized to view this transaction");
+  }
+  return transaction;
 }
 
 export async function findTransactionsByListingId(listing_id: string) {

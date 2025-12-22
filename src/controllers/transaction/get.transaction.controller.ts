@@ -5,11 +5,13 @@ import {
   handleUncaughtError,
 } from "../../utils/apiResponse";
 import {
+  findTransactionByTransactionId,
   findTransactionsByLenderId,
-  findTransactionsByTransactionId,
 } from "../../services/transacion/find.transacion.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { User } from "../../models/User";
 
-export async function getTransactionByBorrowerIdController(
+export async function getTransactionsByBorrowerIdController(
   req: Request,
   res: Response
 ) {
@@ -53,7 +55,7 @@ export async function getTransactionByBorrowerIdController(
   }
 }
 
-export async function getTransactionBylenderIdController(
+export async function getTransactionsBylenderIdController(
   req: Request,
   res: Response
 ) {
@@ -101,8 +103,7 @@ export async function getTransactionBytransactionIdController(
   req: Request,
   res: Response
 ) {
-  const transaction_id = req.body.transaction_id;
-  const user = req.user;
+  const transaction_id = req.params.id;
   if (!transaction_id) {
     return errorResponse(
       res,
@@ -111,15 +112,28 @@ export async function getTransactionBytransactionIdController(
       400
     );
   }
-  if (!user) {
+  if (!req.user) {
     return errorResponse(res, "Login is required", "Unauthorized access", 401);
   }
-  const transacion = await findTransactionsByTransactionId(transaction_id);
+
+  const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+  const user = typedUser as User | null;
+
+  if (!user) {
+    return errorResponse(
+      res,
+      "User not found",
+      `User with ID ${req.user.id} does not exist`,
+      404
+    );
+  }
+
+  const transacion = await findTransactionByTransactionId(transaction_id, user);
   if (!transacion) {
     return errorResponse(
       res,
-      "Review not found",
-      `Review with transaction ID ${transaction_id} does not exist`,
+      "Transacion not found",
+      `Transacion with transaction ID ${transaction_id} does not exist`,
       404
     );
   }
