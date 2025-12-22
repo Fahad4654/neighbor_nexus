@@ -65,15 +65,17 @@ export async function findTransactionsByListingId(
 
 export async function findTransactionsByRentRequestId(
   rent_request_id: string,
-  lender: boolean
+  user: User
 ) {
   let whereClause: any = {};
-  if (lender) {
-    whereClause = { rent_request_id, show_to_lender: true };
+  if (user.isAdmin) {
+    whereClause = { rent_request_id };
   } else {
-    whereClause = { rent_request_id, show_to_borrower: true };
+    whereClause = {
+      [Op.or]: [{ lender_id: user.id }, { borrower_id: user.id }],
+    };
   }
-  const transactions = await Transaction.findOne({
+  const transactions = await Transaction.findAll({
     where: whereClause,
   });
   return transactions;

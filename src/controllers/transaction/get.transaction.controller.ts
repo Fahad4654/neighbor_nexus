@@ -8,6 +8,7 @@ import {
   findTransactionByTransactionId,
   findTransactionsByLenderId,
   findTransactionsByListingId,
+  findTransactionsByRentRequestId,
 } from "../../services/transacion/find.transacion.service";
 import { findByDynamicId } from "../../services/global/find.service";
 import { User } from "../../models/User";
@@ -227,5 +228,57 @@ export async function getTransactionsByListingIdController(
   } catch (error) {
     console.error("Error finding transacions:", error);
     return handleUncaughtError(res, error, "Error fetching transacions");
+  }
+}
+
+export async function getTransactionByRentRequest(req: Request, res: Response) {
+  try {
+    const rent_request_id = req.params.id;
+    if (!rent_request_id) {
+      return errorResponse(
+        res,
+        "Rent request ID is required",
+        "Missing rent request ID in request body",
+        400
+      );
+    }
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User | null;
+
+    if (!user) {
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+
+    const transacion = await findTransactionsByRentRequestId(
+      rent_request_id,
+      user
+    );
+    if (!transacion) {
+      return errorResponse(
+        res,
+        "Transacion not found",
+        `Transacion with rent request ID ${rent_request_id} does not exist`,
+        404
+      );
+    }
+
+    return transacion;
+  } catch (error) {
+    console.error("Error finding transacion:", error);
+    return handleUncaughtError(res, error, "Error fetching transacion");
   }
 }

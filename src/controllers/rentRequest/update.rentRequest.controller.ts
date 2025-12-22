@@ -14,6 +14,8 @@ import { Tool } from "../../models/Tools";
 import { createTransaction } from "../../services/transacion/create.transacion.service";
 import { COMMISSION } from "../../config";
 import { findTransactionsByRentRequestId } from "../../services/transacion/find.transacion.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { User } from "../../models/User";
 
 type RentRequestUpdatableField = keyof RentRequest;
 
@@ -121,9 +123,15 @@ export async function updateRentRequestController(req: Request, res: Response) {
       throw new Error("Cannot update an approved or cancelled request.");
     }
 
+    const typedUser = await findByDynamicId(User, { id: currentUserId }, false);
+    const user = typedUser as User | null;
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const checkTransaction = await findTransactionsByRentRequestId(
       rentRequest_id,
-      userIslender
+      user
     );
     if (checkTransaction) {
       throw new Error("Already has a transaction for this rent request");
