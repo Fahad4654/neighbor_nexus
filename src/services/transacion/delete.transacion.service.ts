@@ -25,6 +25,6 @@ export async function deleteTransaction(
     transaction.show_to_borrower = false;
   }
 
-  transaction.save();
+  await transaction.save();
   return transaction;
 }

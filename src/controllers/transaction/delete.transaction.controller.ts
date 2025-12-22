@@ -43,9 +43,9 @@ export async function deleteTransactionController(req: Request, res: Response) {
       );
     }
 
-    const wantDelReview = await findTransactionByTransactionId(id, user);
+    const wantDelTransaction = await findTransactionByTransactionId(id, user);
 
-    if (!wantDelReview) {
+    if (!wantDelTransaction) {
       return errorResponse(
         res,
         "Transaction not found",
@@ -54,29 +54,20 @@ export async function deleteTransactionController(req: Request, res: Response) {
       );
     }
 
-    if (
-      wantDelReview.borrower_id !== user.id &&
-      wantDelReview.lender_id !== user.id &&
-      !user.isAdmin
-    ) {
-      return errorResponse(
-        res,
-        "Unauthorized",
-        "You are not authorized to delete this transaction",
-        401
-      );
-    }
-
     const deletedTransaction = await deleteTransaction(id, user.id);
 
     return successResponse(
       res,
-      "Review deleted successfully",
+      "Transaction deleted successfully",
       { transaction: deletedTransaction },
       200
     );
-  } catch (error) {
-    console.error("Error deleting review:", error);
-    return handleUncaughtError(res, error, "Error deleting review");
+  } catch (error: any) {
+    if (error.message === "Unauthorized to delete this transaction") {
+      return errorResponse(res, "Forbidden", error.message, 403);
+    }
+
+    console.error("Error updating transaction visibility:", error);
+    return handleUncaughtError(res, error, "Error removing transaction");
   }
 }
