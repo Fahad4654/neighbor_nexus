@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { Transaction } from "../../models/Transaction";
 import { User } from "../../models/User";
 
@@ -74,6 +75,20 @@ export async function findTransactionsByRentRequestId(
   }
   const transactions = await Transaction.findOne({
     where: whereClause,
+  });
+  return transactions;
+}
+
+export async function findTransactionsByUserId(
+  user_id: string,
+  page: number = 1,
+  pageSize: number = 10
+) {
+  const offset = (page - 1) * pageSize;
+  const transactions = await Transaction.findAll({
+    where: { [Op.or]: [{ lender_id: user_id }, { borrower_id: user_id }] },
+    offset: offset,
+    limit: pageSize,
   });
   return transactions;
 }
