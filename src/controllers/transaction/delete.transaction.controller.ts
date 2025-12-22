@@ -1,22 +1,17 @@
 import { Request, Response } from "express";
-import { Review } from "../../models/Review";
-import { deleteReview } from "../../services/review/delete.review.service";
 import {
   successResponse,
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
-import { findTransactionsByTransactionId } from "../../services/transacion/find.transacion.service";
 import { deleteTransaction } from "../../services/transacion/delete.transacion.service";
+import { User } from "../../models/User";
+import { findByDynamicId } from "../../services/global/find.service";
+import { findTransactionByTransactionId } from "../../services/transacion/find.transacion.service";
 
 export async function deleteTransactionController(req: Request, res: Response) {
   try {
     const { id } = req.body;
-    const user = req.user;
-
-    if (!user) {
-      return errorResponse(res, "Login required", "Unauthorized access", 401);
-    }
 
     if (!id) {
       return errorResponse(
@@ -27,7 +22,28 @@ export async function deleteTransactionController(req: Request, res: Response) {
       );
     }
 
-    const wantDelReview = await findTransactionsByTransactionId(id);
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User | null;
+
+    if (!user) {
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+
+    const wantDelReview = await findTransactionByTransactionId(id, user);
 
     if (!wantDelReview) {
       return errorResponse(

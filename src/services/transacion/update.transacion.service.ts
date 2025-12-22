@@ -1,6 +1,8 @@
 import { Review } from "../../models/Review";
 
-export async function updateReview(data: Partial<Review> & { id: string }) {
+export async function updateTransaction(
+  data: Partial<Review> & { id: string }
+) {
   const review = await Review.findOne({ where: { review_id: data.id } });
   if (!review) {
     console.log("Review not found");
