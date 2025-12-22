@@ -48,9 +48,16 @@ export async function findTransactionByTransactionId(
   return transaction;
 }
 
-export async function findTransactionsByListingId(listing_id: string) {
+export async function findTransactionsByListingId(
+  listing_id: string,
+  page: number = 1,
+  pageSize: number = 10
+) {
+  const offset = (page - 1) * pageSize;
   const transactions = await Transaction.findAll({
     where: { listing_id, show_to_lender: true },
+    offset: offset,
+    limit: pageSize,
   });
   return transactions;
 }
