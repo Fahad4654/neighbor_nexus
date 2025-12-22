@@ -73,6 +73,7 @@ export async function findTransactionsByRentRequestId(
   } else {
     whereClause = {
       [Op.or]: [{ lender_id: user.id }, { borrower_id: user.id }],
+      rent_request_id,
     };
   }
   const transactions = await Transaction.findAll({

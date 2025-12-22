@@ -133,8 +133,15 @@ export async function updateRentRequestController(req: Request, res: Response) {
       rentRequest_id,
       user
     );
-    if (checkTransaction) {
+    console.log("---------", checkTransaction);
+    if (checkTransaction.length > 0) {
       throw new Error("Already has a transaction for this rent request");
+    }
+    if (req.body.pickup_time) {
+      const date = new Date(req.body.pickup_time);
+      if (date < new Date()) {
+        throw new Error("Pickup time cannot be in the past");
+      }
     }
     const updatedRentRequest = await updateRentRequest(servicePayload);
     const tool = await Tool.findByPk(updatedRentRequest?.listing_id);
