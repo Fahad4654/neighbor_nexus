@@ -6,6 +6,7 @@ import {
 } from "../../utils/apiResponse";
 import {
   findTransactionByTransactionId,
+  findTransactionsByBorrowerId,
   findTransactionsByLenderId,
   findTransactionsByListingId,
   findTransactionsByRentRequestId,
@@ -14,6 +15,7 @@ import {
 import { findByDynamicId } from "../../services/global/find.service";
 import { User } from "../../models/User";
 import { Tool } from "../../models/Tools";
+import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 
 export async function getTransactionsByBorrowerIdController(
   req: Request,
@@ -21,7 +23,14 @@ export async function getTransactionsByBorrowerIdController(
 ) {
   try {
     const borrower_id = req.params.id;
-    const { page, pageSize } = req.body;
+    const { order, asc, page = 1, pageSize = 10 } = req.body;
+
+    const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
+    if (!reqBodyValidation) return;
+
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
 
     if (!borrower_id) {
       return errorResponse(
@@ -31,27 +40,27 @@ export async function getTransactionsByBorrowerIdController(
         400
       );
     }
-    const transacions = await findTransactionsByLenderId(
+
+    if (borrower_id !== req.user.id) {
+      return errorResponse(res, "Forbidden", "Unauthorized access", 403);
+    }
+    const transacions = await findTransactionsByBorrowerId(
       borrower_id,
-      page,
-      pageSize
+      order,
+      asc,
+      Number(page),
+      Number(pageSize)
     );
 
-    if (!transacions) {
-      console.log("Transacion not found");
-      return errorResponse(
-        res,
-        "Transacion not found",
-        `Borrower does not have any transacions`,
-        404
-      );
-    }
+    const { total, ...restOfPagination } = transacions.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
 
     return successResponse(
       res,
       "Transacions fetched successfully",
-      transacions,
-      200
+      transacions.data,
+      200,
+      pagination
     );
   } catch (error) {
     console.error("Error finding transacions:", error);
@@ -65,7 +74,14 @@ export async function getTransactionsBylenderIdController(
 ) {
   try {
     const lender_id = req.params.id;
-    const { page, pageSize } = req.body;
+    const { order, asc, page = 1, pageSize = 10 } = req.body;
+
+    const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
+    if (!reqBodyValidation) return;
+
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
 
     if (!lender_id) {
       return errorResponse(
@@ -75,27 +91,27 @@ export async function getTransactionsBylenderIdController(
         400
       );
     }
+    if (lender_id !== req.user.id) {
+      return errorResponse(res, "Forbidden", "Unauthorized access", 403);
+    }
+
     const transacions = await findTransactionsByLenderId(
       lender_id,
-      page,
-      pageSize
+      order,
+      asc,
+      Number(page),
+      Number(pageSize)
     );
 
-    if (!transacions) {
-      console.log("Transacion not found");
-      return errorResponse(
-        res,
-        "Transacion not found",
-        `Lender does not have any transacions`,
-        404
-      );
-    }
+    const { total, ...restOfPagination } = transacions.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
 
     return successResponse(
       res,
       "Transacions fetched successfully",
-      transacions,
-      200
+      transacions.data,
+      200,
+      pagination
     );
   } catch (error) {
     console.error("Error finding transacions:", error);
@@ -151,7 +167,12 @@ export async function getTransactionBytransactionIdController(
       );
     }
 
-    return transacion;
+    return successResponse(
+      res,
+      "Transacion fetched successfully",
+      transacion,
+      200
+    );
   } catch (error) {
     console.error("Error finding transacions:", error);
     return handleUncaughtError(res, error, "Error fetching transacions");
@@ -164,7 +185,10 @@ export async function getTransactionsByListingIdController(
 ) {
   try {
     const listing_id = req.params.id;
-    const { page, pageSize } = req.body;
+    const { order, asc, page = 1, pageSize = 10 } = req.body;
+
+    const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
+    if (!reqBodyValidation) return;
     if (!listing_id) {
       return errorResponse(
         res,
@@ -214,18 +238,21 @@ export async function getTransactionsByListingIdController(
 
     const transacions = await findTransactionsByListingId(
       listing_id,
-      page,
-      pageSize
+      order,
+      asc,
+      Number(page),
+      Number(pageSize)
     );
-    if (!transacions) {
-      return errorResponse(
-        res,
-        "Transacion not found",
-        `Transacion with listing ID ${listing_id} does not exist`,
-        404
-      );
-    }
-    return transacions;
+    const { total, ...restOfPagination } = transacions.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
+
+    return successResponse(
+      res,
+      "Transacions fetched successfully",
+      transacions.data,
+      200,
+      pagination
+    );
   } catch (error) {
     console.error("Error finding transacions:", error);
     return handleUncaughtError(res, error, "Error fetching transacions");
@@ -235,14 +262,16 @@ export async function getTransactionsByListingIdController(
 export async function getTransactionByRentRequest(req: Request, res: Response) {
   try {
     const rent_request_id = req.params.id;
+
     if (!rent_request_id) {
       return errorResponse(
         res,
         "Rent request ID is required",
-        "Missing rent request ID in request body",
+        "Missing ID in params",
         400
       );
     }
+
     if (!req.user) {
       return errorResponse(
         res,
@@ -252,35 +281,40 @@ export async function getTransactionByRentRequest(req: Request, res: Response) {
       );
     }
 
+    // 1. Get the user (using the ID from the auth middleware)
     const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
     const user = typedUser as User | null;
 
     if (!user) {
-      return errorResponse(
-        res,
-        "User not found",
-        `User with ID ${req.user.id} does not exist`,
-        404
-      );
+      return errorResponse(res, "User not found", "User does not exist", 404);
     }
 
-    const transacion = await findTransactionsByRentRequestId(
+    // 2. Fetch the transactions
+    const transactions = await findTransactionsByRentRequestId(
       rent_request_id,
       user
     );
-    if (!transacion) {
+
+    // 3. Check if any transactions were found (check array length)
+    if (!transactions || transactions.length === 0) {
       return errorResponse(
         res,
-        "Transacion not found",
-        `Transacion with rent request ID ${rent_request_id} does not exist`,
+        "Transaction not found",
+        `No visible transactions for rent request ${rent_request_id}`,
         404
       );
     }
 
-    return transacion;
+    // 4. Return success response (Don't just return the data, use successResponse)
+    return successResponse(
+      res,
+      "Transaction retrieved successfully",
+      { transactions },
+      200
+    );
   } catch (error) {
-    console.error("Error finding transacion:", error);
-    return handleUncaughtError(res, error, "Error fetching transacion");
+    console.error("Error finding transaction:", error);
+    return handleUncaughtError(res, error, "Error fetching transaction");
   }
 }
 
@@ -290,7 +324,10 @@ export async function getTransactionsByUserIdController(
 ) {
   try {
     const user_id = req.params.id;
-    const { page, pageSize } = req.body;
+    const { order, asc, page = 1, pageSize = 10 } = req.body;
+
+    const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
+    if (!reqBodyValidation) return;
     if (!user_id) {
       return errorResponse(
         res,
@@ -318,16 +355,23 @@ export async function getTransactionsByUserIdController(
       );
     }
 
-    const transacions = await findTransactionsByUserId(user_id, page, pageSize);
-    if (!transacions) {
-      return errorResponse(
-        res,
-        "Transacion not found",
-        `Transacion with user ID ${user_id} does not exist`,
-        404
-      );
-    }
-    return transacions;
+    const transacions = await findTransactionsByUserId(
+      user_id,
+      order,
+      asc,
+      Number(page),
+      Number(pageSize)
+    );
+    const { total, ...restOfPagination } = transacions.pagination;
+    const pagination = { totalCount: total, ...restOfPagination };
+
+    return successResponse(
+      res,
+      "Transacions fetched successfully",
+      transacions.data,
+      200,
+      pagination
+    );
   } catch (error) {
     console.error("Error finding transacions:", error);
     return handleUncaughtError(res, error, "Error fetching transacions");
