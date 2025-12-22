@@ -1,10 +1,10 @@
 import { Transaction } from "../../models/Transaction";
 
 export async function updateTransaction(
-  data: Partial<Transaction> & { id: string }
+  data: Partial<Transaction> & { transaction_id: string }
 ) {
   const transaction = await Transaction.findOne({
-    where: { review_id: data.id },
+    where: { transaction_id: data.id },
   });
   if (!transaction) {
     console.log("Transaction not found");
