@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import { findByDynamicId } from "../../services/global/find.service";
 import { Transaction } from "../../models/Transaction";
-import { updateTransaction } from "../../services/Transaction/update.Transaction.service";
+
 import {
   successResponse,
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
+import { updateTransaction } from "../../services/transacion/update.transacion.service";
 
 export async function updateTransactionController(req: Request, res: Response) {
   try {

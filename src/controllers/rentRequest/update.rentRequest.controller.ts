@@ -10,15 +10,12 @@ import {
 } from "../../utils/apiResponse";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { RentRequest } from "../../models/RentRequest";
-import { Transaction } from "../../models/Transaction";
 import { Tool } from "../../models/Tools";
 import { createTransaction } from "../../services/transacion/create.transacion.service";
 import { COMMISSION } from "../../config";
-import {
-  findTransactionsByRentRequestId,
-  findTransactionsByReviewerId,
-  findTransactionsByUserId,
-} from "../../services/transacion/find.transacion.service";
+import { findTransactionsByRentRequestId } from "../../services/transacion/find.transacion.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { User } from "../../models/User";
 
 type RentRequestUpdatableField = keyof RentRequest;
 
@@ -75,9 +72,13 @@ export async function updateRentRequestController(req: Request, res: Response) {
 
     let allowedFields: RentRequestUpdatableField[] = [];
 
+    let userIslender = false;
+
     if (currentUserId === rentRequest.lender_id) {
       allowedFields = LENDER_ALLOWED_FIELDS;
+      userIslender = true;
     } else if (currentUserId === rentRequest.borrower_id) {
+      userIslender = false;
       if (updateData.rent_status && updateData.rent_status !== "Cancelled") {
         return errorResponse(res, "Borrowers can only cancel requests.", 403);
       }
@@ -122,8 +123,15 @@ export async function updateRentRequestController(req: Request, res: Response) {
       throw new Error("Cannot update an approved or cancelled request.");
     }
 
+    const typedUser = await findByDynamicId(User, { id: currentUserId }, false);
+    const user = typedUser as User | null;
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const checkTransaction = await findTransactionsByRentRequestId(
-      rentRequest_id
+      rentRequest_id,
+      user
     );
     if (checkTransaction) {
       throw new Error("Already has a transaction for this rent request");

@@ -1,93 +1,105 @@
 import { Request, Response } from "express";
-import { findByDynamicId } from "../../services/global/find.service";
-import { Review } from "../../models/Review";
 import {
   successResponse,
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
 import {
-  findReviewsByReviewerId,
-  findReviewsByTransactionId,
-} from "../../services/review/find.review.service";
+  findTransactionByTransactionId,
+  findTransactionsByLenderId,
+  findTransactionsByListingId,
+  findTransactionsByRentRequestId,
+  findTransactionsByUserId,
+} from "../../services/transacion/find.transacion.service";
+import { findByDynamicId } from "../../services/global/find.service";
+import { User } from "../../models/User";
+import { Tool } from "../../models/Tools";
 
-export async function getTransactionByIdController(
+export async function getTransactionsByBorrowerIdController(
   req: Request,
   res: Response
 ) {
   try {
-    const review_id = req.params.id;
+    const borrower_id = req.params.id;
+    const { page, pageSize } = req.body;
 
-    if (!review_id) {
+    if (!borrower_id) {
       return errorResponse(
         res,
-        "Review ID is required",
-        "Missing review ID in route parameter",
+        "borrower_id is required",
+        "Missing borrower ID in route parameter",
         400
       );
     }
+    const transacions = await findTransactionsByLenderId(
+      borrower_id,
+      page,
+      pageSize
+    );
 
-    const typedReview = await findByDynamicId(Review, { id: review_id }, false);
-    const review = typedReview as Review | null;
-
-    if (!review) {
-      console.log("Review not found");
+    if (!transacions) {
+      console.log("Transacion not found");
       return errorResponse(
         res,
-        "Review not found",
-        `Review with ID ${review_id} does not exist`,
+        "Transacion not found",
+        `Borrower does not have any transacions`,
         404
       );
     }
 
     return successResponse(
       res,
-      "Review fetched successfully",
-      review.dataValues,
+      "Transacions fetched successfully",
+      transacions,
       200
     );
   } catch (error) {
-    console.error("Error finding review:", error);
-    return handleUncaughtError(res, error, "Error fetching reviews");
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
   }
 }
 
-export async function getTransactionByReviewerIdController(
+export async function getTransactionsBylenderIdController(
   req: Request,
   res: Response
 ) {
   try {
-    const reviewer_id = req.params.id;
+    const lender_id = req.params.id;
     const { page, pageSize } = req.body;
 
-    if (!reviewer_id) {
+    if (!lender_id) {
       return errorResponse(
         res,
-        "Reviewer ID is required",
-        "Missing reviewer ID in route parameter",
+        "lender_id is required",
+        "Missing lender ID in route parameter",
         400
       );
     }
-    const review = await findTransactionByReviewerId(
-      reviewer_id,
+    const transacions = await findTransactionsByLenderId(
+      lender_id,
       page,
       pageSize
     );
 
-    if (!review) {
-      console.log("Review not found");
+    if (!transacions) {
+      console.log("Transacion not found");
       return errorResponse(
         res,
-        "Review not found",
-        `Review with ID ${reviewer_id} does not exist`,
+        "Transacion not found",
+        `Lender does not have any transacions`,
         404
       );
     }
 
-    return successResponse(res, "Review fetched successfully", review, 200);
+    return successResponse(
+      res,
+      "Transacions fetched successfully",
+      transacions,
+      200
+    );
   } catch (error) {
-    console.error("Error finding review:", error);
-    return handleUncaughtError(res, error, "Error fetching reviews");
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
   }
 }
 
@@ -95,28 +107,229 @@ export async function getTransactionBytransactionIdController(
   req: Request,
   res: Response
 ) {
-  const transaction_id = req.body.transaction_id;
-  const user = req.user;
-  if (!transaction_id) {
-    return errorResponse(
-      res,
-      "Transaction ID is required",
-      "Missing transaction ID in request body",
-      400
-    );
-  }
-  if (!user) {
-    return errorResponse(res, "Login is required", "Unauthorized access", 401);
-  }
-  const review = await findTransactionByTransactionId(transaction_id);
-  if (!review) {
-    return errorResponse(
-      res,
-      "Review not found",
-      `Review with transaction ID ${transaction_id} does not exist`,
-      404
-    );
-  }
+  try {
+    const transaction_id = req.params.id;
+    if (!transaction_id) {
+      return errorResponse(
+        res,
+        "Transaction ID is required",
+        "Missing transaction ID in request body",
+        400
+      );
+    }
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
 
-  return review;
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User | null;
+
+    if (!user) {
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+
+    const transacion = await findTransactionByTransactionId(
+      transaction_id,
+      user
+    );
+    if (!transacion) {
+      return errorResponse(
+        res,
+        "Transacion not found",
+        `Transacion with transaction ID ${transaction_id} does not exist`,
+        404
+      );
+    }
+
+    return transacion;
+  } catch (error) {
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
+  }
+}
+
+export async function getTransactionsByListingIdController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const listing_id = req.params.id;
+    const { page, pageSize } = req.body;
+    if (!listing_id) {
+      return errorResponse(
+        res,
+        "Listing ID is required",
+        "Missing listing ID in request body",
+        400
+      );
+    }
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+
+    const user = req.user;
+    if (!user) {
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+    const typedTool = await findByDynamicId(Tool, { listing_id }, false);
+    const tool = typedTool as Tool | null;
+
+    if (!tool) {
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with listing ID ${listing_id} does not exist`,
+        404
+      );
+    }
+
+    if (tool.owner_id !== user.id) {
+      return errorResponse(
+        res,
+        "Unauthorized access",
+        `You are not the owner of this tool`,
+        401
+      );
+    }
+
+    const transacions = await findTransactionsByListingId(
+      listing_id,
+      page,
+      pageSize
+    );
+    if (!transacions) {
+      return errorResponse(
+        res,
+        "Transacion not found",
+        `Transacion with listing ID ${listing_id} does not exist`,
+        404
+      );
+    }
+    return transacions;
+  } catch (error) {
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
+  }
+}
+
+export async function getTransactionByRentRequest(req: Request, res: Response) {
+  try {
+    const rent_request_id = req.params.id;
+    if (!rent_request_id) {
+      return errorResponse(
+        res,
+        "Rent request ID is required",
+        "Missing rent request ID in request body",
+        400
+      );
+    }
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User | null;
+
+    if (!user) {
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+
+    const transacion = await findTransactionsByRentRequestId(
+      rent_request_id,
+      user
+    );
+    if (!transacion) {
+      return errorResponse(
+        res,
+        "Transacion not found",
+        `Transacion with rent request ID ${rent_request_id} does not exist`,
+        404
+      );
+    }
+
+    return transacion;
+  } catch (error) {
+    console.error("Error finding transacion:", error);
+    return handleUncaughtError(res, error, "Error fetching transacion");
+  }
+}
+
+export async function getTransactionsByUserIdController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const user_id = req.params.id;
+    const { page, pageSize } = req.body;
+    if (!user_id) {
+      return errorResponse(
+        res,
+        "User ID is required",
+        "Missing user ID in request body",
+        400
+      );
+    }
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+
+    const user = req.user;
+    if (!user) {
+      return errorResponse(
+        res,
+        "User not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+
+    const transacions = await findTransactionsByUserId(user_id, page, pageSize);
+    if (!transacions) {
+      return errorResponse(
+        res,
+        "Transacion not found",
+        `Transacion with user ID ${user_id} does not exist`,
+        404
+      );
+    }
+    return transacions;
+  } catch (error) {
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
+  }
 }
