@@ -36,11 +36,10 @@ export async function updateRentRequest(
     throw new Error("No valid fields provided for update");
   }
 
-  if (typeof updates.pickup_time === "string") {
-    updates.pickup_time = new Date(updates.pickup_time);
-  }
-
   if (updates.pickup_time) {
+    if (typeof updates.pickup_time === "string") {
+      updates.pickup_time = new Date(updates.pickup_time);
+    }
     if (isNaN(updates.pickup_time.getTime())) {
       throw new Error("Invalid format for pickup_time");
     }
