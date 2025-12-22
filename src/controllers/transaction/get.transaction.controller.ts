@@ -20,7 +20,7 @@ export async function getTransactionByBorrowerIdController(
     if (!borrower_id) {
       return errorResponse(
         res,
-        "Borrower ID is required",
+        "borrower_id is required",
         "Missing borrower ID in route parameter",
         400
       );
@@ -48,8 +48,8 @@ export async function getTransactionByBorrowerIdController(
       200
     );
   } catch (error) {
-    console.error("Error finding transacion:", error);
-    return handleUncaughtError(res, error, "Error fetching transacion");
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
   }
 }
 
@@ -64,31 +64,36 @@ export async function getTransactionBylenderIdController(
     if (!lender_id) {
       return errorResponse(
         res,
-        "Reviewer ID is required",
-        "Missing reviewer ID in route parameter",
+        "lender_id is required",
+        "Missing lender ID in route parameter",
         400
       );
     }
-    const transacion = await findTransactionsByLenderId(
+    const transacions = await findTransactionsByLenderId(
       lender_id,
       page,
       pageSize
     );
 
-    if (!transacion) {
-      console.log("Review not found");
+    if (!transacions) {
+      console.log("Transacion not found");
       return errorResponse(
         res,
-        "Review not found",
-        `Review with ID ${lender_id} does not exist`,
+        "Transacion not found",
+        `Lender does not have any transacions`,
         404
       );
     }
 
-    return successResponse(res, "Review fetched successfully", transacion, 200);
+    return successResponse(
+      res,
+      "Transacions fetched successfully",
+      transacions,
+      200
+    );
   } catch (error) {
-    console.error("Error finding review:", error);
-    return handleUncaughtError(res, error, "Error fetching reviews");
+    console.error("Error finding transacions:", error);
+    return handleUncaughtError(res, error, "Error fetching transacions");
   }
 }
 
