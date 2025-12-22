@@ -70,9 +70,13 @@ export async function updateRentRequestController(req: Request, res: Response) {
 
     let allowedFields: RentRequestUpdatableField[] = [];
 
+    let userIslender = false;
+
     if (currentUserId === rentRequest.lender_id) {
       allowedFields = LENDER_ALLOWED_FIELDS;
+      userIslender = true;
     } else if (currentUserId === rentRequest.borrower_id) {
+      userIslender = false;
       if (updateData.rent_status && updateData.rent_status !== "Cancelled") {
         return errorResponse(res, "Borrowers can only cancel requests.", 403);
       }
@@ -115,11 +119,6 @@ export async function updateRentRequestController(req: Request, res: Response) {
       rentRequest.rent_status === "Cancelled"
     ) {
       throw new Error("Cannot update an approved or cancelled request.");
-    }
-
-    let userIslender = false;
-    if (currentUserId === rentRequest.lender_id) {
-      userIslender = true;
     }
 
     const checkTransaction = await findTransactionsByRentRequestId(

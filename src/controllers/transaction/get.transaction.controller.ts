@@ -9,6 +9,50 @@ import {
   findTransactionsByTransactionId,
 } from "../../services/transacion/find.transacion.service";
 
+export async function getTransactionByBorrowerIdController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const borrower_id = req.params.id;
+    const { page, pageSize } = req.body;
+
+    if (!borrower_id) {
+      return errorResponse(
+        res,
+        "Borrower ID is required",
+        "Missing borrower ID in route parameter",
+        400
+      );
+    }
+    const transacions = await findTransactionsByLenderId(
+      borrower_id,
+      page,
+      pageSize
+    );
+
+    if (!transacions) {
+      console.log("Transacion not found");
+      return errorResponse(
+        res,
+        "Transacion not found",
+        `Borrower does not have any transacions`,
+        404
+      );
+    }
+
+    return successResponse(
+      res,
+      "Transacions fetched successfully",
+      transacions,
+      200
+    );
+  } catch (error) {
+    console.error("Error finding transacion:", error);
+    return handleUncaughtError(res, error, "Error fetching transacion");
+  }
+}
+
 export async function getTransactionBylenderIdController(
   req: Request,
   res: Response
