@@ -67,7 +67,7 @@ export const deleteToolController = asyncHandler(async (req: Request, res: Respo
   return successResponse(
     res,
     "Tool deleted successfully",
-    { data: tool, deletedCount },
+    { tool: tool, deletedCount },
     200
   );
 }, "Error deleting tool");

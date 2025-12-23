@@ -56,7 +56,7 @@ export const getUsersProfileController = asyncHandler(async (req: Request, res: 
   return successResponse(
     res,
     "User Profiles fetched successfully",
-    profiles.data,
+    { profiles: profiles.data },
     200,
     pagination
   );

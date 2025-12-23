@@ -283,5 +283,5 @@ export async function resetPassword(identifier: string, newPassword: string) {
     }
   );
 
-  return { message: "Password reset successful" };
+  return "Password reset successful";
 }

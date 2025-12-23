@@ -86,7 +86,7 @@ export const deleteUserController = asyncHandler(async (req: Request, res: Respo
   return successResponse(
     res,
     "User deleted successfully",
-    { deleted: { email, id, phoneNumber } },
+    { deletedUser: { email, id, phoneNumber } },
     200
   );
 }, "Error deleting user");

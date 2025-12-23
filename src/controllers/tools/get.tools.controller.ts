@@ -40,7 +40,7 @@ export const getToolsController = asyncHandler(async (req: Request, res: Respons
   return successResponse(
     res,
     "Tools fetched successfully",
-    { toolsList: toolsList.data },
+    { tools: toolsList.data },
     200,
     pagination
   );
@@ -67,7 +67,7 @@ export const getToolByListingIdController = asyncHandler(async (
   return successResponse(
     res,
     "Tool fetched successfully",
-    tool.get({ plain: true }),
+    { tools: tool.get({ plain: true }) },
     200
   );
 }, "Error fetching tool");
@@ -103,7 +103,7 @@ export const getToolsByOwnerIdController = asyncHandler(async (req: Request, res
   return successResponse(
     res,
     "Tools fetched successfully",
-    tools.map((t) => t.get({ plain: true })),
+    { tools: tools.map((t) => t.get({ plain: true })) },
     200
   );
 }, "Error fetching tools");

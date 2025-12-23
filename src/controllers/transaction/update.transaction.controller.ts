@@ -53,7 +53,7 @@ export const updateTransactionController = asyncHandler(async (req: Request, res
   return successResponse(
     res,
     "Transaction updated successfully",
-    { Transaction: updatedTransaction },
+    { transaction: updatedTransaction },
     200
   );
 }, "Error updating Transaction");

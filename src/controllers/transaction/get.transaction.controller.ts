@@ -30,7 +30,7 @@ export const getTransactionsByBorrowerIdController = asyncHandler(async (
   if (!validateAuth(req.user, res)) return;
 
   if (!validateId(borrower_id, "borrower_id", res, "route parameter")) return;
-  
+
   if (!validateAuthorization(req.user, borrower_id, res, "Unauthorized access")) return;
   const transacions = await findTransactionsByBorrowerId(
     borrower_id,
@@ -47,7 +47,7 @@ export const getTransactionsByBorrowerIdController = asyncHandler(async (
   return successResponse(
     res,
     "Transacions fetched successfully",
-    transacions.data,
+    { transactions: transacions.data },
     200,
     pagination
   );
@@ -82,7 +82,7 @@ export const getTransactionsBylenderIdController = asyncHandler(async (
   return successResponse(
     res,
     "Transacions fetched successfully",
-    transacions.data,
+    { transactions: transacions.data },
     200,
     pagination
   );
@@ -138,7 +138,7 @@ export const getTransactionBytransactionIdController = asyncHandler(async (
   return successResponse(
     res,
     "Transacion fetched successfully",
-    transacion,
+    { transaction: transacion },
     200
   );
 }, "Error fetching transacions");
@@ -213,13 +213,13 @@ export const getTransactionsByListingIdController = asyncHandler(async (
   return successResponse(
     res,
     "Transacions fetched successfully",
-    transacions.data,
+    { transactions: transacions.data },
     200,
     pagination
   );
 }, "Error fetching transacions");
 
-export const getTransactionByRentRequest = asyncHandler(async (req: Request, res: Response) => {
+export const getTransactionByRentRequestIdController = asyncHandler(async (req: Request, res: Response) => {
   const rent_request_id = req.params.id;
 
   if (!rent_request_id) {
@@ -250,7 +250,7 @@ export const getTransactionByRentRequest = asyncHandler(async (req: Request, res
   }
 
   // 2. Fetch the transactions
-  const transactions = await findTransactionsByRentRequestId(
+  const transaction = await findTransactionsByRentRequestId(
     rent_request_id,
     user,
     search,
@@ -258,7 +258,7 @@ export const getTransactionByRentRequest = asyncHandler(async (req: Request, res
   );
 
   // 3. Check if any transactions were found (check array length)
-  if (!transactions || transactions.length === 0) {
+  if (!transaction || transaction.length === 0) {
     return errorResponse(
       res,
       "Transaction not found",
@@ -271,7 +271,7 @@ export const getTransactionByRentRequest = asyncHandler(async (req: Request, res
   return successResponse(
     res,
     "Transaction retrieved successfully",
-    { transactions },
+    { transaction },
     200
   );
 }, "Error fetching transaction");
@@ -326,7 +326,7 @@ export const getTransactionsByUserIdController = asyncHandler(async (
   return successResponse(
     res,
     "Transacions fetched successfully",
-    transacions.data,
+    { transactions: transacions.data },
     200,
     pagination
   );

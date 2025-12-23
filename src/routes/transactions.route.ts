@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  getTransactionByRentRequest,
+  getTransactionByRentRequestIdController,
   getTransactionBytransactionIdController,
   getTransactionsByBorrowerIdController,
   getTransactionsBylenderIdController,
@@ -18,7 +18,7 @@ router.post("/user/:id", getTransactionsByUserIdController);
 router.post("/borrower/:id", getTransactionsByBorrowerIdController);
 router.post("/lender/:id", getTransactionsBylenderIdController);
 router.post("/tool/:id", getTransactionsByListingIdController);
-router.get("/rent-request/:id", getTransactionByRentRequest);
+router.get("/rent-request/:id", getTransactionByRentRequestIdController);
 
 router.post("/", createTransactionController);
 router.put("/", updateTransactionController);
