@@ -172,12 +172,15 @@ export async function findTransactionsByListingId(
 
 export async function findTransactionsByRentRequestId(
   rent_request_id: string,
-  user: User
+  user: User,
+  search?: string
 ) {
   let whereClause: any = {};
+  const searchClause = getSearchWhereClause(search);
+
   if (user.isAdmin) {
     // Admins see everything regardless of user visibility flags
-    whereClause = { rent_request_id };
+    whereClause = { rent_request_id, ...searchClause };
   } else {
     // Non-admins only see it if they are a participant AND haven't hidden it
     whereClause = {
@@ -190,6 +193,7 @@ export async function findTransactionsByRentRequestId(
           [Op.and]: [{ borrower_id: user.id }, { show_to_borrower: true }],
         },
       ],
+      ...searchClause,
     };
   }
   const transactions = await Transaction.findAll({

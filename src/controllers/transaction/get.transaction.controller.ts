@@ -264,6 +264,7 @@ export const getTransactionByRentRequest = asyncHandler(async (req: Request, res
   // 1. Get the user (using the ID from the auth middleware)
   const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
   const user = typedUser as User | null;
+  const { search } = getPaginationParams(req);
 
   if (!user) {
     return errorResponse(res, "User not found", "User does not exist", 404);
@@ -272,7 +273,8 @@ export const getTransactionByRentRequest = asyncHandler(async (req: Request, res
   // 2. Fetch the transactions
   const transactions = await findTransactionsByRentRequestId(
     rent_request_id,
-    user
+    user,
+    search
   );
 
   // 3. Check if any transactions were found (check array length)
