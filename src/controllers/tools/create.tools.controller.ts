@@ -42,7 +42,7 @@ export const createToolController = asyncHandler(async (req: Request, res: Respo
   return successResponse(
     res,
     "Tool created successfully",
-    { data: newTool },
+    { tool: newTool },
     201
   );
 }, "Error creating tool");

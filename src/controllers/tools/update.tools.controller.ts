@@ -60,7 +60,7 @@ export const updateToolInfoController = asyncHandler(async (req: Request, res: R
   return successResponse(
     res,
     "Tool updated successfully",
-    { data: updatedTool },
+    { tool: updatedTool },
     200
   );
 }, "Error updating tool info");

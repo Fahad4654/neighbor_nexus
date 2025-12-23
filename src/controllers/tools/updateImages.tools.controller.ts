@@ -71,9 +71,9 @@ export const updateToolImagesController = asyncHandler(async (req: Request, res:
         removeImageIds = remove_image_ids.startsWith("[")
           ? JSON.parse(remove_image_ids)
           : remove_image_ids
-              .split(",")
-              .map((s: string) => s.trim())
-              .filter(Boolean);
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean);
       } else if (Array.isArray(remove_image_ids)) {
         removeImageIds = removeImageIds;
       }
@@ -141,13 +141,13 @@ export const updateToolImagesController = asyncHandler(async (req: Request, res:
       const unauthorizedIds = removeImageIds.filter(id => !foundIds.has(id));
 
       return errorResponse(
-          res,
-          "Image Security Breach",
-          `One or more image IDs (${unauthorizedIds.join(', ')}) do not belong to tool ID ${listing_id} or do not exist.`,
-          403 // Forbidden access
+        res,
+        "Image Security Breach",
+        `One or more image IDs (${unauthorizedIds.join(', ')}) do not belong to tool ID ${listing_id} or do not exist.`,
+        403 // Forbidden access
       );
     }
-    
+
     // Check if deleting these images would leave the tool without a primary image
     const potentialPrimaryImage = await ToolImage.findOne({
       where: {
@@ -204,7 +204,7 @@ export const updateToolImagesController = asyncHandler(async (req: Request, res:
     }
 
     const rootDir = process.cwd();
-    
+
     // 💡 CHANGE 3 (Requirement 2): Unset old primary if a new file is becoming primary AND no existing ID was used
     // NOTE: This runs BEFORE file creation, which is necessary if we are deleting the old primary.
     if (isNewFilePrimaryRequested && newFiles.length > 0 && !new_primary_id) {
@@ -263,7 +263,7 @@ export const updateToolImagesController = asyncHandler(async (req: Request, res:
   return successResponse(
     res,
     "Tool images updated successfully",
-    { data: updatedTool },
+    { tool: updatedTool },
     200
   );
 }, "Error updating tool images");
