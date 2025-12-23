@@ -1,53 +1,57 @@
 import { Request, Response } from "express";
-import { isAdmin } from "../../middlewares/isAdmin.middleware";
+import { User } from "../../models/User";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { findAllProfiles } from "../../services/profile/findAll.profile.service";
 import {
   errorResponse,
   successResponse,
-  handleUncaughtError,
 } from "../../utils/apiResponse";
+import { asyncHandler } from "../../utils/asyncHandler";
 
-export async function getUsersProfileController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+export const getUsersProfileController = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return errorResponse(res, "Authentication required", "Login is required", 401);
+  }
 
-  adminMiddleware(req, res, async () => {
-    try {
-      if (!req.body) {
-        console.log("Request body is required for filtering/pagination");
-        return errorResponse(
-          res,
-          "Request body is required",
-          "Empty request body for required parameters",
-          400
-        );
-      }
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    return errorResponse(res, "User not found", "User ID in token is invalid", 404);
+  }
 
-      // NOTE: validateRequiredBody handles its own response on failure.
-      const reqBodyValidation = validateRequiredBody(req, res, [
-        "order",
-        "asc",
-      ]);
-      if (!reqBodyValidation) return;
+  if (!user.isAdmin) {
+    return errorResponse(res, "Admin access required", "Not authorized", 403);
+  }
 
-      const { order, asc, page = 1, pageSize = 10 } = req.body;
+  if (!req.body) {
+    console.log("Request body is required for filtering/pagination");
+    return errorResponse(
+      res,
+      "Request body is required",
+      "Empty request body for required parameters",
+      400
+    );
+  }
 
-      const profiles = await findAllProfiles(
-        order,
-        asc,
-        Number(page),
-        Number(pageSize)
-      );
+  // NOTE: validateRequiredBody handles its own response on failure.
+  const reqBodyValidation = validateRequiredBody(req, res, [
+    "order",
+    "asc",
+  ]);
+  if (!reqBodyValidation) return;
 
-      return successResponse(
-        res,
-        "User Profiles fetched successfully",
-        profiles.data,
-        200
-      );
-    } catch (error) {
-      console.error("Error fetching user profiles:", error);
-      return handleUncaughtError(res, error, "Error fetching user profiles");
-    }
-  });
-}
+  const { order, asc, page = 1, pageSize = 10 } = req.body;
+
+  const profiles = await findAllProfiles(
+    order,
+    asc,
+    Number(page),
+    Number(pageSize)
+  );
+
+  return successResponse(
+    res,
+    "User Profiles fetched successfully",
+    profiles.data,
+    200
+  );
+}, "Error fetching user profiles");

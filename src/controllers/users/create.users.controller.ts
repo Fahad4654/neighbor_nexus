@@ -1,37 +1,42 @@
 import { Request, Response } from "express";
+import { User } from "../../models/User";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
-import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { createUser } from "../../services/user/create.user.service";
-import { successResponse, handleUncaughtError } from "../../utils/apiResponse";
+import { successResponse, errorResponse } from "../../utils/apiResponse";
+import { asyncHandler } from "../../utils/asyncHandler";
 
-export async function createUserController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+export const createUserController = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return errorResponse(res, "Authentication required", "Login is required", 401);
+  }
 
-  adminMiddleware(req, res, async () => {
-    try {
-      const reqBodyValidation = validateRequiredBody(req, res, [
-        "username",
-        "firstname",
-        "lastname",
-        "email",
-        "password",
-        "phoneNumber",
-      ]);
-      if (!reqBodyValidation) return;
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    return errorResponse(res, "User not found", "User ID in token is invalid", 404);
+  }
 
-      const newUser = await createUser(req.body);
+  if (!user.isAdmin) {
+    return errorResponse(res, "Admin access required", "Not authorized", 403);
+  }
 
-      const { password, ...userWithoutPassword } = newUser.toJSON();
+  const reqBodyValidation = validateRequiredBody(req, res, [
+    "username",
+    "firstname",
+    "lastname",
+    "email",
+    "password",
+    "phoneNumber",
+  ]);
+  if (!reqBodyValidation) return;
 
-      return successResponse(
-        res,
-        "User created successfully",
-        { user: userWithoutPassword },
-        201
-      );
-    } catch (error) {
-      console.error("Error creating user:", error);
-      return handleUncaughtError(res, error, "Error creating user");
-    }
-  });
-}
+  const newUser = await createUser(req.body);
+
+  const { password, ...userWithoutPassword } = newUser.toJSON();
+
+  return successResponse(
+    res,
+    "User created successfully",
+    { user: userWithoutPassword },
+    201
+  );
+}, "Error creating user");

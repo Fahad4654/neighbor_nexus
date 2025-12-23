@@ -1,48 +1,53 @@
 import { Request, Response } from "express";
-import { isAdmin } from "../../middlewares/isAdmin.middleware";
+import { User } from "../../models/User";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { createProfile } from "../../services/profile/create.profile.service";
 import {
   errorResponse,
   successResponse,
-  handleUncaughtError,
 } from "../../utils/apiResponse";
-export async function createUserProfileController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+import { asyncHandler } from "../../utils/asyncHandler";
 
-  adminMiddleware(req, res, async () => {
-    try {
-      if (!req.body) {
-        console.log("Request body is required");
-        return errorResponse(
-          res,
-          "Request body is required",
-          "Empty request body",
-          400
-        );
-      }
+export const createUserProfileController = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return errorResponse(res, "Authentication required", "Login is required", 401);
+  }
 
-      // NOTE: validateRequiredBody handles its own response on failure, so we skip here
-      const reqBodyValidation = validateRequiredBody(req, res, [
-        "userId",
-        "bio",
-        "avatarUrl",
-        "address",
-      ]);
-      if (!reqBodyValidation) return;
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    return errorResponse(res, "User not found", "User ID in token is invalid", 404);
+  }
 
-      const newProfile = await createProfile(req.body);
+  if (!user.isAdmin) {
+    return errorResponse(res, "Admin access required", "Not authorized", 403);
+  }
 
-      console.log("User profile created successfully");
-      return successResponse(
-        res,
-        "User profile created successfully",
-        { profile: newProfile },
-        201
-      );
-    } catch (error) {
-      console.error("Error creating user profile:", error);
-      return handleUncaughtError(res, error, "Error creating user profile");
-    }
-  });
-}
+  if (!req.body) {
+    console.log("Request body is required");
+    return errorResponse(
+      res,
+      "Request body is required",
+      "Empty request body",
+      400
+    );
+  }
+
+  // NOTE: validateRequiredBody handles its own response on failure, so we skip here
+  const reqBodyValidation = validateRequiredBody(req, res, [
+    "userId",
+    "bio",
+    "avatarUrl",
+    "address",
+  ]);
+  if (!reqBodyValidation) return;
+
+  const newProfile = await createProfile(req.body);
+
+  console.log("User profile created successfully");
+  return successResponse(
+    res,
+    "User profile created successfully",
+    { profile: newProfile },
+    201
+  );
+}, "Error creating user profile");
