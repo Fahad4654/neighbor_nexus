@@ -64,7 +64,7 @@ export async function getUsersController(req: Request, res: Response) {
       return successResponse(
         res,
         "User fetched successfully",
-        usersList.data,
+        { users: usersList.data },
         200,
         pagination
       );
