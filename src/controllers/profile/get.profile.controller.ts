@@ -40,13 +40,14 @@ export const getUsersProfileController = asyncHandler(async (req: Request, res: 
   ]);
   if (!reqBodyValidation) return;
 
-  const { order, asc, page, pageSize } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search } = getPaginationParams(req);
 
   const profiles = await findAllProfiles(
     order,
     asc,
     page,
-    pageSize
+    pageSize,
+    search
   );
 
   return successResponse(

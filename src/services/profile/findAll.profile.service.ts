@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { Profile } from "../../models/Profile";
 import { User } from "../../models/User";
 
@@ -5,13 +6,30 @@ export async function findAllProfiles(
   order = "id",
   asc = "ASC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  search?: string
 ) {
   const offset = (page - 1) * pageSize;
+
+  let whereClause: any = {};
+  if (search) {
+    whereClause = {
+      [Op.or]: [
+        { bio: { [Op.iLike]: `%${search}%` } },
+        { address: { [Op.iLike]: `%${search}%` } },
+        { "$user.firstname$": { [Op.iLike]: `%${search}%` } },
+        { "$user.lastname$": { [Op.iLike]: `%${search}%` } },
+        { "$user.email$": { [Op.iLike]: `%${search}%` } },
+      ],
+    };
+  }
+
   const { count, rows } = await Profile.findAndCountAll({
+    where: whereClause,
     include: [
       {
         model: User,
+        as: "user",
         attributes: [
           "id",
           "username",
@@ -28,6 +46,7 @@ export async function findAllProfiles(
     limit: pageSize,
     offset,
     order: [[order, asc]],
+    subQuery: false, // Required for querying on included model in top-level where
   });
   return {
     data: rows,
