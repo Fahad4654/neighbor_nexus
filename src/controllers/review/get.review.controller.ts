@@ -4,90 +4,80 @@ import { Review } from "../../models/Review";
 import {
   successResponse,
   errorResponse,
-  handleUncaughtError,
 } from "../../utils/apiResponse";
 import {
   findReviewsByReviewerId,
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
+import { asyncHandler } from "../../utils/asyncHandler";
 
-export async function getReviewsByIdController(req: Request, res: Response) {
-  try {
-    const review_id = req.params.id;
+export const getReviewsByIdController = asyncHandler(async (req: Request, res: Response) => {
+  const review_id = req.params.id;
 
-    if (!review_id) {
-      return errorResponse(
-        res,
-        "Review ID is required",
-        "Missing review ID in route parameter",
-        400
-      );
-    }
-
-    const typedReview = await findByDynamicId(Review, { id: review_id }, false);
-    const review = typedReview as Review | null;
-
-    if (!review) {
-      console.log("Review not found");
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with ID ${review_id} does not exist`,
-        404
-      );
-    }
-
-    return successResponse(
+  if (!review_id) {
+    return errorResponse(
       res,
-      "Review fetched successfully",
-      review.dataValues,
-      200
+      "Review ID is required",
+      "Missing review ID in route parameter",
+      400
     );
-  } catch (error) {
-    console.error("Error finding review:", error);
-    return handleUncaughtError(res, error, "Error fetching reviews");
   }
-}
 
-export async function getReviewsByReviewerIdController(
+  const typedReview = await findByDynamicId(Review, { id: review_id }, false);
+  const review = typedReview as Review | null;
+
+  if (!review) {
+    console.log("Review not found");
+    return errorResponse(
+      res,
+      "Review not found",
+      `Review with ID ${review_id} does not exist`,
+      404
+    );
+  }
+
+  return successResponse(
+    res,
+    "Review fetched successfully",
+    review.dataValues,
+    200
+  );
+}, "Error fetching reviews");
+
+export const getReviewsByReviewerIdController = asyncHandler(async (
   req: Request,
   res: Response
-) {
-  try {
-    const reviewer_id = req.params.id;
-    const { page, pageSize } = req.body;
+) => {
+  const reviewer_id = req.params.id;
+  const { page, pageSize } = req.body;
 
-    if (!reviewer_id) {
-      return errorResponse(
-        res,
-        "Reviewer ID is required",
-        "Missing reviewer ID in route parameter",
-        400
-      );
-    }
-    const review = await findReviewsByReviewerId(reviewer_id, page, pageSize);
-
-    if (!review) {
-      console.log("Review not found");
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with ID ${reviewer_id} does not exist`,
-        404
-      );
-    }
-
-    return successResponse(res, "Review fetched successfully", review, 200);
-  } catch (error) {
-    console.error("Error finding review:", error);
-    return handleUncaughtError(res, error, "Error fetching reviews");
+  if (!reviewer_id) {
+    return errorResponse(
+      res,
+      "Reviewer ID is required",
+      "Missing reviewer ID in route parameter",
+      400
+    );
   }
-}
+  const review = await findReviewsByReviewerId(reviewer_id, page, pageSize);
 
-export async function getReviewsBytransactionIdController(
+  if (!review) {
+    console.log("Review not found");
+    return errorResponse(
+      res,
+      "Review not found",
+      `Review with ID ${reviewer_id} does not exist`,
+      404
+    );
+  }
+
+  return successResponse(res, "Review fetched successfully", review, 200);
+}, "Error fetching reviews");
+
+export const getReviewsBytransactionIdController = asyncHandler(async (
   req: Request,
   res: Response
-) {
+) => {
   const transaction_id = req.body.transaction_id;
   const user = req.user;
   if (!transaction_id) {
@@ -112,4 +102,4 @@ export async function getReviewsBytransactionIdController(
   }
 
   return review;
-}
+}, "Error fetching reviews");

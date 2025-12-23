@@ -73,69 +73,66 @@ export async function getUsersController(req: Request, res: Response) {
   });
 }
 
-export async function getUsersByIdController(req: Request, res: Response) {
-  try {
-    const userId = req.params.id;
-    if (!userId) {
-      return errorResponse(
-        res,
-        "User ID is required",
-        "User ID is required as a route parameter (e.g., /users/:id)",
-        400
-      );
-    }
+import { asyncHandler } from "../../utils/asyncHandler";
 
-    const typedUser = await findByDynamicId(User, { id: userId }, false);
-    const user = typedUser as User | null;
-
-    if (!user) {
-      console.log("User not found");
-      return errorResponse(
-        res,
-        "User not found",
-        `User with ID ${userId} does not exist`,
-        404
-      );
-    }
-
-    const typedUserProfile = await findByDynamicId(
-      Profile,
-      { userId: user.id },
-      false
-    );
-    const userProfile = typedUserProfile as Profile | null;
-
-    if (!userProfile) {
-      console.log("User profile not found");
-      return errorResponse(
-        res,
-        "User profile not found",
-        `Profile for user ID ${userId} does not exist`,
-        404
-      );
-    }
-
-    if (user.isAdmin && !req.user?.isAdmin) {
-      console.log("Access to admin user's details is restricted");
-      return errorResponse(
-        res,
-        "Forbidden",
-        "Access to admin user's details is restricted",
-        403
-      );
-    }
-
-    const noPasswordUser = { ...user.get() };
-    delete noPasswordUser.password;
-
-    return successResponse(
+export const getUsersByIdController = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  if (!userId) {
+    return errorResponse(
       res,
-      "User details fetched successfully",
-      { user: noPasswordUser, profile: userProfile },
-      200
+      "User ID is required",
+      "User ID is required as a route parameter (e.g., /users/:id)",
+      400
     );
-  } catch (error) {
-    console.error("Error finding user:", error);
-    return handleUncaughtError(res, error, "Error fetching user details");
   }
-}
+
+  const typedUser = await findByDynamicId(User, { id: userId }, false);
+  const user = typedUser as User | null;
+
+  if (!user) {
+    console.log("User not found");
+    return errorResponse(
+      res,
+      "User not found",
+      `User with ID ${userId} does not exist`,
+      404
+    );
+  }
+
+  const typedUserProfile = await findByDynamicId(
+    Profile,
+    { userId: user.id },
+    false
+  );
+  const userProfile = typedUserProfile as Profile | null;
+
+  if (!userProfile) {
+    console.log("User profile not found");
+    return errorResponse(
+      res,
+      "User profile not found",
+      `Profile for user ID ${userId} does not exist`,
+      404
+    );
+  }
+
+  if (user.isAdmin && !req.user?.isAdmin) {
+    console.log("Access to admin user's details is restricted");
+    return errorResponse(
+      res,
+      "Forbidden",
+      "Access to admin user's details is restricted",
+      403
+    );
+  }
+
+  const noPasswordUser = { ...user.get() };
+  delete noPasswordUser.password;
+
+  return successResponse(
+    res,
+    "User details fetched successfully",
+    { user: noPasswordUser, profile: userProfile },
+    200
+  );
+}, "Error fetching user details");

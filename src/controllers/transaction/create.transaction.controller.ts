@@ -1,78 +1,82 @@
 import { Request, Response } from "express";
+import { User } from "../../models/User";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import {
   successResponse,
   errorResponse,
-  handleUncaughtError,
 } from "../../utils/apiResponse";
 import { createTransaction } from "../../services/transacion/create.transacion.service";
-import { isAdmin } from "../../middlewares/isAdmin.middleware";
+import { asyncHandler } from "../../utils/asyncHandler";
 
-export async function createTransactionController(req: Request, res: Response) {
-  const adminMiddleware = isAdmin();
+export const createTransactionController = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return errorResponse(res, "Authentication required", "Login is required", 401);
+  }
 
-  adminMiddleware(req, res, async () => {
-    try {
-      const reqBodyValidation = validateRequiredBody(req, res, [
-        "listing_id",
-        "borrower_id",
-        "lender_id",
-        "rent_request_id",
-        "start_time",
-        "end_time",
-        "total_fee",
-        "platform_commission",
-        "deposit_amount",
-        "stripe_charge_id",
-      ]);
-      if (!reqBodyValidation) return;
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    return errorResponse(res, "User not found", "User ID in token is invalid", 404);
+  }
 
-      const {
-        listing_id,
-        borrower_id,
-        lender_id,
-        rent_request_id,
-        start_time,
-        end_time,
-        total_fee,
-        platform_commission,
-        deposit_amount,
-        stripe_charge_id,
-      } = req.body;
+  if (!user.isAdmin) {
+    return errorResponse(res, "Admin access required", "Not authorized", 403);
+  }
 
-      const newTransaction = await createTransaction(
-        listing_id,
-        borrower_id,
-        lender_id,
-        rent_request_id,
-        start_time,
-        end_time,
-        total_fee,
-        platform_commission,
-        deposit_amount,
-        stripe_charge_id,
-        "Pending"
-      );
+  const reqBodyValidation = validateRequiredBody(req, res, [
+    "listing_id",
+    "borrower_id",
+    "lender_id",
+    "rent_request_id",
+    "start_time",
+    "end_time",
+    "total_fee",
+    "platform_commission",
+    "deposit_amount",
+    "stripe_charge_id",
+  ]);
+  if (!reqBodyValidation) return;
 
-      if (!newTransaction) {
-        console.log("Failed to create transaction");
-        return errorResponse(
-          res,
-          "Failed to create transaction",
-          "transaction service returned null (e.g., failed validation or DB error)",
-          400
-        );
-      }
+  const {
+    listing_id,
+    borrower_id,
+    lender_id,
+    rent_request_id,
+    start_time,
+    end_time,
+    total_fee,
+    platform_commission,
+    deposit_amount,
+    stripe_charge_id,
+  } = req.body;
 
-      return successResponse(
-        res,
-        "transaction created successfully",
-        { transaction: newTransaction },
-        201
-      );
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-      return handleUncaughtError(res, error, "Error creating transaction");
-    }
-  });
-}
+  const newTransaction = await createTransaction(
+    listing_id,
+    borrower_id,
+    lender_id,
+    rent_request_id,
+    start_time,
+    end_time,
+    total_fee,
+    platform_commission,
+    deposit_amount,
+    stripe_charge_id,
+    "Pending"
+  );
+
+  if (!newTransaction) {
+    console.log("Failed to create transaction");
+    return errorResponse(
+      res,
+      "Failed to create transaction",
+      "transaction service returned null (e.g., failed validation or DB error)",
+      400
+    );
+  }
+
+  return successResponse(
+    res,
+    "transaction created successfully",
+    { transaction: newTransaction },
+    201
+  );
+}, "Error creating transaction");
