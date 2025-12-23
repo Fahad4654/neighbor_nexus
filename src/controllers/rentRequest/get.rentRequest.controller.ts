@@ -59,7 +59,7 @@ export async function getRentRequestsController(req: Request, res: Response) {
       return successResponse(
         res,
         "Rent Requests fetched successfully",
-        rentRequests.data,
+        { rentRequests: rentRequests.data },
         200,
         pagination
       );
@@ -105,7 +105,7 @@ export const getRentRequestByBorrowerIdController = asyncHandler(async (
   return successResponse(
     res,
     "Rent Requests fetched successfully",
-    rentRequestsResult.data,
+    { rentRequests: rentRequestsResult.data },
     200,
     pagination
   );
@@ -146,7 +146,7 @@ export const getRentRequestByLenderIdController = asyncHandler(async (
   return successResponse(
     res,
     "Rent Requests fetched successfully",
-    rentRequestsResult.data,
+    { rentRequests: rentRequestsResult.data },
     200,
     pagination
   );
@@ -200,7 +200,7 @@ export const getRentRequestByListingIdController = asyncHandler(async (
   return successResponse(
     res,
     "Rent Requests fetched successfully",
-    rentRequestsResult.data,
+    { rentRequests: rentRequestsResult.data },
     200,
     pagination
   );
@@ -274,7 +274,7 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async
   return successResponse(
     res,
     "Rent Requests fetched successfully",
-    rentRequests.data,
+    { rentRequests: rentRequests.data },
     200,
     pagination
   );
@@ -323,7 +323,7 @@ export const getByRentRequestIdController = asyncHandler(async (
   return successResponse(
     res,
     "Rent Request fetched successfully",
-    rentRequest,
+    { rentRequest: rentRequest },
     200
   );
 }, "Error fetching Rent Request");

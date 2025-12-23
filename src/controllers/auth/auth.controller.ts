@@ -141,7 +141,7 @@ export const logout: RequestHandler = asyncHandler(async (req, res) => {
 
     return successResponse(res, "Logged out successfully");
   } catch (error: any) {
-     return errorResponse(res, error.message || "Logout failed", error, 400);
+    return errorResponse(res, error.message || "Logout failed", error, 400);
   }
 }, "Logout failed");
 
