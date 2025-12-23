@@ -45,7 +45,7 @@ export async function sendOtp(identifier: string, type: string) {
         companyName: `${COMPANY_NAME}`,
       }
     );
-    return { message: "OTP sent successfully" };
+    return "OTP sent successfully";
   }
 
   await mailService.sendMail(
@@ -64,5 +64,5 @@ export async function sendOtp(identifier: string, type: string) {
     }
   );
 
-  return { message: "OTP sent successfully" };
+  return "OTP sent successfully";
 }
