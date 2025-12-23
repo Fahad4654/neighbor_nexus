@@ -40,7 +40,7 @@ export const getReviewsByIdController = asyncHandler(async (req: Request, res: R
   return successResponse(
     res,
     "Review fetched successfully",
-    review.dataValues,
+    { review: review.dataValues },
     200
   );
 }, "Error fetching reviews");
@@ -73,7 +73,7 @@ export const getReviewsByReviewerIdController = asyncHandler(async (
   return successResponse(
     res,
     "Review fetched successfully",
-    reviewsResult.data,
+    { reviews: reviewsResult.data },
     200,
     pagination
   );
