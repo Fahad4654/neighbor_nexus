@@ -3,12 +3,15 @@ import { findByDynamicId } from "../global/find.service";
 import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
 
+import { Op } from "sequelize";
+
 export async function findAllTools(
   order = "createdAt",
   asc: "ASC" | "DESC" = "ASC",
   page = 1,
   pageSize = 10,
-  userId: string
+  userId: string,
+  search?: string
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -20,6 +23,16 @@ export async function findAllTools(
   let whereClause: any = {};
   if (!user.isAdmin) {
     whereClause = { owner_id: userId };
+  }
+
+  if (search) {
+    whereClause = {
+      ...whereClause,
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+      ],
+    };
   }
 
   const { count, rows } = await Tool.findAndCountAll({

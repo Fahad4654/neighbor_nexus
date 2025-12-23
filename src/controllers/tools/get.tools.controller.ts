@@ -23,14 +23,15 @@ export const getToolsController = asyncHandler(async (req: Request, res: Respons
     return errorResponse(res, "User is required", "Login is required", 401);
   }
 
-  const { order, asc, page, pageSize } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search } = getPaginationParams(req);
 
   const toolsList = await findAllTools(
     order,
     asc,
     page,
     pageSize,
-    req.user.id
+    req.user.id,
+    search
   );
 
   const pagination = formatPaginationResponse(toolsList.pagination);
