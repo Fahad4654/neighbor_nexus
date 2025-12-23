@@ -30,7 +30,7 @@ export const getTransactionsByBorrowerIdController = asyncHandler(async (
   if (!validateAuth(req.user, res)) return;
 
   if (!validateId(borrower_id, "borrower_id", res, "route parameter")) return;
-  
+
   if (!validateAuthorization(req.user, borrower_id, res, "Unauthorized access")) return;
   const transacions = await findTransactionsByBorrowerId(
     borrower_id,
@@ -326,7 +326,7 @@ export const getTransactionsByUserIdController = asyncHandler(async (
   return successResponse(
     res,
     "Transacions fetched successfully",
-    transacions.data,
+    { transactions: transacions.data },
     200,
     pagination
   );
