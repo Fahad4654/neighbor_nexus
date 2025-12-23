@@ -2,21 +2,53 @@ import { Op } from "sequelize";
 import { Transaction } from "../../models/Transaction";
 import { User } from "../../models/User";
 
+import { Tool } from "../../models/Tools";
+
+const getSearchWhereClause = (search?: string) => {
+  if (!search) return {};
+  return {
+    [Op.or]: [
+      { "$listing.title$": { [Op.iLike]: `%${search}%` } },
+      { "$borrower.firstname$": { [Op.iLike]: `%${search}%` } },
+      { "$borrower.lastname$": { [Op.iLike]: `%${search}%` } },
+      { "$borrower.email$": { [Op.iLike]: `%${search}%` } },
+      { "$lender.firstname$": { [Op.iLike]: `%${search}%` } },
+      { "$lender.lastname$": { [Op.iLike]: `%${search}%` } },
+      { "$lender.email$": { [Op.iLike]: `%${search}%` } },
+    ],
+  };
+};
+
 export async function findTransactionsByBorrowerId(
   borrower_id: string,
   order = "cratedAt",
   asc = "DESC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  search?: string
 ) {
   const offset = (page - 1) * pageSize;
+  const searchClause = getSearchWhereClause(search);
+  const whereClause = {
+    borrower_id,
+    show_to_borrower: true,
+    ...searchClause,
+  };
+
   const { count, rows } = await Transaction.findAndCountAll({
-    where: { borrower_id, show_to_borrower: true },
+    where: whereClause,
+    include: [
+      { model: Tool, as: "listing" },
+      { model: User, as: "borrower" },
+      { model: User, as: "lender" },
+    ],
     nest: true,
+    distinct: true,
     raw: true,
     limit: pageSize,
     offset,
     order: [[order, asc]],
+    subQuery: false,
   });
   return {
     data: rows,
@@ -34,16 +66,31 @@ export async function findTransactionsByLenderId(
   order = "cratedAt",
   asc = "DESC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  search?: string
 ) {
   const offset = (page - 1) * pageSize;
+  const searchClause = getSearchWhereClause(search);
+  const whereClause = {
+    lender_id,
+    show_to_lender: true,
+    ...searchClause,
+  };
+
   const { count, rows } = await Transaction.findAndCountAll({
-    where: { lender_id, show_to_lender: true },
+    where: whereClause,
+    include: [
+      { model: Tool, as: "listing" },
+      { model: User, as: "borrower" },
+      { model: User, as: "lender" },
+    ],
     nest: true,
+    distinct: true,
     raw: true,
     limit: pageSize,
     offset,
     order: [[order, asc]],
+    subQuery: false,
   });
 
   return {
@@ -61,7 +108,13 @@ export async function findTransactionByTransactionId(
   transaction_id: string,
   user: User
 ) {
-  const transaction = await Transaction.findByPk(transaction_id);
+  const transaction = await Transaction.findByPk(transaction_id, {
+    include: [
+      { model: Tool, as: "listing" },
+      { model: User, as: "borrower" },
+      { model: User, as: "lender" },
+    ],
+  });
   if (!transaction) {
     return null;
   }
@@ -80,16 +133,31 @@ export async function findTransactionsByListingId(
   order = "cratedAt",
   asc = "DESC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  search?: string
 ) {
   const offset = (page - 1) * pageSize;
+  const searchClause = getSearchWhereClause(search);
+  const whereClause = {
+    listing_id,
+    show_to_lender: true,
+    ...searchClause,
+  };
+
   const { count, rows } = await Transaction.findAndCountAll({
-    where: { listing_id, show_to_lender: true },
+    where: whereClause,
+    include: [
+      { model: Tool, as: "listing" },
+      { model: User, as: "borrower" },
+      { model: User, as: "lender" },
+    ],
     nest: true,
+    distinct: true,
     raw: true,
     limit: pageSize,
     offset,
     order: [[order, asc]],
+    subQuery: false,
   });
   return {
     data: rows,
@@ -126,6 +194,11 @@ export async function findTransactionsByRentRequestId(
   }
   const transactions = await Transaction.findAll({
     where: whereClause,
+    include: [
+      { model: Tool, as: "listing" },
+      { model: User, as: "borrower" },
+      { model: User, as: "lender" },
+    ],
   });
   return transactions;
 }
@@ -135,25 +208,41 @@ export async function findTransactionsByUserId(
   order = "cratedAt",
   asc = "DESC",
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  search?: string
 ) {
   const offset = (page - 1) * pageSize;
+  const searchClause = getSearchWhereClause(search);
+  const whereClause = {
+    [Op.and]: [
+      {
+        [Op.or]: [
+          {
+            [Op.and]: [{ lender_id: user_id }, { show_to_lender: true }],
+          },
+          {
+            [Op.and]: [{ borrower_id: user_id }, { show_to_borrower: true }],
+          },
+        ],
+      },
+      searchClause,
+    ],
+  };
+
   const { count, rows } = await Transaction.findAndCountAll({
-    where: {
-      [Op.or]: [
-        {
-          [Op.and]: [{ lender_id: user_id }, { show_to_lender: true }],
-        },
-        {
-          [Op.and]: [{ borrower_id: user_id }, { show_to_borrower: true }],
-        },
-      ],
-    },
+    where: whereClause,
+    include: [
+      { model: Tool, as: "listing" },
+      { model: User, as: "borrower" },
+      { model: User, as: "lender" },
+    ],
     nest: true,
+    distinct: true,
     raw: true,
     limit: pageSize,
     offset,
     order: [[order, asc]],
+    subQuery: false,
   });
   return {
     data: rows,
