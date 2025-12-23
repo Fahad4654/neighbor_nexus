@@ -10,6 +10,7 @@ import {
   errorResponse,
   handleUncaughtError,
 } from "../../utils/apiResponse";
+import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
 
 export async function getUsersController(req: Request, res: Response) {
   const adminMiddleware = isAdmin();
@@ -34,7 +35,7 @@ export async function getUsersController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc, page = 1, pageSize = 10 } = req.body;
+      const { order, asc, page, pageSize } = getPaginationParams(req);
 
       if (!req.user) {
         console.log("login is required");
@@ -49,13 +50,12 @@ export async function getUsersController(req: Request, res: Response) {
       const usersList = await findAllUsers(
         order,
         asc,
-        Number(page),
-        Number(pageSize),
+        page,
+        pageSize,
         req.user?.id
       );
 
-      const { total, ...restOfPagination } = usersList.pagination;
-      const pagination = { totalCount: total, ...restOfPagination };
+      const pagination = formatPaginationResponse(usersList.pagination);
 
       console.log("User fetched successfully");
 

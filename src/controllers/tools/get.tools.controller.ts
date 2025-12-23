@@ -12,6 +12,7 @@ import {
   errorResponse,
 } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
 
 // ✅ Get all tools with pagination
 export const getToolsController = asyncHandler(async (req: Request, res: Response) => {
@@ -22,18 +23,17 @@ export const getToolsController = asyncHandler(async (req: Request, res: Respons
     return errorResponse(res, "User is required", "Login is required", 401);
   }
 
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const toolsList = await findAllTools(
     order,
     asc,
-    Number(page),
-    Number(pageSize),
+    page,
+    pageSize,
     req.user.id
   );
 
-  const { total, ...restOfPagination } = toolsList.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(toolsList.pagination);
 
   return successResponse(
     res,

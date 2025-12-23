@@ -7,6 +7,7 @@ import {
   successResponse,
 } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { getPaginationParams } from "../../utils/pagination";
 
 export const getUsersProfileController = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
@@ -39,13 +40,13 @@ export const getUsersProfileController = asyncHandler(async (req: Request, res: 
   ]);
   if (!reqBodyValidation) return;
 
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const profiles = await findAllProfiles(
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
 
   return successResponse(

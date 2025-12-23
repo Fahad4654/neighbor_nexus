@@ -10,6 +10,7 @@ import {
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { getPaginationParams } from "../../utils/pagination";
 
 export const getReviewsByIdController = asyncHandler(async (req: Request, res: Response) => {
   const review_id = req.params.id;
@@ -49,7 +50,7 @@ export const getReviewsByReviewerIdController = asyncHandler(async (
   res: Response
 ) => {
   const reviewer_id = req.params.id;
-  const { page, pageSize } = req.body;
+  const { page, pageSize } = getPaginationParams(req);
 
   if (!reviewer_id) {
     return errorResponse(
