@@ -5,6 +5,8 @@ export interface PaginationParams {
   asc: any;
   page: number;
   pageSize: number;
+  search?: string;
+  searchBy?: string;
 }
 
 export interface PaginationResponse {
@@ -19,12 +21,14 @@ export interface PaginationResponse {
  * Defaults: page=1, pageSize=10
  */
 export const getPaginationParams = (req: Request): PaginationParams => {
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page = 1, pageSize = 10, search, searchBy } = req.body;
   return {
     order,
     asc,
     page: Number(page),
     pageSize: Number(pageSize),
+    search,
+    searchBy,
   };
 };
 

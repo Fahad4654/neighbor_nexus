@@ -53,7 +53,8 @@ export async function findNearbyToolsGoogle(
   userId: string,
   maxDistanceKm = 10,
   searchTerm?: string,
-  sortOptions: SortOption[] = [] // New parameter for dynamic sorting
+  sortOptions: SortOption[] = [], // New parameter for dynamic sorting
+  searchBy?: string
 ) {
   // 1. Fetch requesting user's location
   const user = await User.findByPk(userId, {
@@ -73,8 +74,11 @@ export async function findNearbyToolsGoogle(
   // 2. Build Search Filtering
   const where: any = {};
   if (searchTerm) {
-    // Search by title (or description if desired)
-    where.title = { [Op.iLike]: `%${searchTerm}%` };
+    if (searchBy && ["title", "description"].includes(searchBy)) {
+      where[searchBy] = { [Op.iLike]: `%${searchTerm}%` };
+    } else {
+      where.title = { [Op.iLike]: `%${searchTerm}%` };
+    }
   }
 
   // 3. Get all potentially matching tools

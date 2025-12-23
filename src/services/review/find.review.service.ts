@@ -13,27 +13,61 @@ export async function findReviewsByUserId(
   return reviews;
 }
 
+import { Op } from "sequelize";
+
 export async function findReviewsByReviewerId(
   reviewer_id: string,
-  page: number = 1, // Default set in function signature
-  pageSize: number = 10 // Default set in function signature
+  page: number = 1,
+  pageSize: number = 10,
+  search?: string,
+  searchBy?: string
 ) {
-  // Using the defaults from the function signature simplifies the function body
   const offset = (page - 1) * pageSize;
 
-  // Use 'findAndCountAll' if you need the total number of records for pagination UI
-  const reviews = await Review.findAll({
-    where: { reviewer_id },
-    offset: offset, // Correct calculation
-    limit: pageSize, // Correct limit
+  let whereClause: any = { reviewer_id };
+  if (search) {
+    if (!searchBy || searchBy === "comment") {
+      whereClause = {
+        ...whereClause,
+        comment: { [Op.iLike]: `%${search}%` },
+      };
+    }
+  }
+
+  const { count, rows } = await Review.findAndCountAll({
+    where: whereClause,
+    offset,
+    limit: pageSize,
   });
 
-  return reviews;
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
 
-export async function findReviewsByTransactionId(transaction_id: string) {
+export async function findReviewsByTransactionId(
+  transaction_id: string,
+  search?: string,
+  searchBy?: string
+) {
+  let whereClause: any = { transaction_id };
+  if (search) {
+    if (!searchBy || searchBy === "comment") {
+      whereClause = {
+        ...whereClause,
+        comment: { [Op.iLike]: `%${search}%` },
+      };
+    }
+  }
+
   const reviews = await Review.findAll({
-    where: { transaction_id },
+    where: whereClause,
   });
   return reviews;
 }

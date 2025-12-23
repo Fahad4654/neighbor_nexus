@@ -7,7 +7,7 @@ import {
   successResponse,
 } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
-import { getPaginationParams } from "../../utils/pagination";
+import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
 
 export const getUsersProfileController = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
@@ -40,19 +40,24 @@ export const getUsersProfileController = asyncHandler(async (req: Request, res: 
   ]);
   if (!reqBodyValidation) return;
 
-  const { order, asc, page, pageSize } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
   const profiles = await findAllProfiles(
     order,
     asc,
     page,
-    pageSize
+    pageSize,
+    search,
+    searchBy
   );
+
+  const pagination = formatPaginationResponse(profiles.pagination);
 
   return successResponse(
     res,
     "User Profiles fetched successfully",
     profiles.data,
-    200
+    200,
+    pagination
   );
 }, "Error fetching user profiles");

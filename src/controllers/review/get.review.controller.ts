@@ -10,7 +10,7 @@ import {
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
 import { asyncHandler } from "../../utils/asyncHandler";
-import { getPaginationParams } from "../../utils/pagination";
+import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
 
 export const getReviewsByIdController = asyncHandler(async (req: Request, res: Response) => {
   const review_id = req.params.id;
@@ -50,7 +50,7 @@ export const getReviewsByReviewerIdController = asyncHandler(async (
   res: Response
 ) => {
   const reviewer_id = req.params.id;
-  const { page, pageSize } = getPaginationParams(req);
+  const { page, pageSize, search, searchBy } = getPaginationParams(req);
 
   if (!reviewer_id) {
     return errorResponse(
@@ -60,19 +60,23 @@ export const getReviewsByReviewerIdController = asyncHandler(async (
       400
     );
   }
-  const review = await findReviewsByReviewerId(reviewer_id, page, pageSize);
+  const reviewsResult = await findReviewsByReviewerId(
+    reviewer_id,
+    page,
+    pageSize,
+    search,
+    searchBy
+  );
 
-  if (!review) {
-    console.log("Review not found");
-    return errorResponse(
-      res,
-      "Review not found",
-      `Review with ID ${reviewer_id} does not exist`,
-      404
-    );
-  }
+  const pagination = formatPaginationResponse(reviewsResult.pagination);
 
-  return successResponse(res, "Review fetched successfully", review, 200);
+  return successResponse(
+    res,
+    "Review fetched successfully",
+    reviewsResult.data,
+    200,
+    pagination
+  );
 }, "Error fetching reviews");
 
 export const getReviewsBytransactionIdController = asyncHandler(async (
@@ -80,6 +84,7 @@ export const getReviewsBytransactionIdController = asyncHandler(async (
   res: Response
 ) => {
   const transaction_id = req.body.transaction_id;
+  const { search, searchBy } = getPaginationParams(req);
   const user = req.user;
   if (!transaction_id) {
     return errorResponse(
@@ -92,7 +97,11 @@ export const getReviewsBytransactionIdController = asyncHandler(async (
   if (!user) {
     return errorResponse(res, "Login is required", "Unauthorized access", 401);
   }
-  const review = await findReviewsByTransactionId(transaction_id);
+  const review = await findReviewsByTransactionId(
+    transaction_id,
+    search,
+    searchBy
+  );
   if (!review) {
     return errorResponse(
       res,

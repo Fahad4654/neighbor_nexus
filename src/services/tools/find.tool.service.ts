@@ -3,12 +3,16 @@ import { findByDynamicId } from "../global/find.service";
 import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
 
+import { Op } from "sequelize";
+
 export async function findAllTools(
   order = "createdAt",
   asc: "ASC" | "DESC" = "ASC",
   page = 1,
   pageSize = 10,
-  userId: string
+  userId: string,
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -20,6 +24,23 @@ export async function findAllTools(
   let whereClause: any = {};
   if (!user.isAdmin) {
     whereClause = { owner_id: userId };
+  }
+
+  if (search) {
+    if (searchBy && ["title", "description"].includes(searchBy)) {
+      whereClause = {
+        ...whereClause,
+        [searchBy]: { [Op.iLike]: `%${search}%` },
+      };
+    } else {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { description: { [Op.iLike]: `%${search}%` } },
+        ],
+      };
+    }
   }
 
   const { count, rows } = await Tool.findAndCountAll({
@@ -74,9 +95,32 @@ export async function findToolsByListingId(listing_id: string) {
   return tool;
 }
 
-export async function findToolsByOwnerId(owner_id: string) {
+export async function findToolsByOwnerId(
+  owner_id: string,
+  search?: string,
+  searchBy?: string
+) {
+  let whereClause: any = { owner_id };
+
+  if (search) {
+    if (searchBy && ["title", "description"].includes(searchBy)) {
+      whereClause = {
+        ...whereClause,
+        [searchBy]: { [Op.iLike]: `%${search}%` },
+      };
+    } else {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { description: { [Op.iLike]: `%${search}%` } },
+        ],
+      };
+    }
+  }
+
   const tools = await Tool.findAll({
-    where: { owner_id },
+    where: whereClause,
     include: [
       {
         model: User,
