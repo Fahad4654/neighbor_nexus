@@ -17,6 +17,7 @@ import { Tool } from "../../models/Tools";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
+import { validateAuth, validateAuthorization, validateId } from "../../utils/validation";
 
 export const getTransactionsByBorrowerIdController = asyncHandler(async (
   req: Request,
@@ -25,25 +26,12 @@ export const getTransactionsByBorrowerIdController = asyncHandler(async (
   const borrower_id = req.params.id;
   const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
-  const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
-  if (!reqBodyValidation) return;
+  if (!validateRequiredBody(req, res, ["order", "asc"])) return;
+  if (!validateAuth(req.user, res)) return;
 
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
-
-  if (!borrower_id) {
-    return errorResponse(
-      res,
-      "borrower_id is required",
-      "Missing borrower ID in route parameter",
-      400
-    );
-  }
-
-  if (borrower_id !== req.user.id) {
-    return errorResponse(res, "Forbidden", "Unauthorized access", 403);
-  }
+  if (!validateId(borrower_id, "borrower_id", res, "route parameter")) return;
+  
+  if (!validateAuthorization(req.user, borrower_id, res, "Unauthorized access")) return;
   const transacions = await findTransactionsByBorrowerId(
     borrower_id,
     order,
@@ -72,24 +60,12 @@ export const getTransactionsBylenderIdController = asyncHandler(async (
   const lender_id = req.params.id;
   const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
-  const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
-  if (!reqBodyValidation) return;
+  if (!validateRequiredBody(req, res, ["order", "asc"])) return;
+  if (!validateAuth(req.user, res)) return;
 
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
+  if (!validateId(lender_id, "lender_id", res, "route parameter")) return;
 
-  if (!lender_id) {
-    return errorResponse(
-      res,
-      "lender_id is required",
-      "Missing lender ID in route parameter",
-      400
-    );
-  }
-  if (lender_id !== req.user.id) {
-    return errorResponse(res, "Forbidden", "Unauthorized access", 403);
-  }
+  if (!validateAuthorization(req.user, lender_id, res, "Unauthorized access")) return;
 
   const transacions = await findTransactionsByLenderId(
     lender_id,

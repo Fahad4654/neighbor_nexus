@@ -18,6 +18,7 @@ import { Tool } from "../../models/Tools";
 import { findByDynamicId } from "../../services/global/find.service";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
+import { validateAuth, validateAuthorization } from "../../utils/validation";
 
 // Find all Rent Requests by Admin
 export async function getRentRequestsController(req: Request, res: Response) {
@@ -86,25 +87,9 @@ export const getRentRequestByBorrowerIdController = asyncHandler(async (
   const { borrower_id } = req.body;
   const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
-  const reqBodyValidation = validateRequiredBody(req, res, [
-    "borrower_id",
-    "order",
-    "asc",
-  ]);
-  if (!reqBodyValidation) return;
-
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
-
-  if (req.user.id !== borrower_id && !req.user.isAdmin) {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "You are not authorized to view this Rent Request",
-      403
-    );
-  }
+  if (!validateRequiredBody(req, res, ["borrower_id", "order", "asc"])) return;
+  if (!validateAuth(req.user, res)) return;
+  if (!validateAuthorization(req.user, borrower_id, res, "You are not authorized to view this Rent Request")) return;
 
   const rentRequestsResult = await findByBorrowerId(
     borrower_id,
@@ -143,25 +128,9 @@ export const getRentRequestByLenderIdController = asyncHandler(async (
   const { lender_id } = req.body;
   const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
-  const reqBodyValidation = validateRequiredBody(req, res, [
-    "lender_id",
-    "order",
-    "asc",
-  ]);
-  if (!reqBodyValidation) return;
-
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
-
-  if (req.user.id !== lender_id && !req.user.isAdmin) {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "You are not authorized to view this Rent Request",
-      403
-    );
-  }
+  if (!validateRequiredBody(req, res, ["lender_id", "order", "asc"])) return;
+  if (!validateAuth(req.user, res)) return;
+  if (!validateAuthorization(req.user, lender_id, res, "You are not authorized to view this Rent Request")) return;
 
   const rentRequestsResult = await findByLenderId(
     lender_id,
@@ -200,16 +169,9 @@ export const getRentRequestByListingIdController = asyncHandler(async (
   const { listing_id } = req.body;
   const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
-  const reqBodyValidation = validateRequiredBody(req, res, [
-    "listing_id",
-    "order",
-    "asc",
-  ]);
-  if (!reqBodyValidation) return;
+  if (!validateRequiredBody(req, res, ["listing_id", "order", "asc"])) return;
 
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
+  if (!validateAuth(req.user, res)) return;
 
   const typedTool = await findByDynamicId(Tool, { listing_id }, false);
   const tool = typedTool as Tool | null;
@@ -222,14 +184,8 @@ export const getRentRequestByListingIdController = asyncHandler(async (
       404
     );
   }
-  if (req.user.id !== tool.owner_id && !req.user.isAdmin) {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "You are not authorized to view this Rent Request",
-      403
-    );
-  }
+  // Safe assertion because validateAuth checked req.user
+  if (!validateAuthorization(req.user!, tool.owner_id, res, "You are not authorized to view this Rent Request")) return;
   const rentRequestsResult = await findByListingId(
     listing_id,
     order,

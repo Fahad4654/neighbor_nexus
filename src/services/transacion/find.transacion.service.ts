@@ -4,40 +4,7 @@ import { User } from "../../models/User";
 
 import { Tool } from "../../models/Tools";
 
-const getSearchWhereClause = (search?: string, searchBy?: string) => {
-  if (!search) return {};
-
-  if (searchBy) {
-    const map: Record<string, string> = {
-      listing_title: "$listing.title$",
-      borrower_firstname: "$borrower.firstname$",
-      borrower_lastname: "$borrower.lastname$",
-      borrower_email: "$borrower.email$",
-      lender_firstname: "$lender.firstname$",
-      lender_lastname: "$lender.lastname$",
-      lender_email: "$lender.email$",
-    };
-
-    const column = map[searchBy];
-    if (column) {
-      return {
-        [column]: { [Op.iLike]: `%${search}%` },
-      };
-    }
-  }
-
-  return {
-    [Op.or]: [
-      { "$listing.title$": { [Op.iLike]: `%${search}%` } },
-      { "$borrower.firstname$": { [Op.iLike]: `%${search}%` } },
-      { "$borrower.lastname$": { [Op.iLike]: `%${search}%` } },
-      { "$borrower.email$": { [Op.iLike]: `%${search}%` } },
-      { "$lender.firstname$": { [Op.iLike]: `%${search}%` } },
-      { "$lender.lastname$": { [Op.iLike]: `%${search}%` } },
-      { "$lender.email$": { [Op.iLike]: `%${search}%` } },
-    ],
-  };
-};
+import { getSearchWhereClause } from "../../utils/search";
 
 export async function findTransactionsByBorrowerId(
   borrower_id: string,
