@@ -219,7 +219,7 @@ export const getTransactionsByListingIdController = asyncHandler(async (
   );
 }, "Error fetching transacions");
 
-export const getTransactionByRentRequest = asyncHandler(async (req: Request, res: Response) => {
+export const getTransactionByRentRequestIdController = asyncHandler(async (req: Request, res: Response) => {
   const rent_request_id = req.params.id;
 
   if (!rent_request_id) {
