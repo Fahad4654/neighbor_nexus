@@ -83,6 +83,7 @@ export const getReviewsBytransactionIdController = asyncHandler(async (
   res: Response
 ) => {
   const transaction_id = req.body.transaction_id;
+  const { search } = getPaginationParams(req);
   const user = req.user;
   if (!transaction_id) {
     return errorResponse(
@@ -95,7 +96,7 @@ export const getReviewsBytransactionIdController = asyncHandler(async (
   if (!user) {
     return errorResponse(res, "Login is required", "Unauthorized access", 401);
   }
-  const review = await findReviewsByTransactionId(transaction_id);
+  const review = await findReviewsByTransactionId(transaction_id, search);
   if (!review) {
     return errorResponse(
       res,

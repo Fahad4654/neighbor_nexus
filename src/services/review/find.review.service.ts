@@ -48,9 +48,17 @@ export async function findReviewsByReviewerId(
   };
 }
 
-export async function findReviewsByTransactionId(transaction_id: string) {
+export async function findReviewsByTransactionId(transaction_id: string, search?: string) {
+  let whereClause: any = { transaction_id };
+  if (search) {
+    whereClause = {
+      ...whereClause,
+      comment: { [Op.iLike]: `%${search}%` },
+    };
+  }
+
   const reviews = await Review.findAll({
-    where: { transaction_id },
+    where: whereClause,
   });
   return reviews;
 }
