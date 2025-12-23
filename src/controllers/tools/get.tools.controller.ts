@@ -74,6 +74,7 @@ export const getToolByListingIdController = asyncHandler(async (
 // Get tools by owner_id
 export const getToolsByOwnerIdController = asyncHandler(async (req: Request, res: Response) => {
   const { owner_id } = req.params;
+  const { search } = getPaginationParams(req);
 
   if (!owner_id) {
     return errorResponse(
@@ -96,7 +97,7 @@ export const getToolsByOwnerIdController = asyncHandler(async (req: Request, res
     );
   }
 
-  const tools = await findToolsByOwnerId(owner.id);
+  const tools = await findToolsByOwnerId(owner.id, search);
 
   return successResponse(
     res,

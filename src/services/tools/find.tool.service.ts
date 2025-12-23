@@ -87,9 +87,21 @@ export async function findToolsByListingId(listing_id: string) {
   return tool;
 }
 
-export async function findToolsByOwnerId(owner_id: string) {
+export async function findToolsByOwnerId(owner_id: string, search?: string) {
+  let whereClause: any = { owner_id };
+
+  if (search) {
+    whereClause = {
+      ...whereClause,
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+      ],
+    };
+  }
+
   const tools = await Tool.findAll({
-    where: { owner_id },
+    where: whereClause,
     include: [
       {
         model: User,
