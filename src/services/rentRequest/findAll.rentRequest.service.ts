@@ -3,8 +3,28 @@ import { RentRequest } from "../../models/RentRequest";
 import { Tool } from "../../models/Tools";
 import { User } from "../../models/User";
 
-const getSearchWhereClause = (search?: string) => {
+const getSearchWhereClause = (search?: string, searchBy?: string) => {
   if (!search) return {};
+
+  if (searchBy) {
+    const map: Record<string, string> = {
+      listing_title: "$listing.title$",
+      borrower_firstname: "$borrower.firstname$",
+      borrower_lastname: "$borrower.lastname$",
+      borrower_email: "$borrower.email$",
+      lender_firstname: "$lender.firstname$",
+      lender_lastname: "$lender.lastname$",
+      lender_email: "$lender.email$",
+    };
+
+    const column = map[searchBy];
+    if (column) {
+      return {
+        [column]: { [Op.iLike]: `%${search}%` },
+      };
+    }
+  }
+
   return {
     [Op.or]: [
       { "$listing.title$": { [Op.iLike]: `%${search}%` } },
@@ -23,10 +43,12 @@ export async function findAllRentRequests(
   asc = "ASC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const whereClause = getSearchWhereClause(search);
+  const whereClause = getSearchWhereClause(search, searchBy);
+
 
   const { count, rows } = await RentRequest.findAndCountAll({
     where: whereClause,
@@ -93,10 +115,11 @@ export async function findByBorrowerId(
   asc = "ASC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = { borrower_id: borrowerId, ...searchClause };
 
   const { count, rows } = await RentRequest.findAndCountAll({
@@ -164,10 +187,11 @@ export async function findByLenderId(
   asc = "ASC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = { lender_id: lenderId, ...searchClause };
 
   const { count, rows } = await RentRequest.findAndCountAll({
@@ -235,10 +259,11 @@ export async function findByListingId(
   asc = "ASC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = { listing_id: listingId, ...searchClause };
 
   const { count, rows } = await RentRequest.findAndCountAll({
@@ -306,10 +331,11 @@ export async function findRentRequestByBorrowerIDAndListingId(
   asc = "ASC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = { listing_id, borrower_id, ...searchClause };
 
   const { count, rows } = await RentRequest.findAndCountAll({

@@ -7,21 +7,36 @@ export async function findAllProfiles(
   asc = "ASC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
 
   let whereClause: any = {};
   if (search) {
-    whereClause = {
-      [Op.or]: [
-        { bio: { [Op.iLike]: `%${search}%` } },
-        { address: { [Op.iLike]: `%${search}%` } },
-        { "$user.firstname$": { [Op.iLike]: `%${search}%` } },
-        { "$user.lastname$": { [Op.iLike]: `%${search}%` } },
-        { "$user.email$": { [Op.iLike]: `%${search}%` } },
-      ],
-    };
+    if (searchBy) {
+      if (["bio", "address"].includes(searchBy)) {
+        whereClause = {
+          ...whereClause,
+          [searchBy]: { [Op.iLike]: `%${search}%` },
+        };
+      } else if (["firstname", "lastname", "email"].includes(searchBy)) {
+        whereClause = {
+          ...whereClause,
+          [`$user.${searchBy}$`]: { [Op.iLike]: `%${search}%` },
+        };
+      }
+    } else {
+      whereClause = {
+        [Op.or]: [
+          { bio: { [Op.iLike]: `%${search}%` } },
+          { address: { [Op.iLike]: `%${search}%` } },
+          { "$user.firstname$": { [Op.iLike]: `%${search}%` } },
+          { "$user.lastname$": { [Op.iLike]: `%${search}%` } },
+          { "$user.email$": { [Op.iLike]: `%${search}%` } },
+        ],
+      };
+    }
   }
 
   const { count, rows } = await Profile.findAndCountAll({

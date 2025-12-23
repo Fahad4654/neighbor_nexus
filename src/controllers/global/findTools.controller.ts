@@ -17,7 +17,8 @@ export const getNearbyToolsGoogleController = asyncHandler(async (
   res: Response
 ) => {
   const { userId } = req.params;
-  let { search, maxDistance, sort } = req.query;
+  // User requested to use req.body for search params
+  const { search, maxDistance, sort, searchBy } = req.body;
 
   const distanceNumber = maxDistance ? Number(maxDistance) : 10;
   if (isNaN(distanceNumber)) {
@@ -32,7 +33,8 @@ export const getNearbyToolsGoogleController = asyncHandler(async (
   let sortOptions: SortOption[] = [];
   if (sort) {
     try {
-      sortOptions = JSON.parse(String(sort));
+      // If sort is coming from body as object, use it directly, else parse string
+      sortOptions = typeof sort === "string" ? JSON.parse(sort) : sort;
       if (!Array.isArray(sortOptions)) {
         throw new Error("Sort must be an array.");
       }
@@ -51,7 +53,8 @@ export const getNearbyToolsGoogleController = asyncHandler(async (
       userId,
       distanceNumber,
       search ? String(search) : undefined,
-      sortOptions
+      sortOptions,
+      searchBy ? String(searchBy) : undefined
     );
 
     return successResponse(

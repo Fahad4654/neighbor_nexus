@@ -10,7 +10,8 @@ export async function findAllUsers(
   page = 1,
   pageSize = 10,
   userId: string,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
   const typedUser = await findByDynamicId(User, { id: userId }, false);
@@ -20,13 +21,19 @@ export async function findAllUsers(
   let whereClause: any = {};
 
   if (search) {
-    whereClause = {
-      [Op.or]: [
-        { firstname: { [Op.iLike]: `%${search}%` } },
-        { lastname: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } },
-      ],
-    };
+    if (searchBy && ["firstname", "lastname", "email"].includes(searchBy)) {
+      whereClause = {
+        [searchBy]: { [Op.iLike]: `%${search}%` },
+      };
+    } else {
+      whereClause = {
+        [Op.or]: [
+          { firstname: { [Op.iLike]: `%${search}%` } },
+          { lastname: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } },
+        ],
+      };
+    }
   }
 
   const { count, rows } = await User.findAndCountAll({

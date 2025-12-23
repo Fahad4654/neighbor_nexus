@@ -35,7 +35,7 @@ export async function getUsersController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc, page, pageSize, search } = getPaginationParams(req);
+      const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
       if (!req.user) {
         console.log("login is required");
@@ -53,7 +53,8 @@ export async function getUsersController(req: Request, res: Response) {
         page,
         pageSize,
         req.user?.id,
-        search
+        search,
+        searchBy
       );
 
       const pagination = formatPaginationResponse(usersList.pagination);

@@ -50,7 +50,7 @@ export const getReviewsByReviewerIdController = asyncHandler(async (
   res: Response
 ) => {
   const reviewer_id = req.params.id;
-  const { page, pageSize, search } = getPaginationParams(req);
+  const { page, pageSize, search, searchBy } = getPaginationParams(req);
 
   if (!reviewer_id) {
     return errorResponse(
@@ -64,7 +64,8 @@ export const getReviewsByReviewerIdController = asyncHandler(async (
     reviewer_id,
     page,
     pageSize,
-    search
+    search,
+    searchBy
   );
 
   const pagination = formatPaginationResponse(reviewsResult.pagination);
@@ -83,7 +84,7 @@ export const getReviewsBytransactionIdController = asyncHandler(async (
   res: Response
 ) => {
   const transaction_id = req.body.transaction_id;
-  const { search } = getPaginationParams(req);
+  const { search, searchBy } = getPaginationParams(req);
   const user = req.user;
   if (!transaction_id) {
     return errorResponse(
@@ -96,7 +97,11 @@ export const getReviewsBytransactionIdController = asyncHandler(async (
   if (!user) {
     return errorResponse(res, "Login is required", "Unauthorized access", 401);
   }
-  const review = await findReviewsByTransactionId(transaction_id, search);
+  const review = await findReviewsByTransactionId(
+    transaction_id,
+    search,
+    searchBy
+  );
   if (!review) {
     return errorResponse(
       res,

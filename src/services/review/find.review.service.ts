@@ -19,16 +19,19 @@ export async function findReviewsByReviewerId(
   reviewer_id: string,
   page: number = 1,
   pageSize: number = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
 
   let whereClause: any = { reviewer_id };
   if (search) {
-    whereClause = {
-      ...whereClause,
-      comment: { [Op.iLike]: `%${search}%` },
-    };
+    if (!searchBy || searchBy === "comment") {
+      whereClause = {
+        ...whereClause,
+        comment: { [Op.iLike]: `%${search}%` },
+      };
+    }
   }
 
   const { count, rows } = await Review.findAndCountAll({
@@ -48,13 +51,19 @@ export async function findReviewsByReviewerId(
   };
 }
 
-export async function findReviewsByTransactionId(transaction_id: string, search?: string) {
+export async function findReviewsByTransactionId(
+  transaction_id: string,
+  search?: string,
+  searchBy?: string
+) {
   let whereClause: any = { transaction_id };
   if (search) {
-    whereClause = {
-      ...whereClause,
-      comment: { [Op.iLike]: `%${search}%` },
-    };
+    if (!searchBy || searchBy === "comment") {
+      whereClause = {
+        ...whereClause,
+        comment: { [Op.iLike]: `%${search}%` },
+      };
+    }
   }
 
   const reviews = await Review.findAll({

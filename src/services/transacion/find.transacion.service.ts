@@ -4,8 +4,28 @@ import { User } from "../../models/User";
 
 import { Tool } from "../../models/Tools";
 
-const getSearchWhereClause = (search?: string) => {
+const getSearchWhereClause = (search?: string, searchBy?: string) => {
   if (!search) return {};
+
+  if (searchBy) {
+    const map: Record<string, string> = {
+      listing_title: "$listing.title$",
+      borrower_firstname: "$borrower.firstname$",
+      borrower_lastname: "$borrower.lastname$",
+      borrower_email: "$borrower.email$",
+      lender_firstname: "$lender.firstname$",
+      lender_lastname: "$lender.lastname$",
+      lender_email: "$lender.email$",
+    };
+
+    const column = map[searchBy];
+    if (column) {
+      return {
+        [column]: { [Op.iLike]: `%${search}%` },
+      };
+    }
+  }
+
   return {
     [Op.or]: [
       { "$listing.title$": { [Op.iLike]: `%${search}%` } },
@@ -25,10 +45,11 @@ export async function findTransactionsByBorrowerId(
   asc = "DESC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = {
     borrower_id,
     show_to_borrower: true,
@@ -67,10 +88,11 @@ export async function findTransactionsByLenderId(
   asc = "DESC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = {
     lender_id,
     show_to_lender: true,
@@ -134,10 +156,11 @@ export async function findTransactionsByListingId(
   asc = "DESC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = {
     listing_id,
     show_to_lender: true,
@@ -173,10 +196,11 @@ export async function findTransactionsByListingId(
 export async function findTransactionsByRentRequestId(
   rent_request_id: string,
   user: User,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   let whereClause: any = {};
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
 
   if (user.isAdmin) {
     // Admins see everything regardless of user visibility flags
@@ -213,10 +237,11 @@ export async function findTransactionsByUserId(
   asc = "DESC",
   page = 1,
   pageSize = 10,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search);
+  const searchClause = getSearchWhereClause(search, searchBy);
   const whereClause = {
     [Op.and]: [
       {

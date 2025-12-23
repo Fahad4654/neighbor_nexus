@@ -11,7 +11,8 @@ export async function findAllTools(
   page = 1,
   pageSize = 10,
   userId: string,
-  search?: string
+  search?: string,
+  searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -26,13 +27,20 @@ export async function findAllTools(
   }
 
   if (search) {
-    whereClause = {
-      ...whereClause,
-      [Op.or]: [
-        { title: { [Op.iLike]: `%${search}%` } },
-        { description: { [Op.iLike]: `%${search}%` } },
-      ],
-    };
+    if (searchBy && ["title", "description"].includes(searchBy)) {
+      whereClause = {
+        ...whereClause,
+        [searchBy]: { [Op.iLike]: `%${search}%` },
+      };
+    } else {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { description: { [Op.iLike]: `%${search}%` } },
+        ],
+      };
+    }
   }
 
   const { count, rows } = await Tool.findAndCountAll({
@@ -87,17 +95,28 @@ export async function findToolsByListingId(listing_id: string) {
   return tool;
 }
 
-export async function findToolsByOwnerId(owner_id: string, search?: string) {
+export async function findToolsByOwnerId(
+  owner_id: string,
+  search?: string,
+  searchBy?: string
+) {
   let whereClause: any = { owner_id };
 
   if (search) {
-    whereClause = {
-      ...whereClause,
-      [Op.or]: [
-        { title: { [Op.iLike]: `%${search}%` } },
-        { description: { [Op.iLike]: `%${search}%` } },
-      ],
-    };
+    if (searchBy && ["title", "description"].includes(searchBy)) {
+      whereClause = {
+        ...whereClause,
+        [searchBy]: { [Op.iLike]: `%${search}%` },
+      };
+    } else {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { description: { [Op.iLike]: `%${search}%` } },
+        ],
+      };
+    }
   }
 
   const tools = await Tool.findAll({

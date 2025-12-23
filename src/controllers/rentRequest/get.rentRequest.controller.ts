@@ -42,14 +42,15 @@ export async function getRentRequestsController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc, page, pageSize, search } = getPaginationParams(req);
+      const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
       const rentRequests = await findAllRentRequests(
         order,
         asc,
         page,
         pageSize,
-        search
+        search,
+        searchBy
       );
 
       const pagination = formatPaginationResponse(rentRequests.pagination);
@@ -83,7 +84,7 @@ export const getRentRequestByBorrowerIdController = asyncHandler(async (
     );
   }
   const { borrower_id } = req.body;
-  const { order, asc, page, pageSize, search } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "borrower_id",
@@ -111,7 +112,8 @@ export const getRentRequestByBorrowerIdController = asyncHandler(async (
     asc,
     page,
     pageSize,
-    search
+    search,
+    searchBy
   );
   const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
@@ -139,7 +141,7 @@ export const getRentRequestByLenderIdController = asyncHandler(async (
     );
   }
   const { lender_id } = req.body;
-  const { order, asc, page, pageSize, search } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "lender_id",
@@ -167,7 +169,8 @@ export const getRentRequestByLenderIdController = asyncHandler(async (
     asc,
     page,
     pageSize,
-    search
+    search,
+    searchBy
   );
   const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
@@ -195,7 +198,7 @@ export const getRentRequestByListingIdController = asyncHandler(async (
     );
   }
   const { listing_id } = req.body;
-  const { order, asc, page, pageSize, search } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "listing_id",
@@ -233,7 +236,8 @@ export const getRentRequestByListingIdController = asyncHandler(async (
     asc,
     page,
     pageSize,
-    search
+    search,
+    searchBy
   );
   const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
@@ -264,7 +268,7 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async
     borrower_id,
     listing_id,
   } = req.body;
-  const { order, asc, page, pageSize, search } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "borrower_id",
@@ -306,7 +310,8 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async
     asc,
     page,
     pageSize,
-    search
+    search,
+    searchBy
   );
   const pagination = formatPaginationResponse(rentRequests.pagination);
 
