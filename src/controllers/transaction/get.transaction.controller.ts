@@ -16,13 +16,14 @@ import { User } from "../../models/User";
 import { Tool } from "../../models/Tools";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
 
 export const getTransactionsByBorrowerIdController = asyncHandler(async (
   req: Request,
   res: Response
 ) => {
   const borrower_id = req.params.id;
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
   if (!reqBodyValidation) return;
@@ -47,12 +48,11 @@ export const getTransactionsByBorrowerIdController = asyncHandler(async (
     borrower_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
 
-  const { total, ...restOfPagination } = transacions.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(transacions.pagination);
 
   return successResponse(
     res,
@@ -68,7 +68,7 @@ export const getTransactionsBylenderIdController = asyncHandler(async (
   res: Response
 ) => {
   const lender_id = req.params.id;
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
   if (!reqBodyValidation) return;
@@ -93,12 +93,11 @@ export const getTransactionsBylenderIdController = asyncHandler(async (
     lender_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
 
-  const { total, ...restOfPagination } = transacions.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(transacions.pagination);
 
   return successResponse(
     res,
@@ -139,7 +138,7 @@ export const getTransactionBytransactionIdController = asyncHandler(async (
       res,
       "User not found",
       `User with ID ${req.user.id} does not exist`,
-      404
+      402
     );
   }
 
@@ -169,7 +168,7 @@ export const getTransactionsByListingIdController = asyncHandler(async (
   res: Response
 ) => {
   const listing_id = req.params.id;
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
   if (!reqBodyValidation) return;
@@ -224,11 +223,10 @@ export const getTransactionsByListingIdController = asyncHandler(async (
     listing_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
-  const { total, ...restOfPagination } = transacions.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(transacions.pagination);
 
   return successResponse(
     res,
@@ -298,7 +296,7 @@ export const getTransactionsByUserIdController = asyncHandler(async (
   res: Response
 ) => {
   const user_id = req.params.id;
-  const { order, asc, page = 1, pageSize = 10 } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
   if (!reqBodyValidation) return;
@@ -333,11 +331,10 @@ export const getTransactionsByUserIdController = asyncHandler(async (
     user_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
-  const { total, ...restOfPagination } = transacions.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(transacions.pagination);
 
   return successResponse(
     res,

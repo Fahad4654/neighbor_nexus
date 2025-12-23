@@ -17,6 +17,7 @@ import {
 import { Tool } from "../../models/Tools";
 import { findByDynamicId } from "../../services/global/find.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
 
 // Find all Rent Requests by Admin
 export async function getRentRequestsController(req: Request, res: Response) {
@@ -41,17 +42,16 @@ export async function getRentRequestsController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc, page = 1, pageSize = 10 } = req.body;
+      const { order, asc, page, pageSize } = getPaginationParams(req);
 
       const rentRequests = await findAllRentRequests(
         order,
         asc,
-        Number(page),
-        Number(pageSize)
+        page,
+        pageSize
       );
 
-      const { total, ...restOfPagination } = rentRequests.pagination;
-      const pagination = { totalCount: total, ...restOfPagination };
+      const pagination = formatPaginationResponse(rentRequests.pagination);
 
       return successResponse(
         res,
@@ -81,7 +81,8 @@ export const getRentRequestByBorrowerIdController = asyncHandler(async (
       400
     );
   }
-  const { borrower_id, order, asc, page = 1, pageSize = 10 } = req.body;
+  const { borrower_id } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "borrower_id",
@@ -107,11 +108,10 @@ export const getRentRequestByBorrowerIdController = asyncHandler(async (
     borrower_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
-  const { total, ...restOfPagination } = rentRequestsResult.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
   return successResponse(
     res,
@@ -136,7 +136,8 @@ export const getRentRequestByLenderIdController = asyncHandler(async (
       400
     );
   }
-  const { lender_id, order, asc, page = 1, pageSize = 10 } = req.body;
+  const { lender_id } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "lender_id",
@@ -162,11 +163,10 @@ export const getRentRequestByLenderIdController = asyncHandler(async (
     lender_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
-  const { total, ...restOfPagination } = rentRequestsResult.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
   return successResponse(
     res,
@@ -191,7 +191,8 @@ export const getRentRequestByListingIdController = asyncHandler(async (
       400
     );
   }
-  const { listing_id, order, asc, page = 1, pageSize = 10 } = req.body;
+  const { listing_id } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "listing_id",
@@ -227,11 +228,10 @@ export const getRentRequestByListingIdController = asyncHandler(async (
     listing_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
-  const { total, ...restOfPagination } = rentRequestsResult.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
   return successResponse(
     res,
@@ -259,11 +259,8 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async
   const {
     borrower_id,
     listing_id,
-    order,
-    asc,
-    page = 1,
-    pageSize = 10,
   } = req.body;
+  const { order, asc, page, pageSize } = getPaginationParams(req);
 
   const reqBodyValidation = validateRequiredBody(req, res, [
     "borrower_id",
@@ -303,11 +300,10 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async
     borrower_id,
     order,
     asc,
-    Number(page),
-    Number(pageSize)
+    page,
+    pageSize
   );
-  const { total, ...restOfPagination } = rentRequests.pagination;
-  const pagination = { totalCount: total, ...restOfPagination };
+  const pagination = formatPaginationResponse(rentRequests.pagination);
 
   return successResponse(
     res,
