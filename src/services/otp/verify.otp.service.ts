@@ -26,6 +26,9 @@ export async function verifyOtp(identifier: string, otp: string) {
     await token.destroy();
     throw new Error("OTP expired");
   }
+  if(token.verified){
+    throw new Error("OTP already verified");
+  }
 
   token.verified = true;
   await token.save();
@@ -46,11 +49,8 @@ export async function verifyOtp(identifier: string, otp: string) {
         supportEmail: ADMIN_MAIL,
       }
     );
-    return {
-      status: "success",
-      message: "OTP verified successfully & User verified successfully!",
-    };
+    return "User verified successfully";
   }
 
-  return { message: "OTP verified successfully" };
+  return "OTP verified successfully";
 }
