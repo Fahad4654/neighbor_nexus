@@ -94,6 +94,18 @@ export const createRentRequesController = asyncHandler(async (req: Request, res:
     );
   }
 
+
+  const pickupTime = new Date(req.body.pickup_time);
+  if (pickupTime < new Date()) {
+    return errorResponse(
+      res,
+      "Invalid pickup time",
+      "Pickup time cannot be in the past",
+      400
+    );
+  }
+
+
   const newRentRequest = await createRentRequest(req.body);
 
   console.log("Rent Request created successfully");
