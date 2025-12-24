@@ -309,9 +309,9 @@ export const getByRentRequestIdController = asyncHandler(async (
     );
   }
   if (
-    req.user.id !== rentRequest.borrower_id &&
+    (req.user.id !== rentRequest.borrower_id || rentRequest.show_to_borrower === false) &&
     !req.user.isAdmin &&
-    req.user.id !== rentRequest.lender_id
+    (req.user.id !== rentRequest.lender_id || rentRequest.show_to_lender === false)
   ) {
     return errorResponse(
       res,
