@@ -93,7 +93,7 @@ export const createRentRequesController = asyncHandler(async (req: Request, res:
       400
     );
   }
-
+  console.log(req.body);
 
   const pickupTime = new Date(req.body.pickup_time);
   if (pickupTime < new Date()) {
