@@ -29,7 +29,6 @@ const BORROWER_ALLOWED_FIELDS: RentRequestUpdatableField[] = [
   "duration_unit",
   "duration_value",
   "pickup_time",
-  "drop_off_time",
   "actual_drop_off_time",
 ];
 

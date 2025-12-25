@@ -8,6 +8,7 @@ import { validateRequiredBody } from "../../services/global/reqBodyValidation.se
 import { findByDynamicId } from "../../services/global/find.service";
 import { User } from "../../models/User";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { RentRequest } from "../../models/RentRequest";
 
 export const deleteRentRequestController = asyncHandler(async (req: Request, res: Response) => {
   if (!req.body) {
@@ -40,20 +41,25 @@ export const deleteRentRequestController = asyncHandler(async (req: Request, res
   const validateBody = validateRequiredBody(req, res, ["rentRequest_id"]);
   if (!validateBody) return;
 
-  const deletedCount = await deleteRentRequest(req.body.rentRequest_id, user);
+  const deletedRentRequest = await deleteRentRequest(req.body.rentRequest_id, user);
 
-  if (deletedCount === 0)
-    [
-      console.log(
-        `Rent Request with ID ${req.body.rentRequest_id} not found`
-      ),
-    ];
+  if (!deletedRentRequest) {
+    console.log(
+      `Rent Request with ID ${req.body.rentRequest_id} not found`
+    );
+    return errorResponse(
+      res,
+      "Rent Request not found",
+      `Rent Request with ID ${req.body.rentRequest_id} does not exist`,
+      404
+    );
+  }
 
   console.log("Rent Request deleted successfully");
   return successResponse(
     res,
     "Rent Request deleted successfully",
-    { deletedCount },
+    { rentRequest: deletedRentRequest },
     200
   );
 }, "Error deleting rent request");

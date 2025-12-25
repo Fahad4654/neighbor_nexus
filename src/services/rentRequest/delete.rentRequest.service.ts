@@ -20,7 +20,25 @@ export async function deleteRentRequest(rentRequestID: string, user: User) {
     throw new Error("Unauthorized to delete this rent request");
   }
 
-  return await RentRequest.destroy({
-    where: { id: rentRequestID },
-  });
+  if (wantToDelRentRequest.borrower_id === user.id && wantToDelRentRequest.show_to_borrower === false) {
+    throw new Error("Unauthorized to delete this rent request");
+  }
+
+  if (wantToDelRentRequest.lender_id === user.id && wantToDelRentRequest.show_to_lender === false) {
+    throw new Error("Unauthorized to delete this rent request");
+  }
+
+  if (wantToDelRentRequest.rent_status !== "Requested") {
+    throw new Error("Unauthorized to delete this rent request");
+  }
+
+  if (wantToDelRentRequest.borrower_id === user.id) {
+    wantToDelRentRequest.show_to_borrower = false;
+  }
+
+  if (wantToDelRentRequest.lender_id === user.id) {
+    wantToDelRentRequest.show_to_lender = false;
+  }
+  await wantToDelRentRequest.save();
+  return wantToDelRentRequest;
 }

@@ -105,6 +105,14 @@ export class RentRequest extends Model {
   @Column(DataType.BOOLEAN)
   borrower_rated!: boolean;
 
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  show_to_borrower!: boolean;
+
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  show_to_lender!: boolean;
+
   @AllowNull(false)
   @Default(false)
   @Column(DataType.BOOLEAN)
