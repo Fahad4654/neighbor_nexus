@@ -1,44 +1,42 @@
 import { RentRequest } from "../../models/RentRequest";
 import { User } from "../../models/User";
-import { findByDynamicId } from "../global/find.service";
 
 export async function deleteRentRequest(rentRequestID: string, user: User) {
-  const typedWantToDelRentRequest = await findByDynamicId(
-    RentRequest,
-    {
-      id: rentRequestID,
-    },
-    false
-  );
-  const wantToDelRentRequest = typedWantToDelRentRequest as RentRequest | null;
+  const wantToDelRentRequest = await RentRequest.findByPk(rentRequestID);
 
   if (!wantToDelRentRequest) {
     throw new Error("Rent Request not found");
   }
 
-  if (wantToDelRentRequest.borrower_id !== user.id && !user.isAdmin) {
-    throw new Error("Unauthorized to delete this rent request");
+  // 1. Security Check: Is this user even part of this request?
+  const isBorrower = wantToDelRentRequest.borrower_id === user.id;
+  const isLender = wantToDelRentRequest.lender_id === user.id;
+
+  if (!isBorrower && !isLender) {
+    throw new Error("Unauthorized: You are not part of this rental request");
   }
 
-  if (wantToDelRentRequest.borrower_id === user.id && wantToDelRentRequest.show_to_borrower === false) {
-    throw new Error("Unauthorized to delete this rent request");
+  // 2. Check if already hidden for this specific user
+  if ((isBorrower && !wantToDelRentRequest.show_to_borrower) ||
+    (isLender && !wantToDelRentRequest.show_to_lender)) {
+    throw new Error("This rent request is already deleted");
   }
 
-  if (wantToDelRentRequest.lender_id === user.id && wantToDelRentRequest.show_to_lender === false) {
-    throw new Error("Unauthorized to delete this rent request");
+  // 3. Status Check: Block deletion only for sensitive states
+  // Example: Prevent deletion if the tool is currently with the borrower
+  const forbiddenStates = ["Requested"];
+  if (forbiddenStates.includes(wantToDelRentRequest.rent_status)) {
+    throw new Error(`Cannot remove request while it is ${wantToDelRentRequest.rent_status}`);
   }
 
-  if (wantToDelRentRequest.rent_status !== "Requested") {
-    throw new Error("Unauthorized to delete this rent request");
-  }
-
-  if (wantToDelRentRequest.borrower_id === user.id) {
+  // 4. Perform "Soft Delete" for the specific user
+  if (isBorrower) {
     wantToDelRentRequest.show_to_borrower = false;
   }
-
-  if (wantToDelRentRequest.lender_id === user.id) {
+  if (isLender) {
     wantToDelRentRequest.show_to_lender = false;
   }
+
   await wantToDelRentRequest.save();
   return wantToDelRentRequest;
 }

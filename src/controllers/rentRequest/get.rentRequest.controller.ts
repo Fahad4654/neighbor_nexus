@@ -250,15 +250,6 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async
     );
   }
 
-  if (req.user.id !== tool.owner_id && !req.user.isAdmin) {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "You are not authorized to view this Rent Request",
-      403
-    );
-  }
-
   const rentRequests = await findRentRequestByBorrowerIDAndListingId(
     listing_id,
     borrower_id,
