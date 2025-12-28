@@ -1,6 +1,5 @@
 import { sequelize } from "../../config/database";
 
-
 class DatabaseService {
   async initialize() {
     try {
