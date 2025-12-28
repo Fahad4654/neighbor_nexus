@@ -48,7 +48,7 @@ export function errorResponse(
     parsedError = error.errors.map((e: any) => ({
       field: e.path,
       message: e.message,
-      value: e.value
+      value: e.value,
     }));
   }
   // If it's a standard Error object but not a Sequelize list

@@ -5,6 +5,7 @@ import { User } from "../../models/User";
 import { Tool } from "../../models/Tools";
 
 import { getSearchWhereClause } from "../../utils/search";
+import { RentRequest } from "../../models/RentRequest";
 
 export async function findTransactionsByBorrowerId(
   borrower_id: string,
@@ -26,9 +27,59 @@ export async function findTransactionsByBorrowerId(
   const { count, rows } = await Transaction.findAndCountAll({
     where: whereClause,
     include: [
-      { model: Tool, as: "listing" },
-      { model: User, as: "borrower" },
-      { model: User, as: "lender" },
+      {
+        model: RentRequest,
+        as: "rentRequest",
+        attributes: [
+          "rent_status",
+          "duration_unit",
+          "duration_value",
+          "pickup_time",
+          "drop_off_time",
+          "rental_price",
+          "actual_pickup_time",
+          "actual_drop_off_time",
+          "cancellation_reason",
+          "borrower_rated",
+          "lender_rated",
+        ],
+      },
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
     ],
     nest: true,
     distinct: true,
@@ -69,9 +120,59 @@ export async function findTransactionsByLenderId(
   const { count, rows } = await Transaction.findAndCountAll({
     where: whereClause,
     include: [
-      { model: Tool, as: "listing" },
-      { model: User, as: "borrower" },
-      { model: User, as: "lender" },
+      {
+        model: RentRequest,
+        as: "rentRequest",
+        attributes: [
+          "rent_status",
+          "duration_unit",
+          "duration_value",
+          "pickup_time",
+          "drop_off_time",
+          "rental_price",
+          "actual_pickup_time",
+          "actual_drop_off_time",
+          "cancellation_reason",
+          "borrower_rated",
+          "lender_rated",
+        ],
+      },
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
     ],
     nest: true,
     distinct: true,
@@ -99,9 +200,59 @@ export async function findTransactionByTransactionId(
 ) {
   const transaction = await Transaction.findByPk(transaction_id, {
     include: [
-      { model: Tool, as: "listing" },
-      { model: User, as: "borrower" },
-      { model: User, as: "lender" },
+      {
+        model: RentRequest,
+        as: "rentRequest",
+        attributes: [
+          "rent_status",
+          "duration_unit",
+          "duration_value",
+          "pickup_time",
+          "drop_off_time",
+          "rental_price",
+          "actual_pickup_time",
+          "actual_drop_off_time",
+          "cancellation_reason",
+          "borrower_rated",
+          "lender_rated",
+        ],
+      },
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
     ],
   });
   if (!transaction) {
@@ -137,9 +288,59 @@ export async function findTransactionsByListingId(
   const { count, rows } = await Transaction.findAndCountAll({
     where: whereClause,
     include: [
-      { model: Tool, as: "listing" },
-      { model: User, as: "borrower" },
-      { model: User, as: "lender" },
+      {
+        model: RentRequest,
+        as: "rentRequest",
+        attributes: [
+          "rent_status",
+          "duration_unit",
+          "duration_value",
+          "pickup_time",
+          "drop_off_time",
+          "rental_price",
+          "actual_pickup_time",
+          "actual_drop_off_time",
+          "cancellation_reason",
+          "borrower_rated",
+          "lender_rated",
+        ],
+      },
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
     ],
     nest: true,
     distinct: true,
@@ -190,9 +391,59 @@ export async function findTransactionsByRentRequestId(
   const transactions = await Transaction.findAll({
     where: whereClause,
     include: [
-      { model: Tool, as: "listing" },
-      { model: User, as: "borrower" },
-      { model: User, as: "lender" },
+      {
+        model: RentRequest,
+        as: "rentRequest",
+        attributes: [
+          "rent_status",
+          "duration_unit",
+          "duration_value",
+          "pickup_time",
+          "drop_off_time",
+          "rental_price",
+          "actual_pickup_time",
+          "actual_drop_off_time",
+          "cancellation_reason",
+          "borrower_rated",
+          "lender_rated",
+        ],
+      },
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
     ],
   });
   return transactions;
@@ -228,9 +479,59 @@ export async function findTransactionsByUserId(
   const { count, rows } = await Transaction.findAndCountAll({
     where: whereClause,
     include: [
-      { model: Tool, as: "listing" },
-      { model: User, as: "borrower" },
-      { model: User, as: "lender" },
+      {
+        model: RentRequest,
+        as: "rentRequest",
+        attributes: [
+          "rent_status",
+          "duration_unit",
+          "duration_value",
+          "pickup_time",
+          "drop_off_time",
+          "rental_price",
+          "actual_pickup_time",
+          "actual_drop_off_time",
+          "cancellation_reason",
+          "borrower_rated",
+          "lender_rated",
+        ],
+      },
+      {
+        model: Tool,
+        as: "listing",
+        attributes: [
+          "listing_id",
+          "title",
+          "is_available",
+          "rental_count",
+          "is_approved",
+          "geo_location",
+        ],
+      },
+      {
+        model: User,
+        as: "borrower",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
+      {
+        model: User,
+        as: "lender",
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
+      },
     ],
     nest: true,
     distinct: true,

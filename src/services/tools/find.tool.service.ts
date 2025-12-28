@@ -102,7 +102,7 @@ export async function findToolsByOwnerId(
   order = "createdAt",
   asc: "ASC" | "DESC" = "ASC",
   page = 1,
-  pageSize = 10,
+  pageSize = 10
 ) {
   let whereClause: any = { owner_id };
   const offset = (page - 1) * pageSize;
