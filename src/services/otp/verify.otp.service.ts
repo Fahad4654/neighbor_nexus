@@ -26,7 +26,7 @@ export async function verifyOtp(identifier: string, otp: string) {
     await token.destroy();
     throw new Error("OTP expired");
   }
-  if(token.verified){
+  if (token.verified) {
     throw new Error("OTP already verified");
   }
 
