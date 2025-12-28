@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import { findNearbyToolsGoogle } from "../../services/findTools/findNearbyToolsByGoogle.service";
-import {
-  errorResponse,
-  successResponse,
-} from "../../utils/apiResponse";
+import { errorResponse, successResponse } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
 
 // Define the expected structure for sort options
@@ -12,69 +9,69 @@ interface SortOption {
   order: "ASC" | "DESC";
 }
 
-export const getNearbyToolsGoogleController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  const { userId } = req.params;
-  // User requested to use req.body for search params
-  const { search, maxDistance, sort, searchBy } = req.body;
+export const getNearbyToolsGoogleController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    // User requested to use req.body for search params
+    const { search, maxDistance, sort, searchBy } = req.body;
 
-  const distanceNumber = maxDistance ? Number(maxDistance) : 10;
-  if (isNaN(distanceNumber)) {
-    return errorResponse(
-      res,
-      "Invalid maxDistance value",
-      "maxDistance must be a numerical value",
-      400
-    );
-  }
-
-  let sortOptions: SortOption[] = [];
-  if (sort) {
-    try {
-      // If sort is coming from body as object, use it directly, else parse string
-      sortOptions = typeof sort === "string" ? JSON.parse(sort) : sort;
-      if (!Array.isArray(sortOptions)) {
-        throw new Error("Sort must be an array.");
-      }
-    } catch (err) {
+    const distanceNumber = maxDistance ? Number(maxDistance) : 10;
+    if (isNaN(distanceNumber)) {
       return errorResponse(
         res,
-        "Invalid sort format",
-        "Sort must be a JSON array of {column: string, order: 'ASC'|'DESC'}",
+        "Invalid maxDistance value",
+        "maxDistance must be a numerical value",
         400
       );
     }
-  }
 
-  try {
-    const tools = await findNearbyToolsGoogle(
-      userId,
-      distanceNumber,
-      search ? String(search) : undefined,
-      sortOptions,
-      searchBy ? String(searchBy) : undefined
-    );
+    let sortOptions: SortOption[] = [];
+    if (sort) {
+      try {
+        // If sort is coming from body as object, use it directly, else parse string
+        sortOptions = typeof sort === "string" ? JSON.parse(sort) : sort;
+        if (!Array.isArray(sortOptions)) {
+          throw new Error("Sort must be an array.");
+        }
+      } catch (err) {
+        return errorResponse(
+          res,
+          "Invalid sort format",
+          "Sort must be a JSON array of {column: string, order: 'ASC'|'DESC'}",
+          400
+        );
+      }
+    }
 
-    return successResponse(
-      res,
-      "Nearby tools fetched successfully",
-      {
-        count: tools.length,
-        tools: tools,
-      },
-      200
-    );
-  } catch (error: any) {
-    if (error.message && error.message.includes("User location missing")) {
-       return errorResponse(
+    try {
+      const tools = await findNearbyToolsGoogle(
+        userId,
+        distanceNumber,
+        search ? String(search) : undefined,
+        sortOptions,
+        searchBy ? String(searchBy) : undefined
+      );
+
+      return successResponse(
         res,
-        "Cannot find tools",
-        "User location missing in profile data or not accessible",
-        400
+        "Nearby tools fetched successfully",
+        {
+          count: tools.length,
+          tools: tools,
+        },
+        200
       );
+    } catch (error: any) {
+      if (error.message && error.message.includes("User location missing")) {
+        return errorResponse(
+          res,
+          "Cannot find tools",
+          "User location missing in profile data or not accessible",
+          400
+        );
+      }
+      throw error;
     }
-    throw error;
-  }
-}, "Failed to fetch nearby tools");
+  },
+  "Failed to fetch nearby tools"
+);
