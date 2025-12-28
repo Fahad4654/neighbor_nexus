@@ -27,7 +27,7 @@ export async function findTransactionsByBorrowerId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -120,7 +120,7 @@ export async function findTransactionsByLenderId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -200,7 +200,7 @@ export async function findTransactionByTransactionId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -288,7 +288,7 @@ export async function findTransactionsByListingId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -391,7 +391,7 @@ export async function findTransactionsByRentRequestId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -479,7 +479,7 @@ export async function findTransactionsByUserId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
