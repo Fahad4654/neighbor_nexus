@@ -124,7 +124,7 @@ export const updateRentRequestController = asyncHandler(
         where: {
           id: { [Op.ne]: rentRequest_id }, // Exclude current request
           listing_id: rentRequest.listing_id,
-          rent_status: { [Op.in]: ["Approved", "Confirmed", "PickedUp"] },
+          rent_status: { [Op.in]: ["Approved", "Cancelled", "Completed"] },
           [Op.and]: [
             { pickup_time: { [Op.lt]: end } },
             { drop_off_time: { [Op.gt]: start } },
