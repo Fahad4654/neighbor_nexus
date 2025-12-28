@@ -1,20 +1,13 @@
-// controllers/rentRequest/update.controller.ts
-
 import { Request, Response } from "express";
 import { findByRentRequestId } from "../../services/rentRequest/findAll.rentRequest.service";
 import { updateRentRequest } from "../../services/rentRequest/update.rentRequest.service";
-import {
-  errorResponse,
-  successResponse,
-} from "../../utils/apiResponse";
+import { errorResponse, successResponse } from "../../utils/apiResponse";
 import { validateRequiredBody } from "../../services/global/reqBodyValidation.service";
 import { RentRequest } from "../../models/RentRequest";
 import { Tool } from "../../models/Tools";
 import { createTransaction } from "../../services/transacion/create.transacion.service";
 import { COMMISSION } from "../../config";
 import { findTransactionsByRentRequestId } from "../../services/transacion/find.transacion.service";
-import { findByDynamicId } from "../../services/global/find.service";
-import { User } from "../../models/User";
 import { asyncHandler } from "../../utils/asyncHandler";
 
 type RentRequestUpdatableField = keyof RentRequest;
@@ -30,6 +23,7 @@ const BORROWER_ALLOWED_FIELDS: RentRequestUpdatableField[] = [
   "duration_value",
   "pickup_time",
   "actual_drop_off_time",
+  "rent_status",
 ];
 
 const ADMIN_ALLOWED_FIELDS: RentRequestUpdatableField[] = [
@@ -43,57 +37,46 @@ const ADMIN_ALLOWED_FIELDS: RentRequestUpdatableField[] = [
   "borrower_rated",
   "lender_rated",
   "cancellation_reason",
-  "borrower_rated",
-  "lender_rated",
 ];
 
 export const updateRentRequestController = asyncHandler(async (req: Request, res: Response) => {
+  // 1. Authentication Check
   if (!req.user || !req.user.id) {
     return errorResponse(res, "Unauthorized", "Login is required", 401);
   }
   const currentUserId = req.user.id;
 
+  // 2. Validate Required ID
   const validateBody = validateRequiredBody(req, res, ["rentRequest_id"]);
   if (!validateBody) return;
 
   const { rentRequest_id, ...updateData } = req.body;
 
+  // 3. Fetch Existing Request
   const rentRequest = await findByRentRequestId(rentRequest_id);
   if (!rentRequest) {
-    return errorResponse(
-      res,
-      "Rent Request not found",
-      `Rent Request with ID ${rentRequest_id} does not exist`,
-      404
-    );
+    return errorResponse(res, "Rent Request not found", `ID ${rentRequest_id} does not exist`, 404);
   }
 
+  // 4. Role-Based Permission Logic
   let allowedFields: RentRequestUpdatableField[] = [];
-
-  let userIslender = false;
 
   if (currentUserId === rentRequest.lender_id) {
     allowedFields = LENDER_ALLOWED_FIELDS;
-    userIslender = true;
   } else if (currentUserId === rentRequest.borrower_id) {
-    userIslender = false;
+    // Security: Borrowers can change status ONLY to "Cancelled"
     if (updateData.rent_status && updateData.rent_status !== "Cancelled") {
-      return errorResponse(res, "Borrowers can only cancel requests.", 403);
+      return errorResponse(res, "Forbidden", "Borrowers can only cancel requests.", 403);
     }
     allowedFields = BORROWER_ALLOWED_FIELDS;
   } else if (req.user.isAdmin) {
     allowedFields = ADMIN_ALLOWED_FIELDS;
   } else {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "You are not authorized to update this rental request.",
-      403
-    );
+    return errorResponse(res, "Forbidden", "You are not authorized to update this request.", 403);
   }
 
-  const updatesToSend: Partial<RentRequest> = {};
-
+  // 5. Sanitize Updates based on Allowed Fields
+  const updatesToSend: any = {};
   for (const field of allowedFields) {
     if (updateData[field] !== undefined) {
       updatesToSend[field] = updateData[field];
@@ -101,88 +84,54 @@ export const updateRentRequestController = asyncHandler(async (req: Request, res
   }
 
   if (Object.keys(updatesToSend).length === 0) {
-    return errorResponse(
-      res,
-      "Update Failed",
-      "No allowed fields provided for update.",
-      400
-    );
+    return errorResponse(res, "Update Failed", "No valid/allowed fields provided.", 400);
   }
-  if (req.body.pickup_time) {
-    if (typeof req.body.pickup_time === "string") {
-      req.body.pickup_time = new Date(req.body.pickup_time);
+
+  // 6. Specific Validation: Pickup Time
+  if (updatesToSend.pickup_time) {
+    const pDate = new Date(updatesToSend.pickup_time);
+    if (isNaN(pDate.getTime())) {
+      return errorResponse(res, "Invalid Date", "Pickup time format is invalid.", 400);
     }
-    if (req.body.pickup_time < new Date()) {
-      return errorResponse(
-        res,
-        "Update Failed",
-        "Pickup time cannot be in the past.",
-        400
-      );
+    if (pDate < new Date()) {
+      return errorResponse(res, "Update Failed", "Pickup time cannot be in the past.", 400);
+    }
+    updatesToSend.pickup_time = pDate;
+  }
+
+  // 7. Prevent modifications after final states (except for specific tracking fields)
+  const isFinalState = rentRequest.rent_status === "Approved" || rentRequest.rent_status === "Cancelled";
+  const isUpdatingTracking = updatesToSend.actual_pickup_time || updatesToSend.actual_drop_off_time;
+
+  if (isFinalState && !isUpdatingTracking && !req.user.isAdmin) {
+    return errorResponse(res, "Update Failed", "Cannot modify an approved or cancelled request.", 400);
+  }
+
+  // 8. Transaction Guard: Only check if the status is moving TO "Approved"
+  if (updatesToSend.rent_status === "Approved") {
+    const existingTransactions = await findTransactionsByRentRequestId(rentRequest_id, req.user as any);
+    if (existingTransactions.length > 0) {
+      return errorResponse(res, "Conflict", "A transaction already exists for this rent request.", 400);
     }
   }
 
-  const servicePayload = {
+  // 9. Execute the Service Update
+  const updatedRentRequest = await updateRentRequest({
     id: rentRequest_id,
     ...updatesToSend,
-  } as Partial<RentRequest> & { id: string };
+  });
 
-  if (
-    rentRequest.rent_status === "Approved" ||
-    rentRequest.rent_status === "Cancelled"
-  ) {
-    console.log("Cannot update an approved or cancelled request.");
-    return errorResponse(
-      res,
-      "Update Failed",
-      "Cannot update an approved or cancelled request.",
-      400
-    );
-  }
-
-  const typedUser = await findByDynamicId(User, { id: currentUserId }, false);
-  const user = typedUser as User | null;
-  if (!user) {
-    console.log("User not found");
-    return errorResponse(
-      res,
-      "User not found",
-      `User with ID ${currentUserId} does not exist`,
-      404
-    );
-  }
-
-  const checkTransaction = await findTransactionsByRentRequestId(
-    rentRequest_id,
-    user
-  );
-  if (checkTransaction.length > 0) {
-    console.log("Transaction already exists");
-    return errorResponse(
-      res,
-      "Transaction already exists",
-      "Transaction already exists",
-      400
-    );
-  }
-
-  const updatedRentRequest = await updateRentRequest(servicePayload);
-  const tool = await Tool.findByPk(updatedRentRequest?.listing_id);
-  if (!tool) {
-    console.log("Tool not found");
-    return errorResponse(
-      res,
-      "Tool not found",
-      `Tool with ID ${updatedRentRequest?.listing_id} does not exist`,
-      404
-    );
-  }
+  // 10. Automated Transaction Creation
   let transaction = null;
+  // Trigger transaction ONLY if the status was just changed to "Approved" by someone other than the borrower
   if (
     updatedRentRequest &&
-    currentUserId === updatedRentRequest.lender_id &&
-    updatedRentRequest.rent_status === "Approved"
+    updatesToSend.rent_status === "Approved" &&
+    currentUserId !== updatedRentRequest.borrower_id
   ) {
+    const tool = await Tool.findByPk(updatedRentRequest.listing_id);
+    if (!tool) throw new Error("Tool not found during transaction creation");
+
     transaction = await createTransaction(
       updatedRentRequest.listing_id,
       updatedRentRequest.borrower_id,
@@ -198,7 +147,6 @@ export const updateRentRequestController = asyncHandler(async (req: Request, res
     );
   }
 
-  console.log("Rent Request updated successfully");
   return successResponse(
     res,
     "Rent Request updated successfully",
