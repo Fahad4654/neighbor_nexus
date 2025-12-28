@@ -34,13 +34,13 @@ export const getSearchWhereClause = (search?: string, searchBy?: string) => {
     if (column) {
       // Check if it's an associated field (contains $) or direct field
       if (column.includes(".") || column.includes("$")) {
-         return {
-            [column]: { [Op.iLike]: `%${search}%` },
-         };
+        return {
+          [column]: { [Op.iLike]: `%${search}%` },
+        };
       } else {
-          return {
-            [column]: { [Op.iLike]: `%${search}%` },
-          };
+        return {
+          [column]: { [Op.iLike]: `%${search}%` },
+        };
       }
     }
   }
@@ -51,7 +51,7 @@ export const getSearchWhereClause = (search?: string, searchBy?: string) => {
   // HOWEVER, for now, to support the specific refactoring request for RentRequest/Transaction code reuse,
   // we will keep the specific default fields here or make them configurable?
   // Let's keep the specific defaults that were repeated, as that's the primary target for refactoring.
-  
+
   return {
     [Op.or]: [
       { "$listing.title$": { [Op.iLike]: `%${search}%` } },

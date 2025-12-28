@@ -2,93 +2,93 @@ import { Request, Response } from "express";
 import { User } from "../../models/User";
 import { findByDynamicId } from "../../services/global/find.service";
 import { updateUser } from "../../services/user/update.user.service";
-import {
-  successResponse,
-  errorResponse,
-} from "../../utils/apiResponse";
+import { successResponse, errorResponse } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
 
-export const updateUserController = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body.id) {
-    return errorResponse(
-      res,
-      "User ID is required",
-      "Missing ID in request body",
-      400
+export const updateUserController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.body.id) {
+      return errorResponse(
+        res,
+        "User ID is required",
+        "Missing ID in request body",
+        400
+      );
+    }
+
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+
+    const typedWantUpUser = await findByDynamicId(
+      User,
+      { id: req.body.id },
+      false
     );
-  }
+    const wantUpUser = typedWantUpUser as User | null;
 
-  if (!req.user) {
-    return errorResponse(
-      res,
-      "Login is required",
-      "Unauthorized access",
-      401
-    );
-  }
+    if (!wantUpUser) {
+      return errorResponse(
+        res,
+        "User Not found",
+        `User with ID ${req.body.id} does not exist`,
+        404
+      );
+    }
 
-  const typedWantUpUser = await findByDynamicId(
-    User,
-    { id: req.body.id },
-    false
-  );
-  const wantUpUser = typedWantUpUser as User | null;
+    if (!req.user.isAdmin) {
+      if (req.user.id !== req.body.id && wantUpUser.createdBy !== req.user.id) {
+        return errorResponse(
+          res,
+          "Forbidden",
+          "You are not permitted to update this user",
+          403
+        );
+      }
+    }
 
-  if (!wantUpUser) {
-    return errorResponse(
-      res,
-      "User Not found",
-      `User with ID ${req.body.id} does not exist`,
-      404
-    );
-  }
-
-  if (!req.user.isAdmin) {
-    if (req.user.id !== req.body.id && wantUpUser.createdBy !== req.user.id) {
+    if (req.body.isAdmin && !req.user.isAdmin) {
       return errorResponse(
         res,
         "Forbidden",
-        "You are not permitted to update this user",
+        "Only admins can grant admin privileges",
         403
       );
     }
-  }
 
-  if (req.body.isAdmin && !req.user.isAdmin) {
-    return errorResponse(
+    if (req.body.isVerified && !req.user.isAdmin) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "Only admins can verify user accounts",
+        403
+      );
+    }
+
+    const updatedUser = await updateUser(req.body);
+
+    if (!updatedUser) {
+      console.log("No valid fields to update or user not found");
+      return errorResponse(
+        res,
+        "Update Failed",
+        "No valid fields to update or user not found after update attempt",
+        400
+      );
+    }
+
+    console.log("User updated successfully");
+    return successResponse(
       res,
-      "Forbidden",
-      "Only admins can grant admin privileges",
-      403
+      "User updated successfully",
+      { user: updatedUser },
+      200
     );
-  }
-
-  if (req.body.isVerified && !req.user.isAdmin) {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "Only admins can verify user accounts",
-      403
-    );
-  }
-
-  const updatedUser = await updateUser(req.body);
-
-  if (!updatedUser) {
-    console.log("No valid fields to update or user not found");
-    return errorResponse(
-      res,
-      "Update Failed",
-      "No valid fields to update or user not found after update attempt",
-      400
-    );
-  }
-
-  console.log("User updated successfully");
-  return successResponse(
-    res,
-    "User updated successfully",
-    { user: updatedUser },
-    200
-  );
-}, "Error updating user");
+  },
+  "Error updating user"
+);

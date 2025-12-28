@@ -25,7 +25,7 @@ interface PaginationResult<T> {
  * @returns Single instance, array of instances, or paginated object
  */
 export async function findByDynamicId<T extends Model>(
-  model: { new (): T } & typeof Model,
+  model: { new(): T } & typeof Model,
   identifiers: Partial<Record<string, string | number>>,
   multiple = false,
   page = 1,

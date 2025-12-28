@@ -7,103 +7,122 @@ import {
   findToolsByListingId,
   findToolsByOwnerId,
 } from "../../services/tools/find.tool.service";
-import {
-  successResponse,
-  errorResponse,
-} from "../../utils/apiResponse";
+import { successResponse, errorResponse } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
-import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
+import {
+  getPaginationParams,
+  formatPaginationResponse,
+} from "../../utils/pagination";
 
 // ✅ Get all tools with pagination
-export const getToolsController = asyncHandler(async (req: Request, res: Response) => {
-  const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
-  if (!reqBodyValidation) return;
+export const getToolsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const reqBodyValidation = validateRequiredBody(req, res, ["order", "asc"]);
+    if (!reqBodyValidation) return;
 
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
 
-  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
 
-  const toolsList = await findAllTools(
-    order,
-    asc,
-    page,
-    pageSize,
-    req.user.id,
-    search,
-    searchBy
-  );
+    const toolsList = await findAllTools(
+      order,
+      asc,
+      page,
+      pageSize,
+      req.user.id,
+      search,
+      searchBy
+    );
 
-  const pagination = formatPaginationResponse(toolsList.pagination);
+    const pagination = formatPaginationResponse(toolsList.pagination);
 
-  return successResponse(
-    res,
-    "Tools fetched successfully",
-    { tools: toolsList.data },
-    200,
-    pagination
-  );
-}, "Error fetching tools");
+    return successResponse(
+      res,
+      "Tools fetched successfully",
+      { tools: toolsList.data },
+      200,
+      pagination
+    );
+  },
+  "Error fetching tools"
+);
 
 // ✅ Get single tool by listing_id
-export const getToolByListingIdController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  const { listing_id } = req.params;
+export const getToolByListingIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { listing_id } = req.params;
 
-  const tool = await findToolsByListingId(listing_id);
+    const tool = await findToolsByListingId(listing_id);
 
-  if (!tool) {
-    return errorResponse(
+    if (!tool) {
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
+    }
+
+    return successResponse(
       res,
-      "Tool not found",
-      `Tool with ID ${listing_id} does not exist`,
-      404
+      "Tool fetched successfully",
+      { tools: tool.get({ plain: true }) },
+      200
     );
-  }
-
-  return successResponse(
-    res,
-    "Tool fetched successfully",
-    { tools: tool.get({ plain: true }) },
-    200
-  );
-}, "Error fetching tool");
+  },
+  "Error fetching tool"
+);
 
 // Get tools by owner_id
-export const getToolsByOwnerIdController = asyncHandler(async (req: Request, res: Response) => {
-  const { owner_id } = req.params;
-  const { search, searchBy } = getPaginationParams(req);
+export const getToolsByOwnerIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { owner_id } = req.params;
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
 
-  if (!owner_id) {
-    return errorResponse(
-      res,
-      "Owner ID is required",
-      "Missing owner_id in route parameter",
-      400
+    if (!owner_id) {
+      return errorResponse(
+        res,
+        "Owner ID is required",
+        "Missing owner_id in route parameter",
+        400
+      );
+    }
+
+    const ownerExists = await findByDynamicId(User, { id: owner_id }, false);
+    const owner = ownerExists as User | null;
+
+    if (!owner) {
+      return errorResponse(
+        res,
+        "Owner not found",
+        `User with ID ${owner_id} does not exist`,
+        404
+      );
+    }
+
+    const toolsList = await findToolsByOwnerId(
+      owner_id,
+      search,
+      searchBy,
+      order,
+      asc,
+      page,
+      pageSize
     );
-  }
 
-  const ownerExists = await findByDynamicId(User, { id: owner_id }, false);
-  const owner = ownerExists as User | null;
+    const pagination = formatPaginationResponse(toolsList.pagination);
 
-  if (!owner) {
-    return errorResponse(
+    return successResponse(
       res,
-      "Owner not found",
-      `User with ID ${owner_id} does not exist`,
-      404
+      "Tools fetched successfully",
+      { tools: toolsList.data },
+      200,
+      pagination
     );
-  }
-
-  const tools = await findToolsByOwnerId(owner.id, search, searchBy);
-
-  return successResponse(
-    res,
-    "Tools fetched successfully",
-    { tools: tools.map((t) => t.get({ plain: true })) },
-    200
-  );
-}, "Error fetching tools");
+  },
+  "Error fetching tools"
+);

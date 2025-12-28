@@ -37,7 +37,11 @@ export async function updateRentRequest(
   }
 
   // 3. Fetch Tool (needed for price calculation)
-  const typedTool = await findByDynamicId(Tool, { listing_id: rentRequest.listing_id }, false);
+  const typedTool = await findByDynamicId(
+    Tool,
+    { listing_id: rentRequest.listing_id },
+    false
+  );
   const tool = typedTool as Tool | null;
   if (!tool) {
     throw new Error("Tool associated with this request not found");
@@ -52,9 +56,14 @@ export async function updateRentRequest(
 
   if (hasTimingChange) {
     // Determine working values
-    const finalPickup = updates.pickup_time ? new Date(updates.pickup_time) : new Date(rentRequest.pickup_time);
+    const finalPickup = updates.pickup_time
+      ? new Date(updates.pickup_time)
+      : new Date(rentRequest.pickup_time);
     const finalUnit = updates.duration_unit || rentRequest.duration_unit;
-    const finalValue = updates.duration_value !== undefined ? Number(updates.duration_value) : Number(rentRequest.duration_value);
+    const finalValue =
+      updates.duration_value !== undefined
+        ? Number(updates.duration_value)
+        : Number(rentRequest.duration_value);
 
     if (isNaN(finalPickup.getTime())) {
       throw new Error("Invalid format for pickup_time");
@@ -108,12 +117,26 @@ export async function updateRentRequest(
       {
         model: User,
         as: "borrower",
-        attributes: ["id", "username", "firstname", "lastname", "email", "phoneNumber"],
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
       },
       {
         model: User,
         as: "lender",
-        attributes: ["id", "username", "firstname", "lastname", "email", "phoneNumber"],
+        attributes: [
+          "id",
+          "username",
+          "firstname",
+          "lastname",
+          "email",
+          "phoneNumber",
+        ],
       },
     ],
   });

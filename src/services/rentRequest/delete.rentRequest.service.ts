@@ -17,8 +17,10 @@ export async function deleteRentRequest(rentRequestID: string, user: User) {
   }
 
   // 2. Check if already hidden for this specific user
-  if ((isBorrower && !wantToDelRentRequest.show_to_borrower) ||
-    (isLender && !wantToDelRentRequest.show_to_lender)) {
+  if (
+    (isBorrower && !wantToDelRentRequest.show_to_borrower) ||
+    (isLender && !wantToDelRentRequest.show_to_lender)
+  ) {
     throw new Error("This rent request is already deleted");
   }
 
@@ -26,7 +28,9 @@ export async function deleteRentRequest(rentRequestID: string, user: User) {
   // Example: Prevent deletion if the tool is currently with the borrower
   const forbiddenStates = ["Requested"];
   if (forbiddenStates.includes(wantToDelRentRequest.rent_status)) {
-    throw new Error(`Cannot remove request while it is ${wantToDelRentRequest.rent_status}`);
+    throw new Error(
+      `Cannot remove request while it is ${wantToDelRentRequest.rent_status}`
+    );
   }
 
   // 4. Perform "Soft Delete" for the specific user

@@ -18,8 +18,7 @@ const routeFiles = fs.readdirSync(routesPath).filter((file) => {
 // Global route logging middleware
 mainRouter.use((req: Request, res: Response, next: NextFunction) => {
   console.log(
-    `[${new Date().toISOString()}] Route called: ${req.method} ${
-      req.originalUrl
+    `[${new Date().toISOString()}] Route called: ${req.method} ${req.originalUrl
     }`
   );
   next();
@@ -42,8 +41,7 @@ routeFiles.forEach(async (file) => {
       // Add route-specific logging
       router.use((req: Request, res: Response, next: NextFunction) => {
         console.log(
-          `[${new Date().toISOString()}] Route handler executed: ${
-            req.method
+          `[${new Date().toISOString()}] Route handler executed: ${req.method
           } ${routePath}`
         );
         next();

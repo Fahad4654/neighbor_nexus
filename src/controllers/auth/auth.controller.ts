@@ -5,10 +5,7 @@ import { AuthService, resetPassword } from "../../services/auth/auth.service";
 import { Profile } from "../../models/Profile";
 import { verifyOtp } from "../../services/otp/verify.otp.service";
 import { sendOtp } from "../../services/otp/send.otp.service";
-import {
-  errorResponse,
-  successResponse,
-} from "../../utils/apiResponse";
+import { errorResponse, successResponse } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
 
 // Registration Controller
@@ -189,73 +186,79 @@ export const refreshToken: RequestHandler = asyncHandler(async (req, res) => {
 }, "Internal Server Error during token refresh");
 
 // requestPasswordResetController.ts
-export const requestPasswordResetController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  const { identifier } = req.body;
-  if (!identifier) {
-    return errorResponse(
-      res,
-      "Username, email or phone number is required",
-      "Missing identifier",
-      400
-    );
-  }
+export const requestPasswordResetController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { identifier } = req.body;
+    if (!identifier) {
+      return errorResponse(
+        res,
+        "Username, email or phone number is required",
+        "Missing identifier",
+        400
+      );
+    }
 
-  try {
-    const result = await sendOtp(identifier, "password");
-    return successResponse(res, "OTP request sent successfully", result);
-  } catch (error: any) {
-    console.error("Error requesting password reset:", error);
-    return errorResponse(
-      res,
-      error.message || "Failed to request password reset",
-      error,
-      400
-    );
-  }
-}, "Failed to request password reset");
+    try {
+      const result = await sendOtp(identifier, "password");
+      return successResponse(res, "OTP request sent successfully", result);
+    } catch (error: any) {
+      console.error("Error requesting password reset:", error);
+      return errorResponse(
+        res,
+        error.message || "Failed to request password reset",
+        error,
+        400
+      );
+    }
+  },
+  "Failed to request password reset"
+);
 
-export const verifyOtpController = asyncHandler(async (req: Request, res: Response) => {
-  const { identifier, otp } = req.body;
-  if (!identifier || !otp) {
-    return errorResponse(
-      res,
-      "All fields are required",
-      "Missing identifier or OTP",
-      400
-    );
-  }
+export const verifyOtpController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { identifier, otp } = req.body;
+    if (!identifier || !otp) {
+      return errorResponse(
+        res,
+        "All fields are required",
+        "Missing identifier or OTP",
+        400
+      );
+    }
 
-  try {
-    const result = await verifyOtp(identifier, otp);
-    return successResponse(res, "OTP verified successfully", result);
-  } catch (error: any) {
-    console.error("Error verifying OTP:", error);
-    return errorResponse(
-      res,
-      error.message || "Failed to verify OTP",
-      error,
-      400
-    );
-  }
-}, "Failed to verify OTP");
+    try {
+      const result = await verifyOtp(identifier, otp);
+      return successResponse(res, "OTP verified successfully", result);
+    } catch (error: any) {
+      console.error("Error verifying OTP:", error);
+      return errorResponse(
+        res,
+        error.message || "Failed to verify OTP",
+        error,
+        400
+      );
+    }
+  },
+  "Failed to verify OTP"
+);
 
 // reset Password controller
-export const resetPasswordController = asyncHandler(async (req: Request, res: Response) => {
-  const { identifier, newPassword } = req.body;
-  // Assuming validation for identifier/newPassword happens in the service or middleware
+export const resetPasswordController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { identifier, newPassword } = req.body;
+    // Assuming validation for identifier/newPassword happens in the service or middleware
 
-  try {
-    const result = await resetPassword(identifier, newPassword);
-    return successResponse(res, "Password reset successfully", result);
-  } catch (error: any) {
-    return errorResponse(
-      res,
-      error.message || "Failed to reset password",
-      error,
-      400
-    );
-  }
-}, "Failed to reset password");
+    try {
+      const result = await resetPassword(identifier, newPassword);
+      return successResponse(res, "Password reset successfully", result);
+    } catch (error: any) {
+      return errorResponse(
+        res,
+        error.message || "Failed to reset password",
+        error,
+        400
+      );
+    }
+  },
+  "Failed to reset password"
+);

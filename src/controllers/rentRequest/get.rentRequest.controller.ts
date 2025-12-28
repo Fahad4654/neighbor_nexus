@@ -17,7 +17,10 @@ import {
 import { Tool } from "../../models/Tools";
 import { findByDynamicId } from "../../services/global/find.service";
 import { asyncHandler } from "../../utils/asyncHandler";
-import { getPaginationParams, formatPaginationResponse } from "../../utils/pagination";
+import {
+  getPaginationParams,
+  formatPaginationResponse,
+} from "../../utils/pagination";
 import { validateAuth, validateAuthorization } from "../../utils/validation";
 
 // Find all Rent Requests by Admin
@@ -43,7 +46,8 @@ export async function getRentRequestsController(req: Request, res: Response) {
       ]);
       if (!reqBodyValidation) return;
 
-      const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
+      const { order, asc, page, pageSize, search, searchBy } =
+        getPaginationParams(req);
 
       const rentRequests = await findAllRentRequests(
         order,
@@ -71,250 +75,278 @@ export async function getRentRequestsController(req: Request, res: Response) {
 }
 
 // Find all Rent Requests by Borrower Id
-export const getRentRequestByBorrowerIdController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  if (!req.body) {
-    console.log("Request body is required for filtering/pagination");
-    return errorResponse(
-      res,
-      "Request body is required",
-      "Empty request body for required parameters",
-      400
+export const getRentRequestByBorrowerIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.body) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
+    const { borrower_id } = req.body;
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
+
+    if (!validateRequiredBody(req, res, ["borrower_id", "order", "asc"]))
+      return;
+    if (!validateAuth(req.user, res)) return;
+    if (
+      !validateAuthorization(
+        req.user,
+        borrower_id,
+        res,
+        "You are not authorized to view this Rent Request"
+      )
+    )
+      return;
+
+    const rentRequestsResult = await findByBorrowerId(
+      borrower_id,
+      order,
+      asc,
+      page,
+      pageSize,
+      search,
+      searchBy
     );
-  }
-  const { borrower_id } = req.body;
-  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
+    const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
-  if (!validateRequiredBody(req, res, ["borrower_id", "order", "asc"])) return;
-  if (!validateAuth(req.user, res)) return;
-  if (!validateAuthorization(req.user, borrower_id, res, "You are not authorized to view this Rent Request")) return;
-
-  const rentRequestsResult = await findByBorrowerId(
-    borrower_id,
-    order,
-    asc,
-    page,
-    pageSize,
-    search,
-    searchBy
-  );
-  const pagination = formatPaginationResponse(rentRequestsResult.pagination);
-
-  return successResponse(
-    res,
-    "Rent Requests fetched successfully",
-    { rentRequests: rentRequestsResult.data },
-    200,
-    pagination
-  );
-}, "Error fetching Rent Requests");
+    return successResponse(
+      res,
+      "Rent Requests fetched successfully",
+      { rentRequests: rentRequestsResult.data },
+      200,
+      pagination
+    );
+  },
+  "Error fetching Rent Requests"
+);
 
 // Find all Rent Requests by Lender Id
-export const getRentRequestByLenderIdController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  if (!req.body) {
-    console.log("Request body is required for filtering/pagination");
-    return errorResponse(
-      res,
-      "Request body is required",
-      "Empty request body for required parameters",
-      400
+export const getRentRequestByLenderIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.body) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
+    const { lender_id } = req.body;
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
+
+    if (!validateRequiredBody(req, res, ["lender_id", "order", "asc"])) return;
+    if (!validateAuth(req.user, res)) return;
+    if (
+      !validateAuthorization(
+        req.user,
+        lender_id,
+        res,
+        "You are not authorized to view this Rent Request"
+      )
+    )
+      return;
+
+    const rentRequestsResult = await findByLenderId(
+      lender_id,
+      order,
+      asc,
+      page,
+      pageSize,
+      search,
+      searchBy
     );
-  }
-  const { lender_id } = req.body;
-  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
+    const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
-  if (!validateRequiredBody(req, res, ["lender_id", "order", "asc"])) return;
-  if (!validateAuth(req.user, res)) return;
-  if (!validateAuthorization(req.user, lender_id, res, "You are not authorized to view this Rent Request")) return;
-
-  const rentRequestsResult = await findByLenderId(
-    lender_id,
-    order,
-    asc,
-    page,
-    pageSize,
-    search,
-    searchBy
-  );
-  const pagination = formatPaginationResponse(rentRequestsResult.pagination);
-
-  return successResponse(
-    res,
-    "Rent Requests fetched successfully",
-    { rentRequests: rentRequestsResult.data },
-    200,
-    pagination
-  );
-}, "Error fetching Rent Requests");
+    return successResponse(
+      res,
+      "Rent Requests fetched successfully",
+      { rentRequests: rentRequestsResult.data },
+      200,
+      pagination
+    );
+  },
+  "Error fetching Rent Requests"
+);
 
 // Find Rent request By Listing Id
-export const getRentRequestByListingIdController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  if (!req.body) {
-    console.log("Request body is required for filtering/pagination");
-    return errorResponse(
-      res,
-      "Request body is required",
-      "Empty request body for required parameters",
-      400
+export const getRentRequestByListingIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.body) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
+    const { listing_id } = req.body;
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
+
+    if (!validateRequiredBody(req, res, ["listing_id", "order", "asc"])) return;
+
+    if (!validateAuth(req.user, res)) return;
+
+    const typedTool = await findByDynamicId(Tool, { listing_id }, false);
+    const tool = typedTool as Tool | null;
+
+    if (!tool) {
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
+    }
+    // Safe assertion because validateAuth checked req.user
+    if (
+      !validateAuthorization(
+        req.user!,
+        tool.owner_id,
+        res,
+        "You are not authorized to view this Rent Request"
+      )
+    )
+      return;
+    const rentRequestsResult = await findByListingId(
+      listing_id,
+      order,
+      asc,
+      page,
+      pageSize,
+      search,
+      searchBy
     );
-  }
-  const { listing_id } = req.body;
-  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
+    const pagination = formatPaginationResponse(rentRequestsResult.pagination);
 
-  if (!validateRequiredBody(req, res, ["listing_id", "order", "asc"])) return;
-
-  if (!validateAuth(req.user, res)) return;
-
-  const typedTool = await findByDynamicId(Tool, { listing_id }, false);
-  const tool = typedTool as Tool | null;
-
-  if (!tool) {
-    return errorResponse(
+    return successResponse(
       res,
-      "Tool not found",
-      `Tool with ID ${listing_id} does not exist`,
-      404
+      "Rent Requests fetched successfully",
+      { rentRequests: rentRequestsResult.data },
+      200,
+      pagination
     );
-  }
-  // Safe assertion because validateAuth checked req.user
-  if (!validateAuthorization(req.user!, tool.owner_id, res, "You are not authorized to view this Rent Request")) return;
-  const rentRequestsResult = await findByListingId(
-    listing_id,
-    order,
-    asc,
-    page,
-    pageSize,
-    search,
-    searchBy
-  );
-  const pagination = formatPaginationResponse(rentRequestsResult.pagination);
-
-  return successResponse(
-    res,
-    "Rent Requests fetched successfully",
-    { rentRequests: rentRequestsResult.data },
-    200,
-    pagination
-  );
-}, "Error fetching Rent Requests");
+  },
+  "Error fetching Rent Requests"
+);
 
 // Find Rent Request By Borrower Id And Listing Id
-export const getRentRequestByBorrowerAndListingIdController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  if (!req.body) {
-    console.log("Request body is required for filtering/pagination");
-    return errorResponse(
-      res,
-      "Request body is required",
-      "Empty request body for required parameters",
-      400
+export const getRentRequestByBorrowerAndListingIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.body) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
+    const { borrower_id, listing_id } = req.body;
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
+
+    const reqBodyValidation = validateRequiredBody(req, res, [
+      "borrower_id",
+      "listing_id",
+      "order",
+      "asc",
+    ]);
+    if (!reqBodyValidation) return;
+
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
+
+    const typedTool = await findByDynamicId(Tool, { listing_id }, false);
+    const tool = typedTool as Tool | null;
+
+    if (!tool) {
+      return errorResponse(
+        res,
+        "Tool not found",
+        `Tool with ID ${listing_id} does not exist`,
+        404
+      );
+    }
+
+    const rentRequests = await findRentRequestByBorrowerIDAndListingId(
+      listing_id,
+      borrower_id,
+      order,
+      asc,
+      page,
+      pageSize,
+      search,
+      searchBy
     );
-  }
-  const {
-    borrower_id,
-    listing_id,
-  } = req.body;
-  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
+    const pagination = formatPaginationResponse(rentRequests.pagination);
 
-  const reqBodyValidation = validateRequiredBody(req, res, [
-    "borrower_id",
-    "listing_id",
-    "order",
-    "asc",
-  ]);
-  if (!reqBodyValidation) return;
-
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
-
-  const typedTool = await findByDynamicId(Tool, { listing_id }, false);
-  const tool = typedTool as Tool | null;
-
-  if (!tool) {
-    return errorResponse(
+    return successResponse(
       res,
-      "Tool not found",
-      `Tool with ID ${listing_id} does not exist`,
-      404
+      "Rent Requests fetched successfully",
+      { rentRequests: rentRequests.data },
+      200,
+      pagination
     );
-  }
+  },
+  "Error fetching Rent Requests"
+);
 
-  const rentRequests = await findRentRequestByBorrowerIDAndListingId(
-    listing_id,
-    borrower_id,
-    order,
-    asc,
-    page,
-    pageSize,
-    search,
-    searchBy
-  );
-  const pagination = formatPaginationResponse(rentRequests.pagination);
+export const getByRentRequestIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if (!id) {
+      console.log("Request body is required for filtering/pagination");
+      return errorResponse(
+        res,
+        "Request body is required",
+        "Empty request body for required parameters",
+        400
+      );
+    }
 
-  return successResponse(
-    res,
-    "Rent Requests fetched successfully",
-    { rentRequests: rentRequests.data },
-    200,
-    pagination
-  );
-}, "Error fetching Rent Requests");
+    if (!req.user) {
+      return errorResponse(res, "User is required", "Login is required", 401);
+    }
 
-export const getByRentRequestIdController = asyncHandler(async (
-  req: Request,
-  res: Response
-) => {
-  const { id } = req.params;
-  if (!id) {
-    console.log("Request body is required for filtering/pagination");
-    return errorResponse(
+    const rentRequest = await findByRentRequestId(id);
+    if (!rentRequest) {
+      return errorResponse(
+        res,
+        "Rent Request not found",
+        `Rent Request with ID ${id} does not exist`,
+        404
+      );
+    }
+    if (
+      (req.user.id !== rentRequest.borrower_id ||
+        rentRequest.show_to_borrower === false) &&
+      !req.user.isAdmin &&
+      (req.user.id !== rentRequest.lender_id ||
+        rentRequest.show_to_lender === false)
+    ) {
+      return errorResponse(
+        res,
+        "Forbidden",
+        "You are not authorized to view this Rent Request",
+        403
+      );
+    }
+    return successResponse(
       res,
-      "Request body is required",
-      "Empty request body for required parameters",
-      400
+      "Rent Request fetched successfully",
+      { rentRequest: rentRequest },
+      200
     );
-  }
-
-  if (!req.user) {
-    return errorResponse(res, "User is required", "Login is required", 401);
-  }
-
-  const rentRequest = await findByRentRequestId(id);
-  if (!rentRequest) {
-    return errorResponse(
-      res,
-      "Rent Request not found",
-      `Rent Request with ID ${id} does not exist`,
-      404
-    );
-  }
-  if (
-    (req.user.id !== rentRequest.borrower_id || rentRequest.show_to_borrower === false) &&
-    !req.user.isAdmin &&
-    (req.user.id !== rentRequest.lender_id || rentRequest.show_to_lender === false)
-  ) {
-    return errorResponse(
-      res,
-      "Forbidden",
-      "You are not authorized to view this Rent Request",
-      403
-    );
-  }
-  return successResponse(
-    res,
-    "Rent Request fetched successfully",
-    { rentRequest: rentRequest },
-    200
-  );
-}, "Error fetching Rent Request");
+  },
+  "Error fetching Rent Request"
+);

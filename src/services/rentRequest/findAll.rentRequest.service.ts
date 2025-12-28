@@ -16,7 +16,6 @@ export async function findAllRentRequests(
   const offset = (page - 1) * pageSize;
   const whereClause = getSearchWhereClause(search, searchBy);
 
-
   const { count, rows } = await RentRequest.findAndCountAll({
     where: whereClause,
     include: [
@@ -87,7 +86,11 @@ export async function findByBorrowerId(
 ) {
   const offset = (page - 1) * pageSize;
   const searchClause = getSearchWhereClause(search, searchBy);
-  const whereClause = { borrower_id: borrowerId, show_to_borrower: true, ...searchClause };
+  const whereClause = {
+    borrower_id: borrowerId,
+    show_to_borrower: true,
+    ...searchClause,
+  };
 
   const { count, rows } = await RentRequest.findAndCountAll({
     where: whereClause,
@@ -159,7 +162,11 @@ export async function findByLenderId(
 ) {
   const offset = (page - 1) * pageSize;
   const searchClause = getSearchWhereClause(search, searchBy);
-  const whereClause = { lender_id: lenderId, show_to_lender: true, ...searchClause };
+  const whereClause = {
+    lender_id: lenderId,
+    show_to_lender: true,
+    ...searchClause,
+  };
 
   const { count, rows } = await RentRequest.findAndCountAll({
     where: whereClause,
@@ -231,7 +238,11 @@ export async function findByListingId(
 ) {
   const offset = (page - 1) * pageSize;
   const searchClause = getSearchWhereClause(search, searchBy);
-  const whereClause = { listing_id: listingId, show_to_lender: true, ...searchClause };
+  const whereClause = {
+    listing_id: listingId,
+    show_to_lender: true,
+    ...searchClause,
+  };
 
   const { count, rows } = await RentRequest.findAndCountAll({
     where: whereClause,

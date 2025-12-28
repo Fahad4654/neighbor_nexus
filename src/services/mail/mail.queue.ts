@@ -1,12 +1,22 @@
 import { Queue, Worker, Job } from "bullmq";
 import Redis from "ioredis";
 import nodemailer from "nodemailer";
-import { ADMIN_USERNAME, COMPANY_NAME, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_USER } from "../../config";
+import {
+  ADMIN_USERNAME,
+  COMPANY_NAME,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  SMTP_HOST,
+  SMTP_PASS,
+  SMTP_PORT,
+  SMTP_USER,
+} from "../../config";
 
 const connection = new Redis({
-  host:  REDIS_HOST || "127.0.0.1",
-  port: Number( REDIS_PORT) || 6379,
-  password:  REDIS_PASSWORD || undefined,
+  host: REDIS_HOST || "127.0.0.1",
+  port: Number(REDIS_PORT) || 6379,
+  password: REDIS_PASSWORD || undefined,
   maxRetriesPerRequest: null, // ⚠ required for BullMQ
 });
 
@@ -36,12 +46,12 @@ connection.on("end", () => {
 
 // Nodemailer transporter with pool
 const transporter = nodemailer.createTransport({
-  host:  SMTP_HOST || "smtp.gmail.com",
-  port: Number( SMTP_PORT) || 587,
-  secure:  SMTP_PORT === "465", // true for 465
+  host: SMTP_HOST || "smtp.gmail.com",
+  port: Number(SMTP_PORT) || 587,
+  secure: SMTP_PORT === "465", // true for 465
   auth: {
-    user:  SMTP_USER,
-    pass:  SMTP_PASS,
+    user: SMTP_USER,
+    pass: SMTP_PASS,
   },
   pool: true,
   maxConnections: 5,

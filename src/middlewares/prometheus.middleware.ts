@@ -1,5 +1,5 @@
-import client from 'prom-client';
-import { Request, Response, NextFunction } from 'express';
+import client from "prom-client";
+import { Request, Response, NextFunction } from "express";
 
 // 1. Setup the registry and default metrics
 const register = new client.Registry();
@@ -7,34 +7,38 @@ client.collectDefaultMetrics({ register });
 
 // 2. Define custom metrics for HTTP traffic
 // Using string literals for metric names to avoid the TypeScript error
-const METRIC_NAME_DURATION = 'http_request_duration_seconds';
-const METRIC_NAME_TOTAL = 'http_requests_total';
+const METRIC_NAME_DURATION = "http_request_duration_seconds";
+const METRIC_NAME_TOTAL = "http_requests_total";
 
 const httpRequestDurationMicroseconds = new client.Histogram({
-  name: METRIC_NAME_DURATION,
-  help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'code'],
-  buckets: [0.003, 0.03, 0.1, 0.3, 1.5, 10], // Buckets for response time (latency)
+    name: METRIC_NAME_DURATION,
+    help: "Duration of HTTP requests in seconds",
+    labelNames: ["method", "route", "code"],
+    buckets: [0.003, 0.03, 0.1, 0.3, 1.5, 10], // Buckets for response time (latency)
 });
 register.registerMetric(httpRequestDurationMicroseconds);
 
 // 3. Simple Counter for total requests
 const httpRequestsTotal = new client.Counter({
     name: METRIC_NAME_TOTAL,
-    help: 'Total number of HTTP requests',
-    labelNames: ['method', 'route', 'code'],
+    help: "Total number of HTTP requests",
+    labelNames: ["method", "route", "code"],
 });
 register.registerMetric(httpRequestsTotal);
 
 // Middleware to track request duration and count
-export const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const metricsMiddleware = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     // Start a timer for response duration tracking
     const end = httpRequestDurationMicroseconds.startTimer();
-    
-    res.on('finish', () => {
+
+    res.on("finish", () => {
         // Determine the route path (use req.path if req.route is undefined)
         const route = req.route ? req.route.path : req.path;
-        
+
         // Record labels for both metrics
         const labels = {
             method: req.method,
@@ -52,9 +56,13 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
 };
 
 // Route handler to expose metrics
-export const metricsRoute = async (req: Request, res: Response, next: NextFunction) => {
+export const metricsRoute = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     try {
-        res.set('Content-Type', register.contentType);
+        res.set("Content-Type", register.contentType);
         res.end(await register.metrics());
     } catch (error) {
         console.error("Error generating metrics:", error);

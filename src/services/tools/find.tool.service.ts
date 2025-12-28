@@ -98,9 +98,14 @@ export async function findToolsByListingId(listing_id: string) {
 export async function findToolsByOwnerId(
   owner_id: string,
   search?: string,
-  searchBy?: string
+  searchBy?: string,
+  order = "createdAt",
+  asc: "ASC" | "DESC" = "ASC",
+  page = 1,
+  pageSize = 10
 ) {
   let whereClause: any = { owner_id };
+  const offset = (page - 1) * pageSize;
 
   if (search) {
     if (searchBy && ["title", "description"].includes(searchBy)) {
@@ -119,7 +124,7 @@ export async function findToolsByOwnerId(
     }
   }
 
-  const tools = await Tool.findAll({
+  const { count, rows } = await Tool.findAndCountAll({
     where: whereClause,
     include: [
       {
@@ -131,8 +136,23 @@ export async function findToolsByOwnerId(
         model: ToolImage,
         as: "images",
         attributes: { exclude: ["createdAt", "updatedAt", "filepath"] },
-      },
+      }, // ✅ include images
     ],
+    nest: true,
+    raw: false,
+    distinct: true,
+    limit: pageSize,
+    offset,
+    order: [[order, asc]],
   });
-  return tools;
+
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
 }
