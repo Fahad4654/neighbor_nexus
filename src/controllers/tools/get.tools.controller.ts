@@ -75,7 +75,7 @@ export const getToolByListingIdController = asyncHandler(async (
 // Get tools by owner_id
 export const getToolsByOwnerIdController = asyncHandler(async (req: Request, res: Response) => {
   const { owner_id } = req.params;
-  const { search, searchBy } = getPaginationParams(req);
+  const { order, asc, page, pageSize, search, searchBy } = getPaginationParams(req);
 
   if (!owner_id) {
     return errorResponse(
@@ -98,12 +98,15 @@ export const getToolsByOwnerIdController = asyncHandler(async (req: Request, res
     );
   }
 
-  const tools = await findToolsByOwnerId(owner.id, search, searchBy);
+  const toolsList = await findToolsByOwnerId(owner_id, search, searchBy, order, asc, page, pageSize);
+
+  const pagination = formatPaginationResponse(toolsList.pagination);
 
   return successResponse(
     res,
     "Tools fetched successfully",
-    { tools: tools.map((t) => t.get({ plain: true })) },
-    200
+    { tools: toolsList.data },
+    200,
+    pagination
   );
 }, "Error fetching tools");
