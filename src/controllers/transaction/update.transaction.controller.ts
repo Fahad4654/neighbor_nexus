@@ -5,10 +5,11 @@ import { Transaction } from "../../models/Transaction";
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import { updateTransaction } from "../../services/transacion/update.transacion.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { User } from "../../models/User";
 
 export const updateTransactionController = asyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.body.id) {
+    if (!req.body.id || !req.user) {
       return errorResponse(
         res,
         "Transaction ID is required",
@@ -33,7 +34,19 @@ export const updateTransactionController = asyncHandler(
       );
     }
 
-    const updatedTransaction = await updateTransaction(req.body);
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User | null;
+
+    if (!user) {
+      return errorResponse(
+        res,
+        "User Not found",
+        `User with ID ${req.user.id} does not exist`,
+        404
+      );
+    }
+
+    const updatedTransaction = await updateTransaction(req.body, user);
 
     if (!updatedTransaction) {
       console.log(
