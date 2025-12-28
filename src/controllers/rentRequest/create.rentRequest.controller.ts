@@ -4,114 +4,107 @@ import { errorResponse, successResponse } from "../../utils/apiResponse";
 import { createRentRequest } from "../../services/rentRequest/create.rentRequest.service";
 import { findToolsByListingId } from "../../services/tools/find.tool.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { RentRequest } from "../../models/RentRequest";
+import { Op } from "sequelize";
 
 export const createRentRequesController = asyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.body) {
-      console.log("Request body is required");
-      return errorResponse(
-        res,
-        "Request body is required",
-        "Empty request body",
-        400
-      );
-    }
-
     if (req.user?.isAdmin) {
-      console.log("Admin cannot create a Rent Request");
-      return errorResponse(
-        res,
-        "Forbidden",
-        "Admin cannot create a Rent Request",
-        403
-      );
+      return errorResponse(res, "Forbidden", "Admin accounts cannot create Rent Requests", 403);
     }
 
-    // NOTE: validateRequiredBody handles its own response on failure, so we skip here
     const reqBodyValidation = validateRequiredBody(req, res, [
       "listing_id",
-      "borrower_id",
       "duration_unit",
       "duration_value",
       "pickup_time",
     ]);
     if (!reqBodyValidation) return;
 
-    const tool = await findToolsByListingId(req.body.listing_id);
+    const currentUserId = req.user?.id;
+    const { listing_id, duration_unit, duration_value, pickup_time } = req.body;
+
+    // 1. Tool Verification
+    const tool = await findToolsByListingId(listing_id);
     if (!tool) {
+      return errorResponse(res, "Tool not found", `Tool with ID ${listing_id} does not exist`, 404);
+    }
+
+    if (!tool.is_available || !tool.is_approved) {
+      return errorResponse(res, "Tool unavailable", "This tool is currently not available or approved.", 400);
+    }
+
+    if (tool.owner_id === currentUserId) {
+      return errorResponse(res, "Forbidden", "You cannot rent your own tool.", 403);
+    }
+
+    // 2. Date Calculation
+    const start = new Date(pickup_time);
+    const duration = Number(duration_value);
+    let end = new Date(start);
+
+    if (duration_unit === "Hour") end.setHours(start.getHours() + duration);
+    else if (duration_unit === "Day") end.setDate(start.getDate() + duration);
+    else if (duration_unit === "Week") end.setDate(start.getDate() + (duration * 7));
+
+    const now = new Date();
+    const maxAllowedDate = new Date();
+    maxAllowedDate.setHours(now.getHours() + 48);
+
+    if (isNaN(start.getTime())) {
+      return errorResponse(res, "Invalid Date", "Invalid pickup time format.", 400);
+    }
+
+    if (start < now || start > maxAllowedDate) {
+      return errorResponse(res, "Invalid Time", "Pickup must be within the next 48 hours.", 400);
+    }
+
+    // 3. Overlap Check (The Core Change)
+    // Find any approved/active requests that overlap with these dates
+    const overlappingRequest = await RentRequest.findOne({
+      where: {
+        listing_id: listing_id,
+        rent_status: { [Op.in]: ["Approved", "Confirmed", "PickedUp"] },
+        [Op.or]: [
+          {
+            // Case 1: New start is inside an existing range
+            pickup_time: { [Op.lte]: start },
+            drop_off_time: { [Op.gt]: start }
+          },
+          {
+            // Case 2: New end is inside an existing range
+            pickup_time: { [Op.lt]: end },
+            drop_off_time: { [Op.gte]: end }
+          },
+          {
+            // Case 3: New range completely swallows an existing range
+            pickup_time: { [Op.gte]: start },
+            drop_off_time: { [Op.lte]: end }
+          }
+        ]
+      }
+    });
+
+    if (overlappingRequest) {
       return errorResponse(
-        res,
-        "Tool not found",
-        `Tool with ID ${req.body.listing_id} does not exist`,
-        404
+        res, 
+        "Conflict", 
+        "The tool is already booked for the selected dates/times.", 
+        409
       );
     }
 
-    if (tool.is_available === false) {
-      return errorResponse(
-        res,
-        "Tool not available",
-        `Tool with ID ${req.body.listing_id} is not available`,
-        400
-      );
-    }
+    // 4. Creation
+    const requestPayload = {
+      ...req.body,
+      borrower_id: currentUserId,
+      lender_id: tool.owner_id,
+      drop_off_time: end // Explicitly pass the calculated end time
+    };
 
-    if (tool.owner_id === req.user?.id) {
-      return errorResponse(
-        res,
-        "Forbidden",
-        "You cannot create a Rent Request for your own tool",
-        403
-      );
-    }
+    const newRentRequest = await createRentRequest(requestPayload);
 
-    if (tool.owner_id === req.body.borrower_id) {
-      return errorResponse(
-        res,
-        "Forbidden",
-        "You cannot create a Rent Request for a tool that you own",
-        403
-      );
-    }
-
-    if (req.user?.id === req.body.lender_id) {
-      return errorResponse(
-        res,
-        "Forbidden",
-        "You cannot create a Rent Request for a tool that you own",
-        403
-      );
-    }
-
-    if (!tool.is_approved) {
-      return errorResponse(
-        res,
-        "Tool not approved",
-        `Tool with ID ${req.body.listing_id} is not approved`,
-        400
-      );
-    }
-    console.log(req.body);
-
-    const pickupTime = new Date(req.body.pickup_time);
-    if (pickupTime < new Date()) {
-      return errorResponse(
-        res,
-        "Invalid pickup time",
-        "Pickup time cannot be in the past",
-        400
-      );
-    }
-
-    const newRentRequest = await createRentRequest(req.body);
-
-    console.log("Rent Request created successfully");
-    return successResponse(
-      res,
-      "Rent Request created successfully",
-      { rentRequest: newRentRequest },
-      201
-    );
+    return successResponse(res, "Rent Request created successfully", { rentRequest: newRentRequest }, 201);
   },
   "Error creating Rent Request"
 );
