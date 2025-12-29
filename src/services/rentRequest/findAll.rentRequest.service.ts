@@ -1,9 +1,7 @@
-import { Op } from "sequelize";
 import { RentRequest } from "../../models/RentRequest";
 import { Tool } from "../../models/Tools";
 import { User } from "../../models/User";
-
-import { getSearchWhereClause } from "../../utils/search";
+import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
 export async function findAllRentRequests(
   order = "id",
@@ -14,7 +12,7 @@ export async function findAllRentRequests(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const whereClause = getSearchWhereClause(search, searchBy);
+  const whereClause = getSearchWhereClauseV2(search, RentRequest, searchBy);
 
   const { count, rows } = await RentRequest.findAndCountAll({
     where: whereClause,
@@ -85,7 +83,7 @@ export async function findByBorrowerId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, RentRequest, searchBy);
   const whereClause = {
     borrower_id: borrowerId,
     show_to_borrower: true,
@@ -161,7 +159,7 @@ export async function findByLenderId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, RentRequest, searchBy);
   const whereClause = {
     lender_id: lenderId,
     show_to_lender: true,
@@ -237,7 +235,7 @@ export async function findByListingId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, RentRequest, searchBy);
   const whereClause = {
     listing_id: listingId,
     show_to_lender: true,
@@ -313,7 +311,7 @@ export async function findRentRequestByBorrowerIDAndListingId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, RentRequest, searchBy);
   const whereClause = { listing_id, borrower_id, ...searchClause };
 
   const { count, rows } = await RentRequest.findAndCountAll({

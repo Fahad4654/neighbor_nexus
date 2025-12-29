@@ -4,6 +4,7 @@ import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
 
 import { Op } from "sequelize";
+import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
 export async function findAllTools(
   order = "createdAt",
@@ -21,27 +22,7 @@ export async function findAllTools(
 
   if (!user) throw new Error("User not found");
 
-  let whereClause: any = {};
-  if (!user.isAdmin) {
-    whereClause = { owner_id: userId };
-  }
-
-  if (search) {
-    if (searchBy && ["title", "description"].includes(searchBy)) {
-      whereClause = {
-        ...whereClause,
-        [searchBy]: { [Op.iLike]: `%${search}%` },
-      };
-    } else {
-      whereClause = {
-        ...whereClause,
-        [Op.or]: [
-          { title: { [Op.iLike]: `%${search}%` } },
-          { description: { [Op.iLike]: `%${search}%` } },
-        ],
-      };
-    }
-  }
+  const whereClause = getSearchWhereClauseV2(search, Tool, searchBy);
 
   const { count, rows } = await Tool.findAndCountAll({
     where: whereClause,
@@ -55,7 +36,7 @@ export async function findAllTools(
         model: ToolImage,
         as: "images",
         attributes: { exclude: ["createdAt", "updatedAt", "filepath"] },
-      }, // ✅ include images
+      },
     ],
     nest: true,
     raw: false,
@@ -104,25 +85,9 @@ export async function findToolsByOwnerId(
   page = 1,
   pageSize = 10
 ) {
-  let whereClause: any = { owner_id };
+  const searchClause = getSearchWhereClauseV2(search, Tool, searchBy);
+  let whereClause: any = { owner_id, ...searchClause };
   const offset = (page - 1) * pageSize;
-
-  if (search) {
-    if (searchBy && ["title", "description"].includes(searchBy)) {
-      whereClause = {
-        ...whereClause,
-        [searchBy]: { [Op.iLike]: `%${search}%` },
-      };
-    } else {
-      whereClause = {
-        ...whereClause,
-        [Op.or]: [
-          { title: { [Op.iLike]: `%${search}%` } },
-          { description: { [Op.iLike]: `%${search}%` } },
-        ],
-      };
-    }
-  }
 
   const { count, rows } = await Tool.findAndCountAll({
     where: whereClause,

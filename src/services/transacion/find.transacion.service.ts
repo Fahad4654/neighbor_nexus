@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import { Transaction } from "../../models/Transaction";
 import { User } from "../../models/User";
 import { Tool } from "../../models/Tools";
-import { getSearchWhereClause } from "../../utils/search";
+import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 import { RentRequest } from "../../models/RentRequest";
 
 export async function findTransactionsByBorrowerId(
@@ -15,7 +15,7 @@ export async function findTransactionsByBorrowerId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, Transaction, searchBy);
   const whereClause = {
     borrower_id,
     show_to_borrower: true,
@@ -27,7 +27,7 @@ export async function findTransactionsByBorrowerId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -108,7 +108,7 @@ export async function findTransactionsByLenderId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, Transaction, searchBy);
   const whereClause = {
     lender_id,
     show_to_lender: true,
@@ -120,7 +120,7 @@ export async function findTransactionsByLenderId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -200,7 +200,7 @@ export async function findTransactionByTransactionId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -276,7 +276,7 @@ export async function findTransactionsByListingId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, Transaction, searchBy);
   const whereClause = {
     listing_id,
     show_to_lender: true,
@@ -288,7 +288,7 @@ export async function findTransactionsByListingId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -366,7 +366,7 @@ export async function findTransactionsByRentRequestId(
   searchBy?: string
 ) {
   let whereClause: any = {};
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, Transaction, searchBy);
 
   if (user.isAdmin) {
     // Admins see everything regardless of user visibility flags
@@ -391,7 +391,7 @@ export async function findTransactionsByRentRequestId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",
@@ -457,7 +457,7 @@ export async function findTransactionsByUserId(
   searchBy?: string
 ) {
   const offset = (page - 1) * pageSize;
-  const searchClause = getSearchWhereClause(search, searchBy);
+  const searchClause = getSearchWhereClauseV2(search, Transaction, searchBy);
   const whereClause = {
     [Op.and]: [
       {
@@ -479,7 +479,7 @@ export async function findTransactionsByUserId(
     include: [
       {
         model: RentRequest,
-        as: "rentRequest",
+        as: "rent_request",
         attributes: [
           "rent_status",
           "duration_unit",

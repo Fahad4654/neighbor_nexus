@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import { Profile } from "../../models/Profile";
 import { User } from "../../models/User";
+import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
 export async function findAllProfiles(
   order = "id",
@@ -12,32 +13,7 @@ export async function findAllProfiles(
 ) {
   const offset = (page - 1) * pageSize;
 
-  let whereClause: any = {};
-  if (search) {
-    if (searchBy) {
-      if (["bio", "address"].includes(searchBy)) {
-        whereClause = {
-          ...whereClause,
-          [searchBy]: { [Op.iLike]: `%${search}%` },
-        };
-      } else if (["firstname", "lastname", "email"].includes(searchBy)) {
-        whereClause = {
-          ...whereClause,
-          [`$user.${searchBy}$`]: { [Op.iLike]: `%${search}%` },
-        };
-      }
-    } else {
-      whereClause = {
-        [Op.or]: [
-          { bio: { [Op.iLike]: `%${search}%` } },
-          { address: { [Op.iLike]: `%${search}%` } },
-          { "$user.firstname$": { [Op.iLike]: `%${search}%` } },
-          { "$user.lastname$": { [Op.iLike]: `%${search}%` } },
-          { "$user.email$": { [Op.iLike]: `%${search}%` } },
-        ],
-      };
-    }
-  }
+  const whereClause = getSearchWhereClauseV2(search, Profile, searchBy);
 
   const { count, rows } = await Profile.findAndCountAll({
     where: whereClause,

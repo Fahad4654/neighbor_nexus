@@ -1,8 +1,7 @@
 import { User } from "../../models/User";
 import { Profile } from "../../models/Profile";
 import { findByDynamicId } from "../global/find.service";
-
-import { Op } from "sequelize";
+import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
 export async function findAllUsers(
   order = "id",
@@ -18,26 +17,10 @@ export async function findAllUsers(
   const user = typedUser as User | null;
   if (!user) throw new Error("User not found");
 
-  let whereClause: any = {};
-
-  if (search) {
-    if (searchBy && ["firstname", "lastname", "email"].includes(searchBy)) {
-      whereClause = {
-        [searchBy]: { [Op.iLike]: `%${search}%` },
-      };
-    } else {
-      whereClause = {
-        [Op.or]: [
-          { firstname: { [Op.iLike]: `%${search}%` } },
-          { lastname: { [Op.iLike]: `%${search}%` } },
-          { email: { [Op.iLike]: `%${search}%` } },
-        ],
-      };
-    }
-  }
+  const whereClause = getSearchWhereClauseV2(search, User, searchBy);
 
   const { count, rows } = await User.findAndCountAll({
-    where: whereClause, // ✅ Apply condition
+    where: whereClause,
     attributes: { exclude: ["password"] },
     include: [
       {
@@ -54,7 +37,7 @@ export async function findAllUsers(
       },
     ],
     nest: true,
-    raw: false, // remove raw so nested JSON works correctly
+    raw: false,
     limit: pageSize,
     distinct: true,
     offset,
