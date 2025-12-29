@@ -2,7 +2,6 @@ import { Op } from "sequelize";
 import { Transaction } from "../../models/Transaction";
 import { User } from "../../models/User";
 import { Tool } from "../../models/Tools";
-import { getSearchWhereClause } from "../../utils/search";
 import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 import { RentRequest } from "../../models/RentRequest";
 
