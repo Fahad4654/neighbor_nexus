@@ -85,7 +85,7 @@ export const getReviewsByReviewerIdController = asyncHandler(
 export const getReviewsBytransactionIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const transaction_id = req.body.transaction_id;
-    const { search, searchBy } = getPaginationParams(req);
+    const { page, pageSize, search, searchBy } = getPaginationParams(req);
     const user = req.user;
     if (!transaction_id) {
       return errorResponse(
@@ -105,6 +105,8 @@ export const getReviewsBytransactionIdController = asyncHandler(
     }
     const review = await findReviewsByTransactionId(
       transaction_id,
+      page,
+      pageSize,
       search,
       searchBy
     );

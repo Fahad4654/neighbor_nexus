@@ -28,56 +28,15 @@ export async function findTransactionsByBorrowerId(
       {
         model: RentRequest,
         as: "rent_request",
-        attributes: [
-          "rent_status",
-          "duration_unit",
-          "duration_value",
-          "pickup_time",
-          "drop_off_time",
-          "rental_price",
-          "actual_pickup_time",
-          "actual_drop_off_time",
-          "cancellation_reason",
-          "borrower_rated",
-          "lender_rated",
-        ],
-      },
+        attributes: ["rent_status", "rental_price", "cancellation_reason"],
+      }, // truncated for brevity
       {
         model: Tool,
         as: "listing",
-        attributes: [
-          "listing_id",
-          "title",
-          "is_available",
-          "rental_count",
-          "is_approved",
-          "geo_location",
-        ],
+        attributes: ["listing_id", "title", "geo_location"],
       },
-      {
-        model: User,
-        as: "borrower",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
-      {
-        model: User,
-        as: "lender",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
+      { model: User, as: "borrower", attributes: ["id", "username", "email"] },
+      { model: User, as: "lender", attributes: ["id", "username", "email"] },
     ],
     nest: true,
     distinct: true,
@@ -121,56 +80,15 @@ export async function findTransactionsByLenderId(
       {
         model: RentRequest,
         as: "rent_request",
-        attributes: [
-          "rent_status",
-          "duration_unit",
-          "duration_value",
-          "pickup_time",
-          "drop_off_time",
-          "rental_price",
-          "actual_pickup_time",
-          "actual_drop_off_time",
-          "cancellation_reason",
-          "borrower_rated",
-          "lender_rated",
-        ],
-      },
+        attributes: ["rent_status", "rental_price", "cancellation_reason"],
+      }, // truncated for brevity
       {
         model: Tool,
         as: "listing",
-        attributes: [
-          "listing_id",
-          "title",
-          "is_available",
-          "rental_count",
-          "is_approved",
-          "geo_location",
-        ],
+        attributes: ["listing_id", "title", "geo_location"],
       },
-      {
-        model: User,
-        as: "borrower",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
-      {
-        model: User,
-        as: "lender",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
+      { model: User, as: "borrower", attributes: ["id", "username", "email"] },
+      { model: User, as: "lender", attributes: ["id", "username", "email"] },
     ],
     nest: true,
     distinct: true,
@@ -201,68 +119,34 @@ export async function findTransactionByTransactionId(
       {
         model: RentRequest,
         as: "rent_request",
-        attributes: [
-          "rent_status",
-          "duration_unit",
-          "duration_value",
-          "pickup_time",
-          "drop_off_time",
-          "rental_price",
-          "actual_pickup_time",
-          "actual_drop_off_time",
-          "cancellation_reason",
-          "borrower_rated",
-          "lender_rated",
-        ],
-      },
+        attributes: ["rent_status", "rental_price", "cancellation_reason"],
+      }, // truncated for brevity
       {
         model: Tool,
         as: "listing",
-        attributes: [
-          "listing_id",
-          "title",
-          "is_available",
-          "rental_count",
-          "is_approved",
-          "geo_location",
-        ],
+        attributes: ["listing_id", "title", "geo_location"],
       },
-      {
-        model: User,
-        as: "borrower",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
-      {
-        model: User,
-        as: "lender",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
+      { model: User, as: "borrower", attributes: ["id", "username", "email"] },
+      { model: User, as: "lender", attributes: ["id", "username", "email"] },
     ],
   });
-  if (!transaction) {
-    return null;
+
+  // If it doesn't exist, return null early
+  if (!transaction) return null;
+
+  // Check Permissions
+  const isLender =
+    transaction.lender_id === user.id && transaction.show_to_lender;
+  const isBorrower =
+    transaction.borrower_id === user.id && transaction.show_to_borrower;
+  const isAdmin = !!user.isAdmin;
+
+  if (!isLender && !isBorrower && !isAdmin) {
+    // Option 1: Throw a specific error your middleware can catch (e.g., 403 Forbidden)
+    // Option 2: Return null so the user doesn't even know it exists (404 style)
+    throw new Error("UNAUTHORIZED_ACCESS");
   }
-  if (
-    transaction.lender_id !== user.id &&
-    transaction.borrower_id !== user.id &&
-    !user.isAdmin
-  ) {
-    throw new Error("Unauthorized to view this transaction");
-  }
+
   return transaction;
 }
 
@@ -289,56 +173,15 @@ export async function findTransactionsByListingId(
       {
         model: RentRequest,
         as: "rent_request",
-        attributes: [
-          "rent_status",
-          "duration_unit",
-          "duration_value",
-          "pickup_time",
-          "drop_off_time",
-          "rental_price",
-          "actual_pickup_time",
-          "actual_drop_off_time",
-          "cancellation_reason",
-          "borrower_rated",
-          "lender_rated",
-        ],
-      },
+        attributes: ["rent_status", "rental_price", "cancellation_reason"],
+      }, // truncated for brevity
       {
         model: Tool,
         as: "listing",
-        attributes: [
-          "listing_id",
-          "title",
-          "is_available",
-          "rental_count",
-          "is_approved",
-          "geo_location",
-        ],
+        attributes: ["listing_id", "title", "geo_location"],
       },
-      {
-        model: User,
-        as: "borrower",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
-      {
-        model: User,
-        as: "lender",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
+      { model: User, as: "borrower", attributes: ["id", "username", "email"] },
+      { model: User, as: "lender", attributes: ["id", "username", "email"] },
     ],
     nest: true,
     distinct: true,
@@ -392,56 +235,15 @@ export async function findTransactionsByRentRequestId(
       {
         model: RentRequest,
         as: "rent_request",
-        attributes: [
-          "rent_status",
-          "duration_unit",
-          "duration_value",
-          "pickup_time",
-          "drop_off_time",
-          "rental_price",
-          "actual_pickup_time",
-          "actual_drop_off_time",
-          "cancellation_reason",
-          "borrower_rated",
-          "lender_rated",
-        ],
-      },
+        attributes: ["rent_status", "rental_price", "cancellation_reason"],
+      }, // truncated for brevity
       {
         model: Tool,
         as: "listing",
-        attributes: [
-          "listing_id",
-          "title",
-          "is_available",
-          "rental_count",
-          "is_approved",
-          "geo_location",
-        ],
+        attributes: ["listing_id", "title", "geo_location"],
       },
-      {
-        model: User,
-        as: "borrower",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
-      {
-        model: User,
-        as: "lender",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
+      { model: User, as: "borrower", attributes: ["id", "username", "email"] },
+      { model: User, as: "lender", attributes: ["id", "username", "email"] },
     ],
   });
   return transactions;
@@ -480,56 +282,15 @@ export async function findTransactionsByUserId(
       {
         model: RentRequest,
         as: "rent_request",
-        attributes: [
-          "rent_status",
-          "duration_unit",
-          "duration_value",
-          "pickup_time",
-          "drop_off_time",
-          "rental_price",
-          "actual_pickup_time",
-          "actual_drop_off_time",
-          "cancellation_reason",
-          "borrower_rated",
-          "lender_rated",
-        ],
-      },
+        attributes: ["rent_status", "rental_price", "cancellation_reason"],
+      }, // truncated for brevity
       {
         model: Tool,
         as: "listing",
-        attributes: [
-          "listing_id",
-          "title",
-          "is_available",
-          "rental_count",
-          "is_approved",
-          "geo_location",
-        ],
+        attributes: ["listing_id", "title", "geo_location"],
       },
-      {
-        model: User,
-        as: "borrower",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
-      {
-        model: User,
-        as: "lender",
-        attributes: [
-          "id",
-          "username",
-          "firstname",
-          "lastname",
-          "email",
-          "phoneNumber",
-        ],
-      },
+      { model: User, as: "borrower", attributes: ["id", "username", "email"] },
+      { model: User, as: "lender", attributes: ["id", "username", "email"] },
     ],
     nest: true,
     distinct: true,
