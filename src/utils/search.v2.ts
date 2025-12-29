@@ -14,7 +14,6 @@ const ALLOWED_SEARCH_FIELDS: Record<string, string[]> = {
     "cancellation_reason",
   ],
   Review: ["transaction_id", "lender_id", "borrower_id", "rating", "comment"],
-
   Tool: [
     "listing_type",
     "title",
