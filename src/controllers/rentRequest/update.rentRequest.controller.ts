@@ -58,6 +58,19 @@ export const updateRentRequestController = asyncHandler(
         404
       );
 
+    // Check rent request time if it was in past
+    const pickupTime = new Date(rentRequest.pickup_time);
+    const dropOffTime = new Date(rentRequest.drop_off_time);
+    const currentTime = new Date();
+    if (pickupTime < currentTime || dropOffTime < currentTime) {
+      return errorResponse(
+        res,
+        "Conflict",
+        "The rent request time is in past.",
+        409
+      );
+    }
+
     // 1. Permission & Sanitization
     let allowedFields: RentRequestUpdatableField[] = [];
     if (currentUserId === rentRequest.lender_id) {
@@ -156,13 +169,20 @@ export const updateRentRequestController = asyncHandler(
       currentUserId !== updatedRentRequest.borrower_id
     ) {
       const tool = await Tool.findByPk(updatedRentRequest.listing_id);
+
+      const dropOffTime = new Date(updatedRentRequest.drop_off_time);
+      const transactionEndTime = new Date(dropOffTime);
+      transactionEndTime.setDate(dropOffTime.getDate() + 1);
+
+      const transactionStartTime = new Date();
+
       transaction = await createTransaction(
         updatedRentRequest.listing_id,
         updatedRentRequest.borrower_id,
         updatedRentRequest.lender_id,
         updatedRentRequest.id,
-        updatedRentRequest.pickup_time,
-        updatedRentRequest.drop_off_time,
+        transactionStartTime,
+        transactionEndTime,
         updatedRentRequest.rental_price,
         Number(updatedRentRequest.rental_price) * (COMMISSION / 100),
         Number(tool?.security_deposit || 0),
