@@ -3,8 +3,8 @@ import { successResponse, errorResponse } from "../../utils/apiResponse";
 import { deleteTransaction } from "../../services/transacion/delete.transacion.service";
 import { User } from "../../models/User";
 import { findByDynamicId } from "../../services/global/find.service";
-import { findTransactionByTransactionId } from "../../services/transacion/find.transacion.service";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { Transaction } from "../../models/Transaction";
 
 export const deleteTransactionController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -40,7 +40,12 @@ export const deleteTransactionController = asyncHandler(
       );
     }
 
-    const wantDelTransaction = await findTransactionByTransactionId(id, user);
+    const typedWantDelTransaction = await findByDynamicId(
+      Transaction,
+      { transaction_id: id },
+      false
+    );
+    const wantDelTransaction = typedWantDelTransaction as Transaction | null;
 
     if (!wantDelTransaction) {
       return errorResponse(
@@ -52,7 +57,7 @@ export const deleteTransactionController = asyncHandler(
     }
 
     try {
-      const deletedTransaction = await deleteTransaction(id, user.id);
+      const deletedTransaction = await deleteTransaction(id, user);
 
       return successResponse(
         res,
