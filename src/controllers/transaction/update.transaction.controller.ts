@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { findByDynamicId } from "../../services/global/find.service";
 import { Transaction } from "../../models/Transaction";
-
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import { updateTransaction } from "../../services/transacion/update.transacion.service";
 import { asyncHandler } from "../../utils/asyncHandler";
@@ -9,7 +8,7 @@ import { User } from "../../models/User";
 
 export const updateTransactionController = asyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.body.id || !req.user) {
+    if (!req.body.transaction_id || !req.user) {
       return errorResponse(
         res,
         "Transaction ID is required",
@@ -20,7 +19,7 @@ export const updateTransactionController = asyncHandler(
 
     const typedWantUpTransaction = await findByDynamicId(
       Transaction,
-      { transaction_id: req.body.id },
+      { transaction_id: req.body.transaction_id },
       false
     );
     const wantUpTransaction = typedWantUpTransaction as Transaction | null;
@@ -29,8 +28,17 @@ export const updateTransactionController = asyncHandler(
       return errorResponse(
         res,
         "Transaction Not found",
-        `Transaction with ID ${req.body.id} does not exist`,
+        `Transaction with ID ${req.body.transaction_id} does not exist`,
         404
+      );
+    }
+
+    if (wantUpTransaction.status !== "Pending") {
+      return errorResponse(
+        res,
+        "Transaction update failed",
+        "Transaction status must be 'Pending' to update",
+        400
       );
     }
 

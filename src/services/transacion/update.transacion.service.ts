@@ -2,12 +2,12 @@ import { Transaction } from "../../models/Transaction";
 import { User } from "../../models/User";
 
 /**
- * Updates a transaction. 
- * @param isSystem - Defaults to false. If true, all fields are updatable. 
+ * Updates a transaction.
+ * @param isSystem - Defaults to false. If true, all fields are updatable.
  * If false, only 'status' and 'stripe_charge_id' are updatable.
  */
 export async function updateTransaction(
-  data: Partial<Transaction> & { transaction_id: string }, 
+  data: Partial<Transaction> & { transaction_id: string },
   user: User,
   isSystem: boolean = false
 ) {
@@ -23,13 +23,15 @@ export async function updateTransaction(
   // 2. Authorization Logic
   // System calls bypass this; User calls must be Borrower, Lender, or Admin
   if (!isSystem) {
-    const isAuthorized = 
-      user.id === transaction.borrower_id || 
-      user.id === transaction.lender_id || 
+    const isAuthorized =
+      (user.id === transaction.borrower_id && transaction.show_to_borrower) ||
+      (user.id === transaction.lender_id && transaction.show_to_lender) ||
       user.isAdmin;
 
     if (!isAuthorized) {
-      throw new Error("User is not authorized to update this transaction");
+      throw new Error(
+        "User is not authorized to update this transaction Or transaction is deleted by you"
+      );
     }
   }
 
@@ -63,5 +65,7 @@ export async function updateTransaction(
   await transaction.update(updates);
 
   // Return the fresh record
-  return Transaction.findOne({ where: { transaction_id: data.transaction_id } });
+  return Transaction.findOne({
+    where: { transaction_id: data.transaction_id },
+  });
 }

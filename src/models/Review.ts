@@ -31,12 +31,12 @@ export class Review extends Model {
   @ForeignKey(() => User)
   @AllowNull(false)
   @Column(DataType.UUID)
-  lender_id!: string;
+  reviewee_id!: string;
 
   @ForeignKey(() => User)
   @AllowNull(false)
   @Column(DataType.UUID)
-  borrower_id!: string;
+  reviewer_id!: string;
 
   @AllowNull(false)
   @Column(DataType.INTEGER)
@@ -56,6 +56,14 @@ export class Review extends Model {
   @Column(DataType.UUID)
   approvedBy!: string;
 
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  show_to_reviewee!: boolean;
+
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  show_to_reviewer!: boolean;
+
   // Relations;
   @BelongsTo(() => Transaction, {
     foreignKey: "transaction_id",
@@ -63,11 +71,11 @@ export class Review extends Model {
   })
   transaction!: Transaction;
 
-  @BelongsTo(() => User, { foreignKey: "lender_id", as: "lender" })
-  lender!: User;
+  @BelongsTo(() => User, { foreignKey: "reviewee_id", as: "reviewee" })
+  reviewee!: User;
 
-  @BelongsTo(() => User, { foreignKey: "borrower_id", as: "borrower" })
-  borrower!: User;
+  @BelongsTo(() => User, { foreignKey: "reviewer_id", as: "reviewer" })
+  reviewer!: User;
 
   @BelongsTo(() => User, { foreignKey: "approvedBy", as: "approver" })
   approver!: User;
