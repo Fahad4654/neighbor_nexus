@@ -1,8 +1,7 @@
-import { Op, Model, ModelStatic } from "sequelize";
+import { Op, Model, ModelStatic, literal } from "sequelize"; // Import literal here
 
 /**
  * Predefined allowed fields per model.
- * This acts as a security whitelist. If a field is not here, it cannot be searched.
  */
 const ALLOWED_SEARCH_FIELDS: Record<string, string[]> = {
   Profile: ["userId", "bio", "address"],
@@ -49,86 +48,76 @@ const ALLOWED_SEARCH_FIELDS: Record<string, string[]> = {
 };
 
 /**
- * Generates a Sequelize where clause with strict validation and type safety.
- * * @param search - The term to search for.
- * @param ModelClass - The Sequelize Model class.
- * @param searchBy - Optional specific column to search.
- * @throws Error if the model is not configured or the column is not allowed.
+ * Generates a Sequelize where clause.
+ * Prevents application crashes by returning a non-matching condition on error.
  */
 export const getSearchWhereClause = (
   search?: string,
   ModelClass?: ModelStatic<Model>,
   searchBy?: string
 ) => {
-  // If no search term or model provided, return empty object
   if (!search || !ModelClass) return {};
 
   const modelName = ModelClass.name;
   const allowedFields = ALLOWED_SEARCH_FIELDS[modelName];
 
-  // 1. Validate that the Model is registered in our security config
+  /**
+   * If model is not registered, log error and return a condition that matches nothing.
+   * Using literal('1=0') ensures the query returns no results safely.
+   */
   if (!allowedFields) {
-    throw new Error(
-      `Search functionality is not configured/allowed for model: ${modelName}`
+    console.error(
+      `[Search Error]: Model "${modelName}" is not configured in whitelist.`
     );
+    return { [Op.and]: [literal("1=0")] };
   }
 
-  // 2. Validate searchBy field against the whitelist
+  /**
+   * If searchBy is provided but not allowed, log error and return 1=0.
+   */
   if (searchBy && !allowedFields.includes(searchBy)) {
-    throw new Error(
-      `Search by column "${searchBy}" is not allowed for model: ${modelName}`
+    console.error(
+      `[Search Error]: Column "${searchBy}" is not allowed for model: ${modelName}`
     );
+    return { [Op.and]: [literal("1=0")] };
   }
 
   const attributes = ModelClass.getAttributes();
 
-  /**
-   * Helper to generate the correct operator based on PostgreSQL/Sequelize data type.
-   * Handles: integer, ARRAY, numeric, uuid, USER-DEFINED (Enum), character,
-   * timestamp, name, bigint, boolean, character varying, double precision, text.
-   */
   const getSearchCondition = (fieldName: string) => {
     const attr = attributes[fieldName];
     if (!attr) return null;
 
-    // Get the internal Sequelize type name (e.g., "STRING", "INTEGER", "ARRAY")
     const typeName = attr.type.constructor.name;
 
-    // --- Type Group 1: Partial Match (iLike) ---
-    // Best for: character, character varying, text, name
+    // 1. Partial Match (iLike): character, text, varying, name
     const stringTypes = ["STRING", "TEXT", "CHAR", "CITEXT"];
     if (stringTypes.includes(typeName)) {
       return { [fieldName]: { [Op.iLike]: `%${search}%` } };
     }
 
-    // --- Type Group 2: Array Search ---
-    // Best for: ARRAY types
+    // 2. Array Match: ARRAY
     if (typeName === "ARRAY") {
       return { [fieldName]: { [Op.contains]: [search] } };
     }
 
-    // --- Type Group 3: Exact Match (eq) ---
-    // Best for: integer, bigint, numeric, double precision, uuid, boolean,
-    // USER-DEFINED (Enum), timestamp with time zone
-    // We use [Op.eq] because partial matches (LIKE) cause errors on non-string types.
+    // 3. Exact Match (eq): int, numeric, uuid, boolean, bigint, double, USER-DEFINED, timestamp
     return { [fieldName]: { [Op.eq]: search } };
   };
 
-  // --- Logic for SEARCH BY SPECIFIC FIELD ---
+  // Logic for SEARCH BY SPECIFIC FIELD
   if (searchBy) {
     const condition = getSearchCondition(searchBy);
-
-    // If field exists in whitelist but not in Model attributes (code inconsistency)
     if (!condition) {
-      throw new Error(
-        `Field "${searchBy}" defined in allowed list but does not exist on Model "${modelName}"`
+      console.error(
+        `[Search Error]: Field "${searchBy}" does not exist in ${modelName} database attributes.`
       );
+      return { [Op.and]: [literal("1=0")] };
     }
-
     return condition;
   }
 
-  // --- Logic for DEFAULT MULTI-FIELD SEARCH (OR) ---
+  // Logic for DEFAULT MULTI-FIELD SEARCH (OR)
   const orConditions = allowedFields
     .map((field) => getSearchCondition(field))
     .filter((cond): cond is Record<string, any> => cond !== null);

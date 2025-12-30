@@ -84,3 +84,31 @@ export async function findReviewsByTransactionId(
     },
   };
 }
+
+
+export async function findAllReviews(
+  page: number = 1,
+  pageSize: number = 10,
+  search?: string,
+  searchBy?: string
+) {
+  const offset = (page - 1) * pageSize;
+
+  const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
+  
+  const { count, rows } = await Review.findAndCountAll({
+    where: { ...whereClause },
+    offset,
+    limit: pageSize,
+  });
+
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
+}

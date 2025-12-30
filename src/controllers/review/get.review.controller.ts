@@ -3,6 +3,7 @@ import { findByDynamicId } from "../../services/global/find.service";
 import { Review } from "../../models/Review";
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import {
+  findAllReviews,
   findReviewsByReviewerId,
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
@@ -11,6 +12,33 @@ import {
   getPaginationParams,
   formatPaginationResponse,
 } from "../../utils/pagination";
+import { isAdmin } from "../../middlewares/isAdmin.middleware";
+
+export const getAllReviewsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const adminAuth = isAdmin();
+    adminAuth(req, res, async () => {
+      const { page, pageSize, search, searchBy } = getPaginationParams(req);
+      const reviewsResult = await findAllReviews(
+        page,
+        pageSize,
+        search,
+        searchBy
+      );
+
+      const pagination = formatPaginationResponse(reviewsResult.pagination);
+
+      return successResponse(
+        res,
+        "Review fetched successfully",
+        { reviews: reviewsResult.data },
+        200,
+        pagination
+      );
+    });
+    ("Error fetching reviews");
+  }
+);
 
 export const getReviewsByIdController = asyncHandler(
   async (req: Request, res: Response) => {

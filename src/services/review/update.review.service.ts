@@ -25,7 +25,7 @@ export async function updateReview(data: Partial<Review> & { id: string }) {
   }
 
   await review.update(updates);
-  return Review.findByPk(review.id, {
+  return Review.findByPk(review.review_id, {
     attributes: { exclude: ["password", "createdAt", "updatedAt"] },
   });
 }
