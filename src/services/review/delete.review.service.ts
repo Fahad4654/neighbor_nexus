@@ -6,7 +6,7 @@ export async function deleteReview(reviewID: string, actionerID: string) {
     throw new Error("Review not found");
   }
 
-  if (review.approvedBy !== actionerID && review.borrower_id !== actionerID) {
+  if (review.approvedBy !== actionerID && review.reviewer_id !== actionerID) {
     throw new Error("Unauthorized to delete this review");
   }
 

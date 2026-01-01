@@ -122,7 +122,8 @@ export async function findReviewByReviewId(review_id: string, user: User) {
 
   if (
     (user.id !== review.reviewee_id && review.show_to_reviewee === false) ||
-    (user.id !== review.reviewer_id && review.show_to_reviewer === false)
+    (user.id !== review.reviewer_id && review.show_to_reviewer === false) ||
+    !user.isAdmin
   ) {
     return null;
   }
