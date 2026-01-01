@@ -4,7 +4,8 @@ import { Review } from "../../models/Review";
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import {
   findAllReviews,
-  findReviewsByReviewerId,
+  findReviewsByLenderId,
+  findReviewsByBorrowerId,
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
 import { asyncHandler } from "../../utils/asyncHandler";
@@ -40,9 +41,10 @@ export const getAllReviewsController = asyncHandler(
   }
 );
 
-export const getReviewsByIdController = asyncHandler(
+export const getReviewsByLenderIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const review_id = req.params.id;
+    const { page, pageSize, search, searchBy } = getPaginationParams(req);
 
     if (!review_id) {
       return errorResponse(
@@ -53,24 +55,22 @@ export const getReviewsByIdController = asyncHandler(
       );
     }
 
-    const typedReview = await findByDynamicId(Review, { id: review_id }, false);
-    const review = typedReview as Review | null;
+    const reviewsResult = await findReviewsByLenderId(
+      review_id,
+      page,
+      pageSize,
+      search,
+      searchBy
+    );
 
-    if (!review) {
-      console.log("Review not found");
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with ID ${review_id} does not exist`,
-        404
-      );
-    }
+    const pagination = formatPaginationResponse(reviewsResult.pagination);
 
     return successResponse(
       res,
       "Review fetched successfully",
-      { review: review.dataValues },
-      200
+      { reviews: reviewsResult.data },
+      200,
+      pagination
     );
   },
   "Error fetching reviews"
@@ -89,7 +89,7 @@ export const getReviewsByReviewerIdController = asyncHandler(
         400
       );
     }
-    const reviewsResult = await findReviewsByReviewerId(
+    const reviewsResult = await findReviewsByBorrowerId(
       reviewer_id,
       page,
       pageSize,

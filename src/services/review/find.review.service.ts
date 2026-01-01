@@ -13,7 +13,7 @@ export async function findReviewsByLenderId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { lender_id: user_id, ...whereClause },
+    where: { lender_id: user_id, show_to_lender: true, ...whereClause },
     offset,
     limit: pageSize,
   });
@@ -41,7 +41,7 @@ export async function findReviewsByBorrowerId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { borrower_id, ...whereClause },
+    where: { borrower_id, show_to_borrower: true, ...whereClause },
     offset,
     limit: pageSize,
   });
