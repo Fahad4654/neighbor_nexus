@@ -15,12 +15,12 @@ import {
 } from "../../utils/pagination";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 
-export const getReviewsByLenderIdController = asyncHandler(
+export const getReviewsByRevieweeIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const review_id = req.params.id;
+    const reviewee_id = req.params.id;
     const { page, pageSize, search, searchBy } = getPaginationParams(req);
 
-    if (!review_id) {
+    if (!reviewee_id) {
       return errorResponse(
         res,
         "Review ID is required",
@@ -30,7 +30,7 @@ export const getReviewsByLenderIdController = asyncHandler(
     }
 
     const reviewsResult = await findReviewsByrevieweeId(
-      review_id,
+      reviewee_id,
       page,
       pageSize,
       search,
