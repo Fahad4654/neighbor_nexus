@@ -1,4 +1,5 @@
 import { Review } from "../../models/Review";
+import { User } from "../../models/User";
 import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
 export async function findReviewsByrevieweeId(
@@ -110,4 +111,21 @@ export async function findAllReviews(
       totalPages: Math.ceil(count / pageSize),
     },
   };
+}
+
+export async function findReviewByReviewId(review_id: string, user: User) {
+  const review = await Review.findByPk(review_id);
+
+  if (!review) {
+    return null;
+  }
+
+  if (
+    (user.id !== review.reviewee_id && review.show_to_reviewee === false) ||
+    (user.id !== review.reviewer_id && review.show_to_reviewer === false)
+  ) {
+    return null;
+  }
+
+  return review;
 }
