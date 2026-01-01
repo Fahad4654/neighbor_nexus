@@ -4,7 +4,9 @@ import { Review } from "../../models/Review";
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import {
   findAllReviews,
-  findReviewsByReviewerId,
+  findReviewByReviewId,
+  findReviewsByrevieweeId,
+  findReviewsByreviewerId,
   findReviewsByTransactionId,
 } from "../../services/review/find.review.service";
 import { asyncHandler } from "../../utils/asyncHandler";
@@ -13,38 +15,14 @@ import {
   formatPaginationResponse,
 } from "../../utils/pagination";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
+import { User } from "../../models/User";
 
-export const getAllReviewsController = asyncHandler(
+export const getReviewsByRevieweeIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const adminAuth = isAdmin();
-    adminAuth(req, res, async () => {
-      const { page, pageSize, search, searchBy } = getPaginationParams(req);
-      const reviewsResult = await findAllReviews(
-        page,
-        pageSize,
-        search,
-        searchBy
-      );
+    const reviewee_id = req.params.id;
+    const { page, pageSize, search, searchBy } = getPaginationParams(req);
 
-      const pagination = formatPaginationResponse(reviewsResult.pagination);
-
-      return successResponse(
-        res,
-        "Review fetched successfully",
-        { reviews: reviewsResult.data },
-        200,
-        pagination
-      );
-    });
-    ("Error fetching reviews");
-  }
-);
-
-export const getReviewsByIdController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const review_id = req.params.id;
-
-    if (!review_id) {
+    if (!reviewee_id) {
       return errorResponse(
         res,
         "Review ID is required",
@@ -53,24 +31,22 @@ export const getReviewsByIdController = asyncHandler(
       );
     }
 
-    const typedReview = await findByDynamicId(Review, { id: review_id }, false);
-    const review = typedReview as Review | null;
+    const reviewsResult = await findReviewsByrevieweeId(
+      reviewee_id,
+      page,
+      pageSize,
+      search,
+      searchBy
+    );
 
-    if (!review) {
-      console.log("Review not found");
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with ID ${review_id} does not exist`,
-        404
-      );
-    }
+    const pagination = formatPaginationResponse(reviewsResult.pagination);
 
     return successResponse(
       res,
       "Review fetched successfully",
-      { review: review.dataValues },
-      200
+      { reviews: reviewsResult.data },
+      200,
+      pagination
     );
   },
   "Error fetching reviews"
@@ -89,7 +65,7 @@ export const getReviewsByReviewerIdController = asyncHandler(
         400
       );
     }
-    const reviewsResult = await findReviewsByReviewerId(
+    const reviewsResult = await findReviewsByreviewerId(
       reviewer_id,
       page,
       pageSize,
@@ -150,4 +126,67 @@ export const getReviewsBytransactionIdController = asyncHandler(
     return review;
   },
   "Error fetching reviews"
+);
+
+export const getAllReviewsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const adminAuth = isAdmin();
+    adminAuth(req, res, async () => {
+      const { page, pageSize, search, searchBy } = getPaginationParams(req);
+      const reviewsResult = await findAllReviews(
+        page,
+        pageSize,
+        search,
+        searchBy
+      );
+
+      const pagination = formatPaginationResponse(reviewsResult.pagination);
+
+      return successResponse(
+        res,
+        "Review fetched successfully",
+        { reviews: reviewsResult.data },
+        200,
+        pagination
+      );
+    });
+    ("Error fetching reviews");
+  }
+);
+
+export const getReviewByReviewIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const review_id = req.params.review_id;
+    if (!review_id) {
+      return errorResponse(
+        res,
+        "Review ID is required",
+        "Missing review ID in request body",
+        400
+      );
+    }
+    if (!req.user) {
+      return errorResponse(
+        res,
+        "Login is required",
+        "Unauthorized access",
+        401
+      );
+    }
+    const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
+    const user = typedUser as User;
+
+    const review = await findReviewByReviewId(review_id, user);
+    if (!review) {
+      return errorResponse(
+        res,
+        "Review not found",
+        `Review with ID ${review_id} does not exist`,
+        404
+      );
+    }
+
+    return review;
+  },
+  "Error fetching review"
 );

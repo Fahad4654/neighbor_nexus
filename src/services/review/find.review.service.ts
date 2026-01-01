@@ -1,8 +1,9 @@
 import { Review } from "../../models/Review";
+import { User } from "../../models/User";
 import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
-export async function findReviewsByLenderId(
-  user_id: string,
+export async function findReviewsByrevieweeId(
+  reviewee_id: string,
   page: number,
   pageSize: number,
   search?: string,
@@ -13,7 +14,7 @@ export async function findReviewsByLenderId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { lender_id: user_id, ...whereClause },
+    where: { reviewee_id, show_to_reviewee: true, ...whereClause },
     offset,
     limit: pageSize,
   });
@@ -29,8 +30,8 @@ export async function findReviewsByLenderId(
   };
 }
 
-export async function findReviewsByBorrowerId(
-  borrower_id: string,
+export async function findReviewsByreviewerId(
+  reviewer_id: string,
   page: number = 1,
   pageSize: number = 10,
   search?: string,
@@ -41,7 +42,7 @@ export async function findReviewsByBorrowerId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { borrower_id, ...whereClause },
+    where: { reviewer_id, show_to_reviewer: true, ...whereClause },
     offset,
     limit: pageSize,
   });
@@ -85,7 +86,6 @@ export async function findReviewsByTransactionId(
   };
 }
 
-
 export async function findAllReviews(
   page: number = 1,
   pageSize: number = 10,
@@ -95,7 +95,7 @@ export async function findAllReviews(
   const offset = (page - 1) * pageSize;
 
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
-  
+
   const { count, rows } = await Review.findAndCountAll({
     where: { ...whereClause },
     offset,
@@ -111,4 +111,22 @@ export async function findAllReviews(
       totalPages: Math.ceil(count / pageSize),
     },
   };
+}
+
+export async function findReviewByReviewId(review_id: string, user: User) {
+  const review = await Review.findByPk(review_id);
+
+  if (!review) {
+    return null;
+  }
+
+  if (
+    (user.id !== review.reviewee_id && review.show_to_reviewee === false) ||
+    (user.id !== review.reviewer_id && review.show_to_reviewer === false) ||
+    !user.isAdmin
+  ) {
+    return null;
+  }
+
+  return review;
 }
