@@ -84,32 +84,6 @@ export const getReviewsByReviewerIdController = asyncHandler(
   "Error fetching reviews"
 );
 
-export const getAllReviewsController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const adminAuth = isAdmin();
-    adminAuth(req, res, async () => {
-      const { page, pageSize, search, searchBy } = getPaginationParams(req);
-      const reviewsResult = await findAllReviews(
-        page,
-        pageSize,
-        search,
-        searchBy
-      );
-
-      const pagination = formatPaginationResponse(reviewsResult.pagination);
-
-      return successResponse(
-        res,
-        "Review fetched successfully",
-        { reviews: reviewsResult.data },
-        200,
-        pagination
-      );
-    });
-    ("Error fetching reviews");
-  }
-);
-
 export const getReviewsBytransactionIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const transaction_id = req.body.transaction_id;
@@ -150,4 +124,30 @@ export const getReviewsBytransactionIdController = asyncHandler(
     return review;
   },
   "Error fetching reviews"
+);
+
+export const getAllReviewsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const adminAuth = isAdmin();
+    adminAuth(req, res, async () => {
+      const { page, pageSize, search, searchBy } = getPaginationParams(req);
+      const reviewsResult = await findAllReviews(
+        page,
+        pageSize,
+        search,
+        searchBy
+      );
+
+      const pagination = formatPaginationResponse(reviewsResult.pagination);
+
+      return successResponse(
+        res,
+        "Review fetched successfully",
+        { reviews: reviewsResult.data },
+        200,
+        pagination
+      );
+    });
+    ("Error fetching reviews");
+  }
 );
