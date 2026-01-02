@@ -1,13 +1,60 @@
+import { Op } from "sequelize";
 import { Review } from "../../models/Review";
 import { User } from "../../models/User";
 import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
+import { findByDynamicId } from "../global/find.service";
+
+export async function findReviewsByUserId(
+  userId: string,
+  page: number = 1,
+  pageSize: number = 10,
+  search?: string,
+  searchBy?: string,
+  order = "id",
+  asc: "ASC" | "DESC" = "ASC"
+) {
+  const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
+  const offset = (page - 1) * pageSize;
+  const typedUser = await findByDynamicId(User, { id: userId }, false);
+  const user = typedUser as User;
+
+  const { count, rows } = await Review.findAndCountAll({
+    where: {
+      [Op.and]: [
+        {
+          reviewee_id: user.id,
+          show_to_reviewee: true,
+        },
+        {
+          [Op.or]: [{ reviewer_id: user.id }, { show_to_reviewer: true }],
+        },
+        whereClause, // Spread this in or include it in the Op.and array
+      ],
+    },
+    offset,
+    limit: pageSize,
+    order: [[order, asc]],
+  });
+
+  return {
+    data: rows,
+    pagination: {
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    },
+  };
+}
 
 export async function findReviewsByrevieweeId(
   reviewee_id: string,
   page: number,
   pageSize: number,
   search?: string,
-  searchBy?: string
+  searchBy?: string,
+  order = "id",
+  asc: "ASC" | "DESC" = "ASC"
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -17,6 +64,7 @@ export async function findReviewsByrevieweeId(
     where: { reviewee_id, show_to_reviewee: true, ...whereClause },
     offset,
     limit: pageSize,
+    order: [[order, asc]],
   });
 
   return {
@@ -35,7 +83,9 @@ export async function findReviewsByreviewerId(
   page: number = 1,
   pageSize: number = 10,
   search?: string,
-  searchBy?: string
+  searchBy?: string,
+  order = "id",
+  asc: "ASC" | "DESC" = "ASC"
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -45,6 +95,7 @@ export async function findReviewsByreviewerId(
     where: { reviewer_id, show_to_reviewer: true, ...whereClause },
     offset,
     limit: pageSize,
+    order: [[order, asc]],
   });
 
   return {
@@ -63,7 +114,9 @@ export async function findReviewsByTransactionId(
   page: number = 1,
   pageSize: number = 10,
   search?: string,
-  searchBy?: string
+  searchBy?: string,
+  order = "id",
+  asc: "ASC" | "DESC" = "ASC"
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -73,6 +126,7 @@ export async function findReviewsByTransactionId(
     where: { transaction_id, ...whereClause },
     offset,
     limit: pageSize,
+    order: [[order, asc]],
   });
 
   return {
@@ -90,7 +144,9 @@ export async function findAllReviews(
   page: number = 1,
   pageSize: number = 10,
   search?: string,
-  searchBy?: string
+  searchBy?: string,
+  order = "id",
+  asc: "ASC" | "DESC" = "ASC"
 ) {
   const offset = (page - 1) * pageSize;
 
@@ -100,6 +156,7 @@ export async function findAllReviews(
     where: { ...whereClause },
     offset,
     limit: pageSize,
+    order: [[order, asc]],
   });
 
   return {
