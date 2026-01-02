@@ -8,6 +8,7 @@ import {
   findReviewsByrevieweeId,
   findReviewsByreviewerId,
   findReviewsByTransactionId,
+  findReviewsByUserId,
 } from "../../services/review/find.review.service";
 import { asyncHandler } from "../../utils/asyncHandler";
 import {
@@ -17,10 +18,49 @@ import {
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { User } from "../../models/User";
 
+export const getReviewsByUserIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user_id = req.params.id;
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
+
+    if (!user_id) {
+      return errorResponse(
+        res,
+        "User ID is required",
+        "Missing user ID in route parameter",
+        400
+      );
+    }
+
+    const reviewsResult = await findReviewsByUserId(
+      user_id,
+      page,
+      pageSize,
+      search,
+      searchBy,
+      order,
+      asc
+    );
+
+    const pagination = formatPaginationResponse(reviewsResult.pagination);
+
+    return successResponse(
+      res,
+      "Review fetched successfully",
+      { reviews: reviewsResult.data },
+      200,
+      pagination
+    );
+  },
+  "Error fetching reviews"
+);
+
 export const getReviewsByRevieweeIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const reviewee_id = req.params.id;
-    const { page, pageSize, search, searchBy } = getPaginationParams(req);
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
 
     if (!reviewee_id) {
       return errorResponse(
@@ -36,7 +76,9 @@ export const getReviewsByRevieweeIdController = asyncHandler(
       page,
       pageSize,
       search,
-      searchBy
+      searchBy,
+      order,
+      asc
     );
 
     const pagination = formatPaginationResponse(reviewsResult.pagination);
@@ -55,7 +97,8 @@ export const getReviewsByRevieweeIdController = asyncHandler(
 export const getReviewsByReviewerIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const reviewer_id = req.params.id;
-    const { page, pageSize, search, searchBy } = getPaginationParams(req);
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
 
     if (!reviewer_id) {
       return errorResponse(
@@ -70,7 +113,9 @@ export const getReviewsByReviewerIdController = asyncHandler(
       page,
       pageSize,
       search,
-      searchBy
+      searchBy,
+      order,
+      asc
     );
 
     const pagination = formatPaginationResponse(reviewsResult.pagination);
@@ -89,7 +134,8 @@ export const getReviewsByReviewerIdController = asyncHandler(
 export const getReviewsBytransactionIdController = asyncHandler(
   async (req: Request, res: Response) => {
     const transaction_id = req.body.transaction_id;
-    const { page, pageSize, search, searchBy } = getPaginationParams(req);
+    const { order, asc, page, pageSize, search, searchBy } =
+      getPaginationParams(req);
     const user = req.user;
     if (!transaction_id) {
       return errorResponse(
@@ -112,7 +158,9 @@ export const getReviewsBytransactionIdController = asyncHandler(
       page,
       pageSize,
       search,
-      searchBy
+      searchBy,
+      order,
+      asc
     );
     if (!review) {
       return errorResponse(
@@ -132,12 +180,15 @@ export const getAllReviewsController = asyncHandler(
   async (req: Request, res: Response) => {
     const adminAuth = isAdmin();
     adminAuth(req, res, async () => {
-      const { page, pageSize, search, searchBy } = getPaginationParams(req);
+      const { order, asc, page, pageSize, search, searchBy } =
+        getPaginationParams(req);
       const reviewsResult = await findAllReviews(
         page,
         pageSize,
         search,
-        searchBy
+        searchBy,
+        order,
+        asc
       );
 
       const pagination = formatPaginationResponse(reviewsResult.pagination);

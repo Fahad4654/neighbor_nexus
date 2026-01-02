@@ -7,11 +7,13 @@ import {
   getReviewsByRevieweeIdController,
   getReviewsByReviewerIdController,
   getReviewsBytransactionIdController,
+  getReviewsByUserIdController,
 } from "../controllers/review/get.review.controller";
 import { updateReviewController } from "../controllers/review/update.review.controller";
 
 const router = Router();
 
+router.post("/user/:id", getReviewsByUserIdController);
 router.post("/reviewee/:id", getReviewsByRevieweeIdController);
 router.post("/reviewer/:id", getReviewsByReviewerIdController);
 router.post("/transaction/:id", getReviewsBytransactionIdController);
