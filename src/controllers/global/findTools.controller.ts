@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { findNearbyToolsGoogle } from "../../services/findTools/findNearbyToolsByGoogle.service";
 import { errorResponse, successResponse } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { validateId } from "../../utils/validation";
 
 // Define the expected structure for sort options
 interface SortOption {
@@ -11,7 +12,11 @@ interface SortOption {
 
 export const getNearbyToolsGoogleController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.params;
+    const TypedUserId = req.params.userId;
+    const userId = TypedUserId as string;
+
+    if (!validateId(userId, "userId", res, "route parameter")) return;
+
     // User requested to use req.body for search params
     const { search, maxDistance, sort, searchBy } = req.body;
 

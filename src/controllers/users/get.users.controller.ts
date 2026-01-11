@@ -83,7 +83,9 @@ import { asyncHandler } from "../../utils/asyncHandler";
 
 export const getUsersByIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const userId = req.params.id;
+    const TypedUserId = req.params.id;
+    const userId = TypedUserId as string;
+
     if (!userId) {
       return errorResponse(
         res,

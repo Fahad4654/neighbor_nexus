@@ -25,7 +25,8 @@ import {
 
 export const getTransactionsByBorrowerIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const borrower_id = req.params.id;
+    const typedBorrowerId = req.params.id;
+    const borrower_id = typedBorrowerId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
@@ -63,7 +64,8 @@ export const getTransactionsByBorrowerIdController = asyncHandler(
 
 export const getTransactionsBylenderIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const lender_id = req.params.id;
+    const typedLenderId = req.params.id;
+    const lender_id = typedLenderId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
@@ -100,7 +102,8 @@ export const getTransactionsBylenderIdController = asyncHandler(
 
 export const getTransactionBytransactionIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const transaction_id = req.params.id;
+    const typedTransactionId = req.params.id;
+    const transaction_id = typedTransactionId as string;
     if (!transaction_id) {
       return errorResponse(
         res,
@@ -155,7 +158,8 @@ export const getTransactionBytransactionIdController = asyncHandler(
 
 export const getTransactionsByListingIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const listing_id = req.params.id;
+    const typedListingId = req.params.id;
+    const listing_id = typedListingId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
@@ -232,7 +236,8 @@ export const getTransactionsByListingIdController = asyncHandler(
 
 export const getTransactionByRentRequestIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const rent_request_id = req.params.id;
+    const typedRentRequestId = req.params.id;
+    const rent_request_id = typedRentRequestId as string;
 
     if (!rent_request_id) {
       return errorResponse(
@@ -292,7 +297,8 @@ export const getTransactionByRentRequestIdController = asyncHandler(
 
 export const getTransactionsByUserIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const user_id = req.params.id;
+    const typedUserId = req.params.id;
+    const user_id = typedUserId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
