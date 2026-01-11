@@ -2,7 +2,7 @@ import { mailQueue } from "./mail.queue";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
-import { NODE_ENV, MAIL_SEND } from "../../config";
+import { MAIL_SEND } from "../../config";
 
 export class MailService {
   /**

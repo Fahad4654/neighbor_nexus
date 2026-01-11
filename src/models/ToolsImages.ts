@@ -4,7 +4,6 @@ import {
   Model,
   DataType,
   PrimaryKey,
-  AutoIncrement,
   AllowNull,
   ForeignKey,
   BelongsTo,

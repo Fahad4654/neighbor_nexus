@@ -1,12 +1,10 @@
 // create.tool.service.ts
-
 import { User } from "../../models/User";
 import { findByDynamicId } from "../global/find.service";
 import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
 import { saveFile } from "../../middlewares/upload";
 import path from "path";
-import { Express } from "express"; // Import Express for typing
 
 export async function createTool(
   data: {

@@ -15,9 +15,9 @@ router.delete("/", deleteUserProfileController);
 
 router.post(
   "/upload-avatar",
-  uploadProfilePic, // Multer middleware (memory storage)
-  multerErrorHandler, // Handle Multer errors first
-  uploadProfilePictureController // Then handle the actual upload + DB update
+  uploadProfilePic,
+  multerErrorHandler,
+  uploadProfilePictureController
 );
 
 export { router as userCreateRouter };
