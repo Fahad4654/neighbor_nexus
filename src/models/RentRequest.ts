@@ -4,12 +4,10 @@ import {
   Model,
   DataType,
   PrimaryKey,
-  AutoIncrement,
   AllowNull,
   ForeignKey,
   Default,
   BelongsTo,
-  Comment,
 } from "sequelize-typescript";
 import { User } from "./User";
 import { Tool } from "./Tools";
