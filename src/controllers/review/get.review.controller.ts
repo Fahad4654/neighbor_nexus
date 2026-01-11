@@ -17,13 +17,16 @@ import {
 } from "../../utils/pagination";
 import { isAdmin } from "../../middlewares/isAdmin.middleware";
 import { User } from "../../models/User";
+import { validateId } from "../../utils/validation";
 
 export const getReviewsByUserIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const user_id = req.params.id;
+    const typedUserId = req.params.id;
+    const user_id = typedUserId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
+    if (!validateId(user_id, "user_id", res, "route parameter")) return;
     if (!user_id) {
       return errorResponse(
         res,
@@ -58,7 +61,8 @@ export const getReviewsByUserIdController = asyncHandler(
 
 export const getReviewsByRevieweeIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const reviewee_id = req.params.id;
+    const typedRevieweeId = req.params.id;
+    const reviewee_id = typedRevieweeId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
@@ -96,7 +100,8 @@ export const getReviewsByRevieweeIdController = asyncHandler(
 
 export const getReviewsByReviewerIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const reviewer_id = req.params.id;
+    const typedReviewerId = req.params.id;
+    const reviewer_id = typedReviewerId as string;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 
@@ -207,7 +212,9 @@ export const getAllReviewsController = asyncHandler(
 
 export const getReviewByReviewIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const review_id = req.params.review_id;
+    const typedReviewId = req.params.review_id;
+    const review_id = typedReviewId as string;
+    if (!validateId(review_id, "review_id", res, "route parameter")) return;
     if (!review_id) {
       return errorResponse(
         res,

@@ -21,7 +21,11 @@ import {
   getPaginationParams,
   formatPaginationResponse,
 } from "../../utils/pagination";
-import { validateAuth, validateAuthorization } from "../../utils/validation";
+import {
+  validateAuth,
+  validateAuthorization,
+  validateId,
+} from "../../utils/validation";
 
 // Find all Rent Requests by Admin
 export async function getRentRequestsController(req: Request, res: Response) {
@@ -303,7 +307,9 @@ export const getRentRequestByBorrowerAndListingIdController = asyncHandler(
 
 export const getByRentRequestIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const typedId = req.params.id;
+    const id = typedId as string;
+    if (!validateId(id, "id", res, "route parameter")) return;
     if (!id) {
       console.log("Request body is required for filtering/pagination");
       return errorResponse(

@@ -13,6 +13,7 @@ import {
   getPaginationParams,
   formatPaginationResponse,
 } from "../../utils/pagination";
+import { validateId } from "../../utils/validation";
 
 // ✅ Get all tools with pagination
 export const getToolsController = asyncHandler(
@@ -53,7 +54,10 @@ export const getToolsController = asyncHandler(
 // ✅ Get single tool by listing_id
 export const getToolByListingIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { listing_id } = req.params;
+    const typedListingId = req.params.listing_id;
+    const listing_id = typedListingId as string;
+
+    if (!validateId(listing_id, "listing_id", res, "route parameter")) return;
 
     const tool = await findToolsByListingId(listing_id);
 
@@ -79,7 +83,11 @@ export const getToolByListingIdController = asyncHandler(
 // Get tools by owner_id
 export const getToolsByOwnerIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { owner_id } = req.params;
+    const typedOwnerId = req.params.owner_id;
+    const owner_id = typedOwnerId as string;
+
+    if (!validateId(owner_id, "owner_id", res, "route parameter")) return;
+
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
 

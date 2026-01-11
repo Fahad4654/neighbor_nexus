@@ -59,7 +59,9 @@ const transporter = nodemailer.createTransport({
 });
 
 // Queue for sending emails
-export const mailQueue = new Queue("mailQueue", { connection });
+export const mailQueue = new Queue("mailQueue", {
+  connection: connection as any,
+});
 
 const companyName = `${COMPANY_NAME}`;
 
@@ -83,7 +85,7 @@ export const mailWorker = new Worker(
     }
   },
   {
-    connection,
+    connection: connection as any,
     concurrency: 5,
   }
 );
