@@ -137,15 +137,16 @@ export const getReviewsByReviewerIdController = asyncHandler(
 
 export const getReviewsBytransactionIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const transaction_id = req.body.transaction_id;
+    const { transaction_id } = req.body;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
     const user = req.user;
+
     if (!transaction_id) {
       return errorResponse(
         res,
         "Transaction ID is required",
-        "Missing transaction ID in request body",
+        "Missing transaction ID",
         400
       );
     }
@@ -157,7 +158,8 @@ export const getReviewsBytransactionIdController = asyncHandler(
         401
       );
     }
-    const review = await findReviewsByTransactionId(
+
+    const reviewsResult = await findReviewsByTransactionId(
       transaction_id,
       user.id,
       page,
@@ -167,16 +169,22 @@ export const getReviewsBytransactionIdController = asyncHandler(
       order,
       asc
     );
-    if (!review) {
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with transaction ID ${transaction_id} does not exist`,
-        404
-      );
+
+    // If reviewsResult.data is an empty array, it's still a "success", just 0 results
+    if (!reviewsResult) {
+      return errorResponse(res, "Error", "Failed to retrieve reviews", 500);
     }
 
-    return review;
+    const pagination = formatPaginationResponse(reviewsResult.pagination);
+
+    // FIX: Use successResponse instead of 'return review'
+    return successResponse(
+      res,
+      "Transaction reviews fetched successfully",
+      { reviews: reviewsResult.data },
+      200,
+      pagination
+    );
   },
   "Error fetching reviews"
 );

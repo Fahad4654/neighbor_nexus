@@ -124,7 +124,7 @@ export async function findReviewsByreviewerId(
 
 export async function findReviewsByTransactionId(
   transaction_id: string,
-  requestingUserId?: string,
+  requestingUserId: string,
   page: number = 1,
   pageSize: number = 10,
   search?: string,
@@ -133,24 +133,33 @@ export async function findReviewsByTransactionId(
   asc: "ASC" | "DESC" = "ASC"
 ) {
   const offset = (page - 1) * pageSize;
-
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
     where: {
-      transaction_id,
-      [Op.or]: [
-        // 1. Show if it's approved and the reviewee hasn't hidden it
-        { approved: true, show_to_reviewee: true },
-        // 2. OR show if the requester is the person who wrote it (even if unapproved)
-        { reviewer_id: requestingUserId, show_to_reviewer: true },
+      [Op.and]: [
+        { transaction_id }, // Must belong to this transaction
+        {
+          [Op.or]: [
+            // Rule 1: Anyone can see it if it's approved and not hidden by the target
+            {
+              reviewee_id: requestingUserId,
+              approved: true,
+              show_to_reviewee: true,
+            },
+            // Rule 2: The author can see it even if it's NOT approved
+            { reviewer_id: requestingUserId, show_to_reviewer: true },
+          ],
+        },
+        whereClause || {},
       ],
-      ...whereClause,
     },
     offset,
     limit: pageSize,
     order: [[order, asc]],
   });
+
+  console.log(rows);
 
   return {
     data: rows,
