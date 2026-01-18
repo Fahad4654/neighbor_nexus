@@ -7,11 +7,13 @@ export async function createReview(
   rating: number,
   comment?: string
 ) {
+  console.log(transactionID);
   const transaction = await Transaction.findOne({
     where: {
-      id: transactionID,
+      transaction_id: transactionID,
     },
   });
+  console.log(transaction);
   if (!transaction) {
     throw new Error("Transaction not found");
   }
@@ -22,13 +24,13 @@ export async function createReview(
     reviewed_user_id = transaction.borrower_id;
   }
   const review = await Review.create({
-    reviewed_user_id: reviewed_user_id,
-    transaction_id: transactionID,
+    reviewee_id: reviewed_user_id,
+    transaction_id: transaction.transaction_id,
     reviewer_id: userId,
     rating: rating,
     comment: comment ? comment : "",
     approved: false,
-    approvedBy: "",
+    approvedBy: null,
   });
   return review;
 }

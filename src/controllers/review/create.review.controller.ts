@@ -17,8 +17,8 @@ export const createReviewController = asyncHandler(
     const { userID, transactionID, rating, comment } = req.body;
 
     const newReview = await createReview(
-      userID,
       transactionID,
+      userID,
       rating,
       comment
     );

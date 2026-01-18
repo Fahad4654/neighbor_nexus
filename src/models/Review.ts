@@ -18,7 +18,7 @@ import { Transaction } from "./Transaction";
 })
 export class Review extends Model {
   @PrimaryKey
-  @AllowNull(false)
+  @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   review_id!: string;
 
