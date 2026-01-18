@@ -9,19 +9,16 @@ export const createReviewController = asyncHandler(
     const reqBodyValidation = validateRequiredBody(req, res, [
       "userID",
       "transactionID",
-      "reviewed_user_id",
       "rating",
       "comment",
     ]);
     if (!reqBodyValidation) return;
 
-    const { userID, transactionID, reviewed_user_id, rating, comment } =
-      req.body;
+    const { userID, transactionID, rating, comment } = req.body;
 
     const newReview = await createReview(
       userID,
       transactionID,
-      reviewed_user_id,
       rating,
       comment
     );
