@@ -61,7 +61,12 @@ export async function findReviewsByrevieweeId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { reviewee_id, show_to_reviewee: true, approved: true, ...whereClause },
+    where: {
+      reviewee_id,
+      show_to_reviewee: true,
+      approved: true, // IMPORTANT: Public can only see approved reviews
+      ...whereClause,
+    },
     offset,
     limit: pageSize,
     order: [[order, asc]],
@@ -111,6 +116,7 @@ export async function findReviewsByreviewerId(
 
 export async function findReviewsByTransactionId(
   transaction_id: string,
+  requestingUserId?: string,
   page: number = 1,
   pageSize: number = 10,
   search?: string,
@@ -123,7 +129,16 @@ export async function findReviewsByTransactionId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { transaction_id, ...whereClause },
+    where: {
+      transaction_id,
+      [Op.or]: [
+        // 1. Show if it's approved and the reviewee hasn't hidden it
+        { approved: true, show_to_reviewee: true },
+        // 2. OR show if the requester is the person who wrote it (even if unapproved)
+        { reviewer_id: requestingUserId, show_to_reviewer: true },
+      ],
+      ...whereClause,
+    },
     offset,
     limit: pageSize,
     order: [[order, asc]],
@@ -172,18 +187,19 @@ export async function findAllReviews(
 
 export async function findReviewByReviewId(review_id: string, user: User) {
   const review = await Review.findByPk(review_id);
+  if (!review) return null;
 
-  if (!review) {
-    return null;
+  // 1. Admins see everything
+  if (user.isAdmin) return review;
+
+  // 2. If it's not approved, ONLY the reviewer can see it
+  if (!review.approved) {
+    return review.reviewer_id === user.id ? review : null;
   }
 
-  if (
-    (user.id !== review.reviewee_id && review.show_to_reviewee === false) ||
-    (user.id !== review.reviewer_id && review.show_to_reviewer === false) ||
-    !user.isAdmin
-  ) {
-    return null;
-  }
+  // 3. If it's approved, check visibility flags based on who is asking
+  if (user.id === review.reviewer_id && !review.show_to_reviewer) return null;
+  if (user.id === review.reviewee_id && !review.show_to_reviewee) return null;
 
   return review;
 }
