@@ -1,20 +1,47 @@
 import { Review } from "../../models/Review";
+import { Transaction } from "../../models/Transaction";
 
 export async function createReview(
-  reviewed_user_id: string,
   transactionID: string,
   userId: string,
   rating: number,
-  comment: string
+  comment?: string
 ) {
+  console.log(transactionID);
+  const transaction = await Transaction.findOne({
+    where: {
+      transaction_id: transactionID,
+    },
+  });
+  console.log(transaction);
+  if (!transaction) {
+    throw new Error("Transaction not found");
+  }
+  const existingReview = await Review.findOne({
+    where: {
+      transaction_id: transactionID,
+      reviewer_id: userId,
+    },
+  });
+  if (existingReview) {
+    throw new Error(
+      "You have already submitted a review for this transaction."
+    );
+  }
+  let reviewed_user_id: string;
+  if (transaction.borrower_id === userId) {
+    reviewed_user_id = transaction.lender_id;
+  } else {
+    reviewed_user_id = transaction.borrower_id;
+  }
   const review = await Review.create({
-    reviewed_user_id: reviewed_user_id,
-    transaction_id: transactionID,
+    reviewee_id: reviewed_user_id,
+    transaction_id: transaction.transaction_id,
     reviewer_id: userId,
     rating: rating,
-    comment: comment,
+    comment: comment || "",
     approved: false,
-    approvedBy: userId,
+    approvedBy: null,
   });
   return review;
 }

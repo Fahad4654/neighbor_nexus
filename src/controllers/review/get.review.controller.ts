@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { findByDynamicId } from "../../services/global/find.service";
-import { Review } from "../../models/Review";
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import {
   findAllReviews,

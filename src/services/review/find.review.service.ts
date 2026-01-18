@@ -61,7 +61,7 @@ export async function findReviewsByrevieweeId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { reviewee_id, show_to_reviewee: true, ...whereClause },
+    where: { reviewee_id, show_to_reviewee: true, approved: true, ...whereClause },
     offset,
     limit: pageSize,
     order: [[order, asc]],

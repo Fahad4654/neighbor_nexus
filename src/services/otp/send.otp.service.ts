@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { ADMIN_MAIL, COMPANY_NAME, CLIENT_URL } from "../../config";
+import { ADMIN_MAIL, COMPANY_NAME } from "../../config";
 import { Otp } from "../../models/Otp";
 import { User } from "../../models/User";
 import { MailService } from "../mail/mail.service";

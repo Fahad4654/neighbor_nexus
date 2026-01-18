@@ -30,8 +30,8 @@ router.post(
 router.put("/update-info", updateToolInfoController);
 router.put(
   "/update-images",
-  uploadToolImages, // Multer handles file upload
-  multerErrorHandler, // FIX: Catch file errors BEFORE the controller
+  uploadToolImages,
+  multerErrorHandler,
   updateToolImagesController
 );
 router.delete("/", deleteToolController);

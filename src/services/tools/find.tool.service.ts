@@ -2,8 +2,6 @@ import { User } from "../../models/User";
 import { findByDynamicId } from "../global/find.service";
 import { Tool } from "../../models/Tools";
 import { ToolImage } from "../../models/ToolsImages";
-
-import { Op } from "sequelize";
 import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
 
 export async function findAllTools(

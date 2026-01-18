@@ -5,7 +5,6 @@ import { validateRequiredBody } from "../../services/global/reqBodyValidation.se
 import { findByDynamicId } from "../../services/global/find.service";
 import { User } from "../../models/User";
 import { asyncHandler } from "../../utils/asyncHandler";
-import { RentRequest } from "../../models/RentRequest";
 
 export const deleteRentRequestController = asyncHandler(
   async (req: Request, res: Response) => {

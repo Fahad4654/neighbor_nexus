@@ -9,7 +9,6 @@ import {
   HasOne,
   ForeignKey,
   Validate,
-  Comment,
 } from "sequelize-typescript";
 import { Profile } from "./Profile";
 import { GeoPoint } from "../types/geo";

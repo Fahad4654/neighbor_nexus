@@ -1,4 +1,3 @@
-import { Op } from "sequelize";
 import { Profile } from "../../models/Profile";
 import { User } from "../../models/User";
 import { getSearchWhereClause as getSearchWhereClauseV2 } from "../../utils/search.v2";
