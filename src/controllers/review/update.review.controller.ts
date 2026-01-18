@@ -4,10 +4,22 @@ import { Review } from "../../models/Review";
 import { updateReview } from "../../services/review/update.review.service";
 import { successResponse, errorResponse } from "../../utils/apiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
+import { User } from "../../models/User";
 
 export const updateReviewController = asyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.body.id) {
+    const reqUser = req.user;
+    if (!reqUser) {
+      return errorResponse(
+        res,
+        "User not found",
+        "User not found in request",
+        404
+      );
+    }
+    const typedUser = await findByDynamicId(User, { id: reqUser.id }, false);
+    const user = typedUser as User;
+    if (!req.body.review_id) {
       return errorResponse(
         res,
         "Review ID is required",
@@ -16,9 +28,10 @@ export const updateReviewController = asyncHandler(
       );
     }
 
+    console.log(req.body);
     const typedWantUpReview = await findByDynamicId(
       Review,
-      { id: req.body.id },
+      { review_id: req.body.review_id },
       false
     );
     const wantUpReview = typedWantUpReview as Review | null;
@@ -27,8 +40,26 @@ export const updateReviewController = asyncHandler(
       return errorResponse(
         res,
         "Review Not found",
-        `Review with ID ${req.body.id} does not exist`,
+        `Review with ID ${req.body.review_id} does not exist`,
         404
+      );
+    }
+
+    if (!user.isAdmin && req.body.approved) {
+      return errorResponse(
+        res,
+        "Unauthorized",
+        "User is not authorized to update this review",
+        401
+      );
+    }
+
+    if (!user.isAdmin && req.body.approvedBy) {
+      return errorResponse(
+        res,
+        "Unauthorized",
+        "User is not authorized to update this review",
+        401
       );
     }
 

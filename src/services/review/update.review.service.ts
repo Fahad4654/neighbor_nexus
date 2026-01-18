@@ -1,7 +1,7 @@
 import { Review } from "../../models/Review";
 
-export async function updateReview(data: Partial<Review> & { id: string }) {
-  const review = await Review.findOne({ where: { review_id: data.id } });
+export async function updateReview(data: Partial<Review> & { review_id: string }) {
+  const review = await Review.findOne({ where: { review_id: data.review_id } });
   if (!review) {
     console.log("Review not found");
     throw new Error("Review not found");
@@ -26,6 +26,8 @@ export async function updateReview(data: Partial<Review> & { id: string }) {
 
   await review.update(updates);
   return Review.findByPk(review.review_id, {
-    attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+    attributes: {
+      exclude: ["show_to_reviewee", "show_to_reviewer"],
+    },
   });
 }
