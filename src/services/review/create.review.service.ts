@@ -17,6 +17,17 @@ export async function createReview(
   if (!transaction) {
     throw new Error("Transaction not found");
   }
+  const existingReview = await Review.findOne({
+    where: {
+      transaction_id: transactionID,
+      reviewer_id: userId,
+    },
+  });
+  if (existingReview) {
+    throw new Error(
+      "You have already submitted a review for this transaction."
+    );
+  }
   let reviewed_user_id: string;
   if (transaction.borrower_id === userId) {
     reviewed_user_id = transaction.lender_id;
@@ -28,7 +39,7 @@ export async function createReview(
     transaction_id: transaction.transaction_id,
     reviewer_id: userId,
     rating: rating,
-    comment: comment ? comment : "",
+    comment: comment || "",
     approved: false,
     approvedBy: null,
   });

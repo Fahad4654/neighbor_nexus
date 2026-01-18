@@ -10,7 +10,6 @@ export const createReviewController = asyncHandler(
       "userID",
       "transactionID",
       "rating",
-      "comment",
     ]);
     if (!reqBodyValidation) return;
 

@@ -24,7 +24,10 @@ export class Review extends Model {
 
   @ForeignKey(() => Transaction)
   @AllowNull(false)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    unique: "unique_transaction_reviewer", // Link these two
+  })
   transaction_id!: string;
 
   @ForeignKey(() => User)
@@ -34,7 +37,10 @@ export class Review extends Model {
 
   @ForeignKey(() => User)
   @AllowNull(false)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    unique: "unique_transaction_reviewer", // Link these two
+  })
   reviewer_id!: string;
 
   @AllowNull(false)
@@ -53,7 +59,7 @@ export class Review extends Model {
   @ForeignKey(() => User)
   @AllowNull(true)
   @Column(DataType.UUID)
-  approvedBy!: string;
+  approvedBy!: string | null; // Allow null if not yet approved
 
   @Default(true)
   @Column(DataType.BOOLEAN)
