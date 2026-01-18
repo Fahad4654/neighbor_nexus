@@ -159,6 +159,7 @@ export const getReviewsBytransactionIdController = asyncHandler(
     }
     const review = await findReviewsByTransactionId(
       transaction_id,
+      user.id,
       page,
       pageSize,
       search,

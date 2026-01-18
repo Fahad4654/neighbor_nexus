@@ -22,13 +22,21 @@ export async function findReviewsByUserId(
     where: {
       [Op.and]: [
         {
-          reviewee_id: user.id,
-          show_to_reviewee: true,
+          [Op.or]: [
+            // Perspective 1: User is the Reviewee (Only show if approved and visible)
+            {
+              reviewee_id: userId,
+              approved: true,
+              show_to_reviewee: true,
+            },
+            // Perspective 2: User is the Reviewer (Show even if pending, unless hidden)
+            {
+              reviewer_id: userId,
+              show_to_reviewer: true,
+            },
+          ],
         },
-        {
-          [Op.or]: [{ reviewer_id: user.id }, { show_to_reviewer: true }],
-        },
-        whereClause, // Spread this in or include it in the Op.and array
+        whereClause, // Applies search filters on top of the visibility logic
       ],
     },
     offset,
