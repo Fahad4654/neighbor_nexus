@@ -203,7 +203,11 @@ export async function findAllReviews(
 }
 
 export async function findReviewByReviewId(review_id: string, user: User) {
-  const review = await Review.findByPk(review_id);
+  // Using findOne ensures we target 'review_id' specifically
+  const review = await Review.findOne({
+    where: { review_id: review_id }
+  });
+
   if (!review) return null;
 
   // 1. Admins see everything
@@ -215,8 +219,14 @@ export async function findReviewByReviewId(review_id: string, user: User) {
   }
 
   // 3. If it's approved, check visibility flags based on who is asking
-  if (user.id === review.reviewer_id && !review.show_to_reviewer) return null;
-  if (user.id === review.reviewee_id && !review.show_to_reviewee) return null;
+  // We use "return null" to effectively hide it if the user has opted to hide it
+  if (user.id === review.reviewer_id && review.show_to_reviewer === false) {
+    return null;
+  }
+  
+  if (user.id === review.reviewee_id && review.show_to_reviewee === false) {
+    return null;
+  }
 
   return review;
 }
