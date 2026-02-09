@@ -137,15 +137,16 @@ export const getReviewsByReviewerIdController = asyncHandler(
 
 export const getReviewsBytransactionIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const transaction_id = req.body.transaction_id;
+    const { transaction_id } = req.body;
     const { order, asc, page, pageSize, search, searchBy } =
       getPaginationParams(req);
     const user = req.user;
+
     if (!transaction_id) {
       return errorResponse(
         res,
         "Transaction ID is required",
-        "Missing transaction ID in request body",
+        "Missing transaction ID",
         400
       );
     }
@@ -157,8 +158,10 @@ export const getReviewsBytransactionIdController = asyncHandler(
         401
       );
     }
-    const review = await findReviewsByTransactionId(
+
+    const reviewsResult = await findReviewsByTransactionId(
       transaction_id,
+      user.id,
       page,
       pageSize,
       search,
@@ -166,16 +169,22 @@ export const getReviewsBytransactionIdController = asyncHandler(
       order,
       asc
     );
-    if (!review) {
-      return errorResponse(
-        res,
-        "Review not found",
-        `Review with transaction ID ${transaction_id} does not exist`,
-        404
-      );
+
+    // If reviewsResult.data is an empty array, it's still a "success", just 0 results
+    if (!reviewsResult) {
+      return errorResponse(res, "Error", "Failed to retrieve reviews", 500);
     }
 
-    return review;
+    const pagination = formatPaginationResponse(reviewsResult.pagination);
+
+    // FIX: Use successResponse instead of 'return review'
+    return successResponse(
+      res,
+      "Transaction reviews fetched successfully",
+      { reviews: reviewsResult.data },
+      200,
+      pagination
+    );
   },
   "Error fetching reviews"
 );
@@ -211,39 +220,36 @@ export const getAllReviewsController = asyncHandler(
 
 export const getReviewByReviewIdController = asyncHandler(
   async (req: Request, res: Response) => {
-    const typedReviewId = req.params.review_id;
-    const review_id = typedReviewId as string;
-    if (!validateId(review_id, "review_id", res, "route parameter")) return;
-    if (!review_id) {
-      return errorResponse(
-        res,
-        "Review ID is required",
-        "Missing review ID in request body",
-        400
-      );
-    }
+    const { review_id } = req.params; // Cleaner way to get params
+    const typedReviewId = review_id as string;
+
+    if (!validateId(typedReviewId, "review_id", res, "route parameter")) return;
+
     if (!req.user) {
-      return errorResponse(
-        res,
-        "Login is required",
-        "Unauthorized access",
-        401
-      );
+      return errorResponse(res, "Login is required", "Unauthorized access", 401);
     }
+
     const typedUser = await findByDynamicId(User, { id: req.user.id }, false);
     const user = typedUser as User;
 
-    const review = await findReviewByReviewId(review_id, user);
+    const review = await findReviewByReviewId(typedReviewId, user);
+
     if (!review) {
       return errorResponse(
         res,
         "Review not found",
-        `Review with ID ${review_id} does not exist`,
+        `Review with ID ${review_id} does not exist or access denied`,
         404
       );
     }
 
-    return review;
+    // FIX: Change 'return review' to this:
+    return successResponse(
+      res, 
+      "Review fetched successfully", 
+      { review }, 
+      200
+    );
   },
   "Error fetching review"
 );

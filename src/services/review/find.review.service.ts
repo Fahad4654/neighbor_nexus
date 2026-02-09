@@ -22,13 +22,21 @@ export async function findReviewsByUserId(
     where: {
       [Op.and]: [
         {
-          reviewee_id: user.id,
-          show_to_reviewee: true,
+          [Op.or]: [
+            // Perspective 1: User is the Reviewee (Only show if approved and visible)
+            {
+              reviewee_id: userId,
+              approved: true,
+              show_to_reviewee: true,
+            },
+            // Perspective 2: User is the Reviewer (Show even if pending, unless hidden)
+            {
+              reviewer_id: userId,
+              show_to_reviewer: true,
+            },
+          ],
         },
-        {
-          [Op.or]: [{ reviewer_id: user.id }, { show_to_reviewer: true }],
-        },
-        whereClause, // Spread this in or include it in the Op.and array
+        whereClause, // Applies search filters on top of the visibility logic
       ],
     },
     offset,
@@ -61,7 +69,12 @@ export async function findReviewsByrevieweeId(
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { reviewee_id, show_to_reviewee: true, approved: true, ...whereClause },
+    where: {
+      reviewee_id,
+      show_to_reviewee: true,
+      approved: true, // IMPORTANT: Public can only see approved reviews
+      ...whereClause,
+    },
     offset,
     limit: pageSize,
     order: [[order, asc]],
@@ -111,6 +124,7 @@ export async function findReviewsByreviewerId(
 
 export async function findReviewsByTransactionId(
   transaction_id: string,
+  requestingUserId: string,
   page: number = 1,
   pageSize: number = 10,
   search?: string,
@@ -119,15 +133,33 @@ export async function findReviewsByTransactionId(
   asc: "ASC" | "DESC" = "ASC"
 ) {
   const offset = (page - 1) * pageSize;
-
   const whereClause = getSearchWhereClauseV2(search, Review, searchBy);
 
   const { count, rows } = await Review.findAndCountAll({
-    where: { transaction_id, ...whereClause },
+    where: {
+      [Op.and]: [
+        { transaction_id }, // Must belong to this transaction
+        {
+          [Op.or]: [
+            // Rule 1: Anyone can see it if it's approved and not hidden by the target
+            {
+              reviewee_id: requestingUserId,
+              approved: true,
+              show_to_reviewee: true,
+            },
+            // Rule 2: The author can see it even if it's NOT approved
+            { reviewer_id: requestingUserId, show_to_reviewer: true },
+          ],
+        },
+        whereClause || {},
+      ],
+    },
     offset,
     limit: pageSize,
     order: [[order, asc]],
   });
+
+  console.log(rows);
 
   return {
     data: rows,
@@ -171,17 +203,28 @@ export async function findAllReviews(
 }
 
 export async function findReviewByReviewId(review_id: string, user: User) {
-  const review = await Review.findByPk(review_id);
+  // Using findOne ensures we target 'review_id' specifically
+  const review = await Review.findOne({
+    where: { review_id: review_id }
+  });
 
-  if (!review) {
-    return null;
+  if (!review) return null;
+
+  // 1. Admins see everything
+  if (user.isAdmin) return review;
+
+  // 2. If it's not approved, ONLY the reviewer can see it
+  if (!review.approved) {
+    return review.reviewer_id === user.id ? review : null;
   }
 
-  if (
-    (user.id !== review.reviewee_id && review.show_to_reviewee === false) ||
-    (user.id !== review.reviewer_id && review.show_to_reviewer === false) ||
-    !user.isAdmin
-  ) {
+  // 3. If it's approved, check visibility flags based on who is asking
+  // We use "return null" to effectively hide it if the user has opted to hide it
+  if (user.id === review.reviewer_id && review.show_to_reviewer === false) {
+    return null;
+  }
+  
+  if (user.id === review.reviewee_id && review.show_to_reviewee === false) {
     return null;
   }
 

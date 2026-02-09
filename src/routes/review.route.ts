@@ -16,7 +16,7 @@ const router = Router();
 router.post("/user/:id", getReviewsByUserIdController);
 router.post("/reviewee/:id", getReviewsByRevieweeIdController);
 router.post("/reviewer/:id", getReviewsByReviewerIdController);
-router.post("/transaction/:id", getReviewsBytransactionIdController);
+router.post("/transaction", getReviewsBytransactionIdController);
 router.get("/:review_id", getReviewByReviewIdController);
 router.post("/", createReviewController);
 router.post("/all", getAllReviewsController);
