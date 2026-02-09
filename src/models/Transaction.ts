@@ -81,7 +81,7 @@ export class Transaction extends Model {
   stripe_charge_id?: string;
 
   @AllowNull(false)
-  @Default("Requested")
+  @Default("Pending")
   @Column(
     DataType.ENUM("Pending", "Approved", "Cancelled", "Completed", "Disputed")
   )
